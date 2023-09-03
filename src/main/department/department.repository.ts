@@ -54,4 +54,19 @@ export default class DepartmentRepository extends Repository<Department> {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    async numOfEmployee(idDepartment: string): Promise<number | undefined> {
+        try {
+            const query = `
+            SELECT COUNT(U.id)
+            FROM department D INNER JOIN user U ON D.id = U.departmentId
+            WHERE D.id = '${idDepartment}';`
+            const result = await this.query(query);
+            const obj = result[0];
+            const countValue = parseInt(obj['COUNT(U.id)'], 10); // Parse the value as an integer
+            return countValue;
+        } catch (err) {
+            return -1;
+        }
+    }
 }

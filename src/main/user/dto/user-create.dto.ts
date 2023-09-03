@@ -13,7 +13,7 @@ export default class UserCreateDto {
     @IsDateString()
     @ApiProperty({
         type: String,
-        description: 'DD/MM/YYYY',
+        example: 'YYYY-MM-DD',
     })
     public dob: string;
 
