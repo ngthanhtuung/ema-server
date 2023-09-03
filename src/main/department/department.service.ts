@@ -8,6 +8,9 @@ import { InjectMapper } from '@automapper/nestjs';
 import DepartmentDTO from './deparment.dto';
 import Department from './department.entity';
 import { paginateResponse } from '../base/filter.pagination';
+import DepartmentUpdateDto from './dto/department-update.dto';
+import * as moment from 'moment-timezone';
+import User from '../user/user.entity';
 
 @Injectable()
 export class DepartmentService {
@@ -59,6 +62,56 @@ export class DepartmentService {
                 return new ApiResponse('Success', 'Create department successfully', result);
             }
             throw new HttpException(new ApiResponse('Fail', 'Create department fail'), HttpStatus.BAD_REQUEST);
+        } catch (err) {
+            throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async updateDepartment(idDepartment: string, data: DepartmentUpdateDto, user: User): Promise<any | undefined> {
+        try {
+            const department = await this.departmentRepository.findOne({
+                where: { id: idDepartment },
+            });
+
+            if (department) {
+                const result = await this.departmentRepository.update({ id: idDepartment }, {
+                    departmentName: data.departmentName,
+                    description: data.description,
+                    modifiedAt: moment().tz('Asia/Ho_Chi_Minh').toDate(),
+                    modifiedBy: user.id
+                });
+                if (result.affected > 0) {
+                    return new ApiResponse('Success', 'Update department successfully');
+                }
+                throw new HttpException(new ApiResponse('Fail', 'Update department fail'), HttpStatus.BAD_REQUEST);
+            }
+            throw new HttpException(new ApiResponse('Fail', 'Department not found'), HttpStatus.BAD_REQUEST);
+        } catch (err) {
+            throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async changeStatusDepartment(idDepartment: string, user: User): Promise<any | undefined> {
+        try {
+            const department = await this.departmentRepository.findOne({
+                where: { id: idDepartment },
+            });
+            if (department) {
+                const checkEmployeeBelong = await this.departmentRepository.numOfEmployee(idDepartment);
+                if (checkEmployeeBelong > 0 && department.status === true) {
+                    throw new HttpException(new ApiResponse('Fail', `Department has ${checkEmployeeBelong} employee(s) belong, please morderate before disable`), HttpStatus.BAD_REQUEST);
+                }
+                const result = await this.departmentRepository.update({ id: idDepartment }, {
+                    status: !department.status,
+                    modifiedAt: moment().tz('Asia/Ho_Chi_Minh').toDate(),
+                    modifiedBy: user.id
+                })
+                if (result.affected > 0) {
+                    return new ApiResponse('Success', `${department.status === true ? 'Disable' : 'Enable'} department successfully`);
+                }
+                throw new HttpException(new ApiResponse('Fail', 'Change status department fail'), HttpStatus.BAD_REQUEST);
+            }
+            throw new HttpException(new ApiResponse('Fail', 'Department not found'), HttpStatus.BAD_REQUEST);
         } catch (err) {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
         }
