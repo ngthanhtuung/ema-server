@@ -7,6 +7,11 @@ import { HttpException, HttpStatus } from "@nestjs/common";
 @CustomRepository(Role)
 export class RoleRepository extends Repository<Role> {
 
+    /**
+     * getRoleById
+     * @param roleId 
+     * @returns 
+     */
     async getRoleById(roleId: string): Promise<any | undefined> {
         try {
             const role = await this.findOne({

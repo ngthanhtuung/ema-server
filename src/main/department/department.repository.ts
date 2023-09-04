@@ -5,11 +5,15 @@ import DepartmentCreateDto from "./dto/department-create.dto";
 import ApiResponse from "src/shared/res/apiResponse";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import DepartmentPagination from "./dto/department.pagination";
-import DepartmentDTO from "./deparment.dto";
 
 @CustomRepository(Department)
 export default class DepartmentRepository extends Repository<Department> {
 
+    /**
+     * getAllDepartment
+     * @param departmentPagination 
+     * @returns 
+     */
     async getAllDepartment(departmentPagination: DepartmentPagination): Promise<[Department[], number]> {
         try {
             const query = this.createQueryBuilder('department')
@@ -29,6 +33,11 @@ export default class DepartmentRepository extends Repository<Department> {
         }
     }
 
+    /**
+     * getDepartmentById
+     * @param departmentId 
+     * @returns 
+     */
     async getDepartmentById(departmentId: string): Promise<any | undefined> {
         try {
             const department = await this.findOne({
@@ -41,6 +50,11 @@ export default class DepartmentRepository extends Repository<Department> {
         }
     }
 
+    /**
+     * createDepartment
+     * @param data 
+     * @returns 
+     */
     async createDepartment(data: DepartmentCreateDto): Promise<Department | undefined> {
         try {
             const result = await this.create({
@@ -55,15 +69,22 @@ export default class DepartmentRepository extends Repository<Department> {
         }
     }
 
+    /**
+     * numOfEmployee
+     * @param idDepartment 
+     * @returns 
+     */
     async numOfEmployee(idDepartment: string): Promise<number | undefined> {
         try {
             const query = `
             SELECT COUNT(U.id)
             FROM department D INNER JOIN user U ON D.id = U.departmentId
-            WHERE D.id = '${idDepartment}';`
+            WHERE D.id = '${idDepartment}' and U.status = 1`
             const result = await this.query(query);
             const obj = result[0];
-            const countValue = parseInt(obj['COUNT(U.id)'], 10); // Parse the value as an integer
+            // Parse the value as an integer
+            const countValue = parseInt(obj['COUNT(U.id)'], 10);
+            console.log("countValue:", countValue);
             return countValue;
         } catch (err) {
             return -1;

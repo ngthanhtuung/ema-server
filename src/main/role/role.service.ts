@@ -9,6 +9,11 @@ export class RoleService {
         private readonly roleRepository: RoleRepository,
     ) { }
 
+    /**
+     * getRoleById
+     * @param roleId 
+     * @returns 
+     */
     async getRoleById(roleId: string): Promise<any | undefined> {
         try {
             const role = await this.roleRepository.getRoleById(roleId);

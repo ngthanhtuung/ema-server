@@ -18,23 +18,50 @@ import User from '../user/user.entity';
 export class DepartmentController {
   constructor(private readonly departmentService: DepartmentService) { }
 
-  @Get()
+  /**
+   * http://localhost:6969/api/v1/department/list(Get)
+   * getAllDepartment
+   * @param departmentPagination 
+   * @returns 
+   */
+  @Get('/list')
   async getAllDepartment(@Query() departmentPagination: DepartmentPagination): Promise<any | undefined> {
     return await this.departmentService.getAllDepartment(departmentPagination);
   }
 
-  @Post()
+  /**
+   * http://localhost:6969/api/v1/department/create(Post)
+   * createDepartment
+   * @param department 
+   * @returns 
+   */
+  @Post('/create')
   @hasRoles(RoleEnum.ADMIN)
   async createDepartment(@Body() department: DepartmentCreateDto): Promise<any | undefined> {
     return await this.departmentService.createDepartment(department);
   }
 
+  /**
+   * http://localhost:6969/api/v1/department/:idDepartment(Put)
+   * updateDepartment
+   * @param idDepartment 
+   * @param department 
+   * @param user 
+   * @returns 
+   */
   @Put(':idDepartment')
   @hasRoles(RoleEnum.ADMIN)
   async updateDepartment(@Param('idDepartment') idDepartment: string, @Body() department: DepartmentUpdateDto, @GetUser() user: User): Promise<any | undefined> {
     return await this.departmentService.updateDepartment(idDepartment, department, user);
   }
 
+  /**
+   * http://localhost:6969/api/v1/department/:idDepartment/change-status(put)
+   * changeStatus
+   * @param idDepartment 
+   * @param user 
+   * @returns 
+   */
   @Put('/:idDepartment/change-status')
   @hasRoles(RoleEnum.ADMIN)
   async changeStatus(@Param('idDepartment') idDepartment: string, @GetUser() user: User): Promise<any | undefined> {
