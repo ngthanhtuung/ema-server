@@ -16,7 +16,12 @@ export class AuthService {
         private jwtService: JwtService,
     ) { }
 
-
+    /**
+     * validateUser
+     * @param username 
+     * @param password 
+     * @returns 
+     */
     async validateUser(username: string, password: string): Promise<User | undefined> {
         const user = await this.userService.findUserByUsername(username);
         if (!user) {
@@ -33,6 +38,11 @@ export class AuthService {
         throw new HttpException(new ApiResponse('Failed', "Username or Password is invalid"), HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * login
+     * @param user 
+     * @returns 
+     */
     async login(user: User) {
         const payload: Payload = {
             id: user.id,

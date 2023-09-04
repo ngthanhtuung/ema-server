@@ -1,14 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Mailgun from 'mailgun.js';
-
+import * as FormData from 'form-data';
+import MailRepository from './mail.repository';
 @Injectable()
 export class MailService {
 
     constructor(
-        private readonly configService: ConfigService
+        private readonly configService: ConfigService,
+        private readonly mailRepository: MailRepository,
     ) { }
 
+    /**
+     * getConnection
+     * @returns 
+     */
     async getConnection(): Promise<any | undefined> {
         const mailgunKey = this.configService.get<string>('MAILGUN_API_PRIVATE_KEY');
         const mailGunBaseUrl = this.configService.get<string>('MAILGUN_API_BASE_URL');
@@ -17,17 +23,25 @@ export class MailService {
         return mg;
     }
 
-    async sendEmail(toUser: string, subject: string, username: string): Promise<any | undefined> {
+    /**
+     * sendEmail
+     * @param toUser 
+     * @param username 
+     * @param password 
+     * @returns 
+     */
+    async sendEmail(toUser: string, username: string, password: string): Promise<any | undefined> {
         try {
             const mg = await this.getConnection();
+            const mailData = await this.mailRepository.getDetailMailTemplate(1);
+            console.log("mailData:", mailData);
+            const htmlMail = mailData?.mailText?.replace('${username}', username)?.replace('${password}', password)
+            console.log("htmlMail:", htmlMail);
             const data = {
                 from: "HREA System <tungnt16092001@gmail.com>",
                 to: [toUser],
-                subject: subject,
-                html: `<p>Welcome to the HREA System, your account is: </p>
-                <strong>Username: </strong> ${username} <br>
-                <strong>Password: </strong> 123456789
-                `
+                subject: mailData?.mailTitle,
+                html: htmlMail
             }
             const response = await mg.messages.create(this.configService.get<string>('MAILGUN_API_BASE_URL'), data);
             return response;

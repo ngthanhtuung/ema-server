@@ -11,6 +11,14 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     ) {
         super({ passReqToCallback: true })
     }
+    
+    /**
+     * validate
+     * @param req 
+     * @param username 
+     * @param password 
+     * @returns 
+     */
     async validate(
         req: Request,
         username: string,

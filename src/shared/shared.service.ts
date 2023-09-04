@@ -12,11 +12,57 @@ export class SharedService {
         private readonly mailService: MailService
     ) { }
 
+    /**
+     * hashPassword
+     * @param password 
+     * @returns 
+     */
     public async hashPassword(password: string): Promise<string> {
         const salt: string = await bcrypt.genSalt(10);
         return await bcrypt.hash(password, salt);
     }
 
+    /**
+     * shuffleArray
+     * @param array 
+     * @returns 
+     */
+    private shuffleArray = (array: Array<String>) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1))
+            const temp = array[i];
+            array[i] = array[i]
+            array[j] = temp
+        }
+        return array
+    }
+
+    /**
+     * generatePassword
+     * @param passwordLength 
+     * @returns 
+     */
+    public generatePassword = (passwordLength: number) => {
+        const numberChars = "0123456789"
+        const upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        const lowerChars = "abcdefghijklmnopqrstuvwxyz"
+        const symbolsChars = "!@#$%^&*_-+="
+        const allChars = numberChars + upperChars + lowerChars + symbolsChars
+        let randomPasswordArray = Array(passwordLength);
+        randomPasswordArray[0] = numberChars;
+        randomPasswordArray[1] = upperChars;
+        randomPasswordArray[2] = lowerChars;
+        randomPasswordArray[3] = symbolsChars;
+        randomPasswordArray = randomPasswordArray.fill(allChars, 4);
+        return this.shuffleArray(randomPasswordArray.map((x) => x[Math.floor(Math.random() * x.length)])).join('')
+    }
+
+    /**
+     * comparePassword
+     * @param password 
+     * @param hashPassword 
+     * @returns 
+     */
     public async comparePassword(
         password: string,
         hashPassword: string,
@@ -24,9 +70,16 @@ export class SharedService {
         return await bcrypt.compare(password, hashPassword);
     }
 
-    public async sendConfirmEmail(email: string, username: string): Promise<any | undefined> {
+    /**
+     * sendConfirmEmail
+     * @param email 
+     * @param username 
+     * @param password 
+     * @returns 
+     */
+    public async sendConfirmEmail(email: string, username: string, password: string): Promise<any | undefined> {
         try {
-            const response = await this.mailService.sendEmail(email, 'Welcome to the HREA System', username);
+            const response = await this.mailService.sendEmail(email, username, password);
             if (response) {
                 return true;
             }

@@ -20,7 +20,11 @@ export class DepartmentService {
         private readonly departmentRepository: DepartmentRepository,
     ) { }
 
-
+    /**
+     * getAllDepartment
+     * @param departmentPagination 
+     * @returns 
+     */
     async getAllDepartment(departmentPagination: DepartmentPagination): Promise<any | undefined> {
         try {
             const [list, count] = await this.departmentRepository.getAllDepartment(departmentPagination);
@@ -28,13 +32,13 @@ export class DepartmentService {
             for (const item of list) {
                 departmentDTO.push(this.mapper.map(item, DepartmentDTO, Department));
             }
-            if (list.length === 0) {
+            if (list?.length === 0) {
                 return new ApiResponse('Error', 'Department not found');
             }
             return new ApiResponse('Success', 'Get department successfully',
                 paginateResponse<DepartmentDTO>(
-                    departmentPagination.currentPage as number,
-                    departmentPagination.sizePage as number,
+                    departmentPagination?.currentPage as number,
+                    departmentPagination?.sizePage as number,
                     [departmentDTO, count]
                 ))
 
@@ -43,6 +47,11 @@ export class DepartmentService {
         }
     }
 
+    /**
+     * getDepartmentById
+     * @param departmentId 
+     * @returns 
+     */
     async getDepartmentById(departmentId: string): Promise<any | undefined> {
         try {
             const department = await this.departmentRepository.getDepartmentById(departmentId);
@@ -55,9 +64,14 @@ export class DepartmentService {
         }
     }
 
-    async createDepartment(deparment: DepartmentCreateDto): Promise<any | undefined> {
+    /**
+     * createDepartment
+     * @param department 
+     * @returns 
+     */
+    async createDepartment(department: DepartmentCreateDto): Promise<any | undefined> {
         try {
-            const result = await this.departmentRepository.createDepartment(deparment);
+            const result = await this.departmentRepository.createDepartment(department);
             if (result) {
                 return new ApiResponse('Success', 'Create department successfully', result);
             }
@@ -67,6 +81,13 @@ export class DepartmentService {
         }
     }
 
+    /**
+     * updateDepartment
+     * @param idDepartment 
+     * @param data 
+     * @param user 
+     * @returns 
+     */
     async updateDepartment(idDepartment: string, data: DepartmentUpdateDto, user: User): Promise<any | undefined> {
         try {
             const department = await this.departmentRepository.findOne({
@@ -75,10 +96,10 @@ export class DepartmentService {
 
             if (department) {
                 const result = await this.departmentRepository.update({ id: idDepartment }, {
-                    departmentName: data.departmentName,
-                    description: data.description,
+                    departmentName: data?.departmentName,
+                    description: data?.description,
                     modifiedAt: moment().tz('Asia/Ho_Chi_Minh').toDate(),
-                    modifiedBy: user.id
+                    modifiedBy: user?.id
                 });
                 if (result.affected > 0) {
                     return new ApiResponse('Success', 'Update department successfully');
@@ -91,6 +112,12 @@ export class DepartmentService {
         }
     }
 
+    /**
+     * changeStatusDepartment
+     * @param idDepartment 
+     * @param user 
+     * @returns 
+     */
     async changeStatusDepartment(idDepartment: string, user: User): Promise<any | undefined> {
         try {
             const department = await this.departmentRepository.findOne({
@@ -98,13 +125,14 @@ export class DepartmentService {
             });
             if (department) {
                 const checkEmployeeBelong = await this.departmentRepository.numOfEmployee(idDepartment);
+                console.log("checkEmployeeBelong:", checkEmployeeBelong);
                 if (checkEmployeeBelong > 0 && department.status === true) {
-                    throw new HttpException(new ApiResponse('Fail', `Department has ${checkEmployeeBelong} employee(s) belong, please morderate before disable`), HttpStatus.BAD_REQUEST);
+                    throw new HttpException(new ApiResponse('Fail', `Department has ${checkEmployeeBelong} employee(s) belong, please moderate before disable`), HttpStatus.BAD_REQUEST);
                 }
                 const result = await this.departmentRepository.update({ id: idDepartment }, {
                     status: !department.status,
                     modifiedAt: moment().tz('Asia/Ho_Chi_Minh').toDate(),
-                    modifiedBy: user.id
+                    modifiedBy: user?.id
                 })
                 if (result.affected > 0) {
                     return new ApiResponse('Success', `${department.status === true ? 'Disable' : 'Enable'} department successfully`);

@@ -1,9 +1,7 @@
-import { RoleService } from './../role/role.service';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import UserRepository from './user.repository';
 import UserCreateDto from './dto/user-create.dto';
 import ApiResponse from 'src/shared/res/apiResponse';
-import { DepartmentService } from '../department/department.service';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import UserDTO from './user.dto';
@@ -11,6 +9,8 @@ import User from './user.entity';
 import { SharedService } from 'src/shared/shared.service';
 import ChangePasswordDto from './dto/changePassword.dto';
 import * as moment from 'moment-timezone';
+import UserPagination from './dto/user.pagination';
+import { paginateResponse } from '../base/filter.pagination';
 
 @Injectable()
 export class UserService {
@@ -19,8 +19,44 @@ export class UserService {
         @InjectMapper() private readonly mapper: Mapper,
         private readonly userRepository: UserRepository,
         private readonly sharedService: SharedService
-    ) { }
+    ) {
+        this.mapper.createMap(Boolean, Boolean);
+    }
 
+    /**
+     * getAllUser
+     * @param userPagination 
+     * @returns 
+     */
+    async getAllUser(userPagination: UserPagination): Promise<any | undefined> {
+        try {
+            const [list, count] = await this.userRepository.getAllUser(userPagination);
+            const userDTO: UserDTO[] = [];
+            console.log("list:", list);
+            console.log("count:", count);
+            for (const item of list) {
+                userDTO.push(this.mapper.map(item, UserDTO, User,));
+            }
+            if (list.length === 0) {
+                return new ApiResponse('Error', 'User not found');
+            }
+            return new ApiResponse('Success', 'Get user successfully',
+                paginateResponse<UserDTO>(
+                    userPagination.currentPage as number,
+                    userPagination.sizePage as number,
+                    [userDTO, count]
+                ))
+
+        } catch (err) {
+            throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * findUserByUsername
+     * @param username 
+     * @returns 
+     */
     async findUserByUsername(username: string): Promise<any | undefined> {
         try {
             const user = await this.userRepository.findUserByUsername(username);
@@ -32,15 +68,21 @@ export class UserService {
         }
     }
 
+    /**
+     * createUser
+     * @param data 
+     * @param loginUser 
+     * @returns 
+     */
     async createUser(data: UserCreateDto, loginUser: User): Promise<any | undefined> {
         try {
-            const DEFAULT_PASSWORD = '123456789';
-            const hashPassword = await this.sharedService.hashPassword(DEFAULT_PASSWORD);
-            const callback = async (email: string, username: string): Promise<boolean | undefined> => {
-                const result = await this.sharedService.sendConfirmEmail(email, username);
+            const generatePassword = this.sharedService.generatePassword(8);
+            const hashPassword = await this.sharedService.hashPassword(generatePassword);
+            const callback = async (email: string, username: string, password: string): Promise<boolean | undefined> => {
+                const result = await this.sharedService.sendConfirmEmail(email, username, password);
                 return result;
             }
-            const user = await this.userRepository.createUser(data, hashPassword, loginUser.id, callback);
+            const user = await this.userRepository.createUser(data, hashPassword, loginUser?.id, generatePassword, callback);
             if (user) {
                 const parseUser = this.mapper.map(user, UserDTO, User);
                 return new ApiResponse('Success', 'Create user successfully', parseUser);
@@ -50,6 +92,12 @@ export class UserService {
         }
     }
 
+    /**
+     * updateRefreshToken
+     * @param id 
+     * @param refreshToken 
+     * @returns 
+     */
     async updateRefreshToken(id: string, refreshToken: string): Promise<any | undefined> {
         try {
             await this.userRepository.update({ id: id }, { refreshToken: refreshToken });
@@ -59,6 +107,12 @@ export class UserService {
         }
     }
 
+    /**
+     * changePassword
+     * @param data 
+     * @param user 
+     * @returns 
+     */
     async changePassword(data: ChangePasswordDto, user: User): Promise<any | undefined> {
         try {
             const loginUser = await this.findUserByUsername(user.username);
@@ -84,6 +138,11 @@ export class UserService {
         }
     }
 
+    /**
+     * getProfile
+     * @param user 
+     * @returns 
+     */
     async getProfile(user: User): Promise<any | undefined> {
         try {
             const loginUser = await this.findUserByUsername(user.username);
@@ -93,4 +152,48 @@ export class UserService {
         }
     }
 
+    /**
+     * changeStatusUser
+     * @param idUser 
+     * @param user 
+     * @returns 
+     */
+    async changeStatusUser(idUser: string, user: User): Promise<any | undefined> {
+        try {
+            const User = await this.userRepository.findOne({
+                where: { id: idUser },
+            });
+            if (User) {
+                const result = await this.userRepository.update({ id: idUser }, {
+                    status: !User?.status,
+                    modifiedAt: moment().tz('Asia/Ho_Chi_Minh').toDate(),
+                    modifiedBy: user?.id
+                })
+                if (result.affected > 0) {
+                    return new ApiResponse('Success', `${User.status === true ? 'Disable' : 'Enable'} User successfully`);
+                }
+                throw new HttpException(new ApiResponse('Fail', 'Change status User fail'), HttpStatus.BAD_REQUEST);
+            }
+            throw new HttpException(new ApiResponse('Fail', 'User not found'), HttpStatus.BAD_REQUEST);
+        } catch (err) {
+            throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * getListUserByFilter
+     * @param condition 
+     * @param data 
+     * @returns 
+     */
+    async getListUserByFilter(condition: string, data: string): Promise<any | undefined> {
+        try {
+            const user = await this.userRepository.getListUserByFilter(condition, data);
+            if (user) {
+                return user;
+            }
+        } catch (err) {
+            throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
