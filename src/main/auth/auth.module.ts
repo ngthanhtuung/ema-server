@@ -8,10 +8,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { LocalStrategy } from './local-auth/local.strategy';
 import { JwtStrategy } from './jwt-auth/jwt.strategy';
+import { TypeOrmExModule } from 'src/type-orm/typeorm-ex.module';
+import AuthCodeRepository from './authcode.repository';
 
 @Module({
   imports: [
     UserModule,
+    TypeOrmExModule.forCustomRepository([AuthCodeRepository]),
     SharedModule,
     PassportModule,
     JwtModule.register({

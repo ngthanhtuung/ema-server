@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from './public';
@@ -13,13 +13,29 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
 
+  /**
+   * http://localhost:6969/api/v1/login(Post)
+   * login
+   * @param user 
+   * @returns 
+   */
   @Post('/login')
   @Public()
   @UseGuards(LocalAuthGuard)
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ description: 'Login successfully' })
-  login(@GetUser() user: User): any {
+  async login(@GetUser() user: User): Promise<any> {
+    console.log("tesst login");
     return this.authService.login(user);
+  }
+
+  /**
+   * 
+   */
+  @Post('/send/code')
+  @Public()
+  async sendCodeByEmail(@Body() email: string): Promise<any | undefined> {
+    return await this.authService.sendCodeByEmail(email);
   }
 
 }

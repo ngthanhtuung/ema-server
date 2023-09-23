@@ -57,6 +57,17 @@ export class SharedService {
         return this.shuffleArray(randomPasswordArray.map((x) => x[Math.floor(Math.random() * x.length)])).join('')
     }
 
+    public generateUniqueRandomNumber() {
+        let uniqueNumber;
+        const usedNumbers = new Set();
+        do {
+            uniqueNumber = Math.floor(100000 + Math.random() * 900000);
+        } while (usedNumbers.has(uniqueNumber));
+
+        usedNumbers.add(uniqueNumber);
+        return String(uniqueNumber);
+    }
+
     /**
      * comparePassword
      * @param password 
@@ -77,9 +88,27 @@ export class SharedService {
      * @param password 
      * @returns 
      */
-    public async sendConfirmEmail(email: string, username: string, password: string): Promise<any | undefined> {
+    public async sendConfirmEmail(email: string, password: string): Promise<any | undefined> {
         try {
-            const response = await this.mailService.sendEmail(email, username, password);
+            const response = await this.mailService.sendEmail(email, password);
+            if (response) {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * sendCodeEmail
+     * @param email 
+     * @param username 
+     * @returns 
+     */
+    public async sendCodeEmail(email: string, username: string, code: string): Promise<any | undefined> {
+        try {
+            const response = await this.mailService.sendCodeByEmail(email, username, code);
             if (response) {
                 return true;
             }

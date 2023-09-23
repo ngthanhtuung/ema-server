@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity,  ManyToOne, OneToOne } from "typeorm";
 import BaseEntity from "../base/base.entity";
 import Role from "../role/role.entity";
 import { AutoMap } from "@automapper/classes";
 import Department from "../department/department.entity";
+import AuthCode from "../auth/authcode.entity";
 
 @Entity()
 export default class User extends BaseEntity {
@@ -28,7 +29,7 @@ export default class User extends BaseEntity {
     public idNumber: string;
 
     @AutoMap()
-    @Column('bit', { name: 'gender', nullable: false })
+    @Column('boolean', { name: 'gender', nullable: false })
     public gender: boolean;
 
     @AutoMap()
@@ -62,4 +63,8 @@ export default class User extends BaseEntity {
     @AutoMap()
     @ManyToOne(() => Department, (department) => department.users, { onDelete: 'CASCADE' })
     public department: Department;
+    
+    @AutoMap({ typeFn: () => AuthCode })
+    @OneToOne(() => AuthCode, (authcode) => authcode.user, { onDelete: 'CASCADE' })
+    public authcode: AuthCode;
 }

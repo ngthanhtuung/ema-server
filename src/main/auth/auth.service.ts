@@ -6,6 +6,7 @@ import { SharedService } from 'src/shared/shared.service';
 import { Payload } from './jwt-auth/payload';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
+import AuthCodeRepository from './authcode.repository';
 
 @Injectable()
 export class AuthService {
@@ -13,17 +14,18 @@ export class AuthService {
     constructor(
         private readonly sharedService: SharedService,
         private readonly userService: UserService,
+        private readonly authCode: AuthCodeRepository,
         private jwtService: JwtService,
     ) { }
 
     /**
      * validateUser
-     * @param username 
+     * @param email 
      * @param password 
      * @returns 
      */
-    async validateUser(username: string, password: string): Promise<User | undefined> {
-        const user = await this.userService.findUserByUsername(username);
+    async validateUser(email: string, password: string): Promise<User | undefined> {
+        const user = await this.userService.findUserByEmail(email);
         if (!user) {
             throw new HttpException(new ApiResponse('Failed', "User not found"), HttpStatus.NOT_FOUND);
         }
@@ -44,9 +46,11 @@ export class AuthService {
      * @returns 
      */
     async login(user: User) {
+        console.log("login in service");
+    
         const payload: Payload = {
             id: user.id,
-            username: user.username,
+            email: user.email,
             roles: [user.role.roleName]
         }
         const accessToken = this.jwtService.sign(payload, {
@@ -62,5 +66,22 @@ export class AuthService {
         );
         this.userService.updateRefreshToken(user.id, refreshToken);
         return new ApiResponse('Success', 'Login Successfully', { accessToken: accessToken, refreshToken: refreshToken });
+    }
+
+    /**
+     * sendCodeByEmail
+     * @param email 
+     * @returns 
+     */
+    async sendCodeByEmail(email: string) {
+        const user = await this.userService.findUserByEmail(email);
+        if (!user) {
+            throw new HttpException(new ApiResponse('Failed', "User not found"), HttpStatus.NOT_FOUND);
+        }
+        const code = this.sharedService.generateUniqueRandomNumber();
+        // await this.authCode.update()
+        console.log("code:", code);
+        const result = await this.sharedService.sendCodeEmail(email, user.username, code);
+        return new ApiResponse('Success', 'Login Successfully', {});
     }
 }

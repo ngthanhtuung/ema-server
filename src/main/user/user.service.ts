@@ -53,13 +53,13 @@ export class UserService {
     }
 
     /**
-     * findUserByUsername
-     * @param username 
+     * findUserByEmail
+     * @param email 
      * @returns 
      */
-    async findUserByUsername(username: string): Promise<any | undefined> {
+    async findUserByEmail(email: string): Promise<any | undefined> {
         try {
-            const user = await this.userRepository.findUserByUsername(username);
+            const user = await this.userRepository.findUserByEmail(email);
             if (user) {
                 return user;
             }
@@ -78,8 +78,8 @@ export class UserService {
         try {
             const generatePassword = this.sharedService.generatePassword(8);
             const hashPassword = await this.sharedService.hashPassword(generatePassword);
-            const callback = async (email: string, username: string, password: string): Promise<boolean | undefined> => {
-                const result = await this.sharedService.sendConfirmEmail(email, username, password);
+            const callback = async (email: string, password: string): Promise<boolean | undefined> => {
+                const result = await this.sharedService.sendConfirmEmail(email, password);
                 return result;
             }
             const user = await this.userRepository.createUser(data, hashPassword, loginUser?.id, generatePassword, callback);
@@ -115,7 +115,7 @@ export class UserService {
      */
     async changePassword(data: ChangePasswordDto, user: User): Promise<any | undefined> {
         try {
-            const loginUser = await this.findUserByUsername(user.username);
+            const loginUser = await this.findUserByEmail(user.email);
             const { oldPassword, newPassword, confirmPassword } = data;
             if (newPassword !== confirmPassword) {
                 throw new HttpException(new ApiResponse('Fail', 'Confirm password is not match'), HttpStatus.BAD_REQUEST);
@@ -145,7 +145,7 @@ export class UserService {
      */
     async getProfile(user: User): Promise<any | undefined> {
         try {
-            const loginUser = await this.findUserByUsername(user.username);
+            const loginUser = await this.findUserByEmail(user.email);
             return new ApiResponse('Success', 'Get profile successfully', loginUser);
         } catch (err) {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
@@ -186,12 +186,11 @@ export class UserService {
      * @param data 
      * @returns 
      */
-    async getListUserByFilter(condition: string, data: string): Promise<any | undefined> {
+    async getListUserByFilter(gender: boolean, status: boolean, departmentId: string, roleId: number): Promise<any | undefined> {
         try {
-            const user = await this.userRepository.getListUserByFilter(condition, data);
-            if (user) {
-                return user;
-            }
+            const userList = await this.userRepository.getListUserByFilter(gender, status, departmentId, roleId);
+            console.log("userList:", userList);
+            return userList;
         } catch (err) {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
         }
