@@ -38,14 +38,14 @@ export default class UserRepository extends Repository<User> {
     }
 
     /**
-     * findUserByUsername
+     * findUserByEmail
      * @param username 
      * @returns 
      */
-    async findUserByUsername(username: string): Promise<any | undefined> {
+    async findUserByEmail(email: string): Promise<any | undefined> {
         try {
             const user = await this.findOne({
-                where: { username: username },
+                where: { email: email },
                 relations: ['role', 'department']
             })
             return user;
@@ -68,7 +68,7 @@ export default class UserRepository extends Repository<User> {
         hashPassword: string,
         createdBy: string,
         generatePassword: string,
-        fn: (email: string, username: string, password: string) => Promise<boolean>
+        fn: (email: string, password: string) => Promise<boolean>
     ): Promise<any | undefined> {
         const queryRunner = this.manager.connection.createQueryRunner();
         await queryRunner.connect();
@@ -100,7 +100,7 @@ export default class UserRepository extends Repository<User> {
                     createdBy: createdBy
                 })
             )
-            const result = await fn(user?.email, user?.username, generatePassword);
+            const result = await fn(user?.email, generatePassword);
             if (result) {
                 await queryRunner.commitTransaction();
                 return user;
@@ -121,32 +121,58 @@ export default class UserRepository extends Repository<User> {
      * @param data 
      * @returns 
      */
-    async getListUserByFilter(condition: string, data: string): Promise<any | undefined> {
+    async getListUserByFilter(gender: boolean, status: boolean, departmentId: string, roleId: number): Promise<any | undefined> {
         try {
-            let query = ` SELECT U.*, R.roleName, D.departmentName
+            let query = `SELECT *
             FROM user U
             INNER JOIN role R ON U.roleId = R.id
-            INNER JOIN department D ON U.departmentId = D.id`
-            switch (condition) {
-                // filter by gender
-                case 'gender':
-
-                    break;
-                // filter by status
-                case 'status':
-
-                    break;
-                // filter by role
-                case 'gender':
-
-                    break;
-                // filter by role
-                case 'department':
-
-                    break;
+            INNER JOIN department D ON U.departmentId = D.id WHERE `
+            const array = []
+            // check have condition gender
+            if (gender !== undefined) {
+                array.push(`U.gender = ${gender}`)
+            }
+            // check have condtion status
+            if (status !== undefined) {
+                array.push(`U.status = ${status}`)
+            }
+            // check have condtion departmentId
+            if (departmentId !== undefined) {
+                array.push(`U.departmentId = '${departmentId}'`)
+            }
+            //  check have condtion roleId
+            if (roleId !== undefined) {
+                array.push(`U.roleId = '${Number(roleId)}'`)
+            }
+            if (array.length > 0) {
+                query += array.join(' AND ')
+                console.log("query final:", query);
+                const result = await this.query(query);
+                return new ApiResponse('Success', 'Get user by condition successfully', result);
             }
         } catch (err) {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * updateCodeAndIssueDate
+     * @param userId 
+     * @param authCode 
+     * @param issueDate 
+     * @returns 
+     */
+    async updateCodeAndIssueDate(userId: string, authCode: string, issueDate: string): Promise<any | undefined> {
+        try {
+            console.log("userId userRepository:", userId);
+            let query = `UPDATE user
+            SET issueDate = '${issueDate}', authCode = '${authCode}'
+            WHERE id = '${userId}';`
+            await this.query(query);
+            console.log("Update successfully !!!");
+            return true;
+        } catch (err) {
+            return false;
         }
     }
 }

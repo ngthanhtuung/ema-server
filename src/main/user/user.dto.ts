@@ -44,4 +44,10 @@ export default class UserDTO extends BaseDTO {
     @AutoMap()
     public departmentName: string;
 
+    @AutoMap()
+    public authCode: string;
+
+    @AutoMap()
+    public issueDate: Date;
+
 }

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import UserCreateDto from './dto/user-create.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { hasRoles } from '../auth/role-auth/roles.decorator';
 import { RoleEnum } from '../role/enum/role.enum';
 import ChangePasswordDto from './dto/changePassword.dto';
@@ -13,8 +13,8 @@ import UserPagination from './dto/user.pagination';
 
 @Controller('user')
 @ApiTags('user-controller')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @ApiBearerAuth()
+// @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
 
   constructor(private readonly userService: UserService) { }
@@ -38,8 +38,25 @@ export class UserController {
    * @returns 
    */
   @Get('/list/filter')
-  async getListUserByFilter(@Query('condition') condition: string, @Query('data') data?: string): Promise<any | undefined> {
-    return await this.userService.getListUserByFilter(condition, data);
+  @ApiQuery({
+    name: 'gender',
+    required: false,
+    description: "True: Male | False: Female"
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false
+  })
+  @ApiQuery({
+    name: 'departmentId',
+    required: false
+  })
+  @ApiQuery({
+    name: 'roleId',
+    required: false,
+  })
+  async getListUserByFilter(@Query('gender') gender?: boolean, @Query('status') status?: boolean, @Query('departmentId') departmentId?: string, @Query('roleId') roleId?: number): Promise<any | undefined> {
+    return await this.userService.getListUserByFilter(gender, status, departmentId, roleId);
   }
 
   /**

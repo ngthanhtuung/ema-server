@@ -28,7 +28,7 @@ export default class User extends BaseEntity {
     public idNumber: string;
 
     @AutoMap()
-    @Column('bit', { name: 'gender', nullable: false })
+    @Column('boolean', { name: 'gender', nullable: false })
     public gender: boolean;
 
     @AutoMap()
@@ -62,4 +62,12 @@ export default class User extends BaseEntity {
     @AutoMap()
     @ManyToOne(() => Department, (department) => department.users, { onDelete: 'CASCADE' })
     public department: Department;
+
+    @AutoMap()
+    @Column('char', { name: 'authCode', nullable: true, length: 6 })
+    public authCode: string;
+
+    @AutoMap()
+    @Column('varchar', { name: 'issueDate', nullable: true })
+    public issueDate: string;
 }
