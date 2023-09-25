@@ -6,7 +6,8 @@ import { SharedService } from 'src/shared/shared.service';
 import { Payload } from './jwt-auth/payload';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
-import AuthCodeRepository from './authcode.repository';
+import * as moment from 'moment';
+import 'moment-timezone';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,6 @@ export class AuthService {
     constructor(
         private readonly sharedService: SharedService,
         private readonly userService: UserService,
-        private readonly authCode: AuthCodeRepository,
         private jwtService: JwtService,
     ) { }
 
@@ -47,7 +47,7 @@ export class AuthService {
      */
     async login(user: User) {
         console.log("login in service");
-    
+
         const payload: Payload = {
             id: user.id,
             email: user.email,
@@ -78,10 +78,15 @@ export class AuthService {
         if (!user) {
             throw new HttpException(new ApiResponse('Failed', "User not found"), HttpStatus.NOT_FOUND);
         }
+        // generate code
         const code = this.sharedService.generateUniqueRandomNumber();
-        // await this.authCode.update()
+        // time current
+        const currentTime = moment().format("YYYY-MM-DD HH:mm:ss")
+        // update code and issueDate
+        await this.userService.updateCodeAndIssueDate(user?.id, code, currentTime)
         console.log("code:", code);
-        const result = await this.sharedService.sendCodeEmail(email, user.username, code);
-        return new ApiResponse('Success', 'Login Successfully', {});
+        // send code email
+        await this.sharedService.sendCodeEmail(email, user.username, code);
+        return new ApiResponse('Success', 'Send Code Successfully');
     }
 }

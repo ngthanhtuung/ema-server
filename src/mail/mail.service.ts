@@ -63,7 +63,7 @@ export class MailService {
             // Get ID : 2
             const mailData = await this.mailRepository.getDetailMailTemplate(2);
             console.log("mailData:", mailData);
-            const htmlMail = mailData?.mailText?.replace('${username}', username)?.replace('${code}', code)
+            const htmlMail = mailData?.mailText?.replace('${email}', toUser)?.replace('${code}', code)
             console.log("htmlMail:", htmlMail);
             const data = {
                 from: "HREA System <tungnt16092001@gmail.com>",

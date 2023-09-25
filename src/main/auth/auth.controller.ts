@@ -6,6 +6,7 @@ import { LocalAuthGuard } from './local-auth/local-auth.guard';
 import LoginDto from './dto/login.dto';
 import User from '../user/user.entity';
 import { GetUser } from 'src/decorators/getUser.decorator';
+import PayloadDTO from './dto/payload.dto';
 
 @Controller('auth')
 @ApiTags('auth-controller')
@@ -25,17 +26,20 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ description: 'Login successfully' })
   async login(@GetUser() user: User): Promise<any> {
-    console.log("tesst login");
     return this.authService.login(user);
   }
 
-  /**
-   * 
-   */
+/**
+ * 
+ * @param account 
+ * @returns 
+ */
   @Post('/send/code')
   @Public()
-  async sendCodeByEmail(@Body() email: string): Promise<any | undefined> {
-    return await this.authService.sendCodeByEmail(email);
+  @ApiBody({ type: PayloadDTO })
+  @ApiOkResponse({ description: 'Send Code Successfully' })
+  async sendCodeByEmail(@Body() account: PayloadDTO): Promise<any | undefined> {
+    return await this.authService.sendCodeByEmail(account?.email);
   }
 
 }

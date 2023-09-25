@@ -195,4 +195,23 @@ export class UserService {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * updateCodeAndIssueDate
+     * @param userId 
+     * @param authCode 
+     * @param issueDate 
+     * @returns 
+     */
+    async updateCodeAndIssueDate(userId: string, authCode: string, issueDate: string): Promise<any | undefined> {
+        try {
+            let query = `UPDATE user
+                SET issueDate = '${issueDate}', authCode = '${authCode}'
+                WHERE id = '${userId}';`
+            await this.userRepository.query(query);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
 }

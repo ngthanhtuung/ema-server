@@ -154,4 +154,25 @@ export default class UserRepository extends Repository<User> {
             throw new HttpException(new ApiResponse('Fail', err.message), err.status || HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * updateCodeAndIssueDate
+     * @param userId 
+     * @param authCode 
+     * @param issueDate 
+     * @returns 
+     */
+    async updateCodeAndIssueDate(userId: string, authCode: string, issueDate: string): Promise<any | undefined> {
+        try {
+            console.log("userId userRepository:", userId);
+            let query = `UPDATE user
+            SET issueDate = '${issueDate}', authCode = '${authCode}'
+            WHERE id = '${userId}';`
+            await this.query(query);
+            console.log("Update successfully !!!");
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
 }
