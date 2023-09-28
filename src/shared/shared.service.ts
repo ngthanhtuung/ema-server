@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
-import User from 'src/main/user/user.entity';
+
 
 @Injectable()
 export class SharedService {
