@@ -31,14 +31,15 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 255 })
   avatar: string;
 
+  @Column({ type: 'varchar' })
+  refreshToken: string;
+
   @Column({
     enum: EAccountStatus,
     type: 'enum',
     default: EAccountStatus.INACTIVE,
   })
   status: EAccountStatus;
-
-  // THIẾU REFESHTOKEN
 
   @OneToOne(() => AccountEntity, {
     onDelete: 'CASCADE',
