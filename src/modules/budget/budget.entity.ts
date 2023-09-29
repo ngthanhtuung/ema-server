@@ -1,5 +1,6 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import { BaseEntity } from "../base/base.entity";
+import { EventEntity } from "../event/event.entity";
 
 @Entity({ name: 'budget' })
 export class BudgetEntity extends BaseEntity {
@@ -15,4 +16,7 @@ export class BudgetEntity extends BaseEntity {
 
     @Column({ type: 'varchar' })
     description: string;
+
+    @ManyToOne(() => EventEntity, (event) => event.budgets, { onDelete: 'CASCADE' })
+    event: EventEntity;
 }

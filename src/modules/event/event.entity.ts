@@ -1,6 +1,8 @@
-import { Column, Entity } from "typeorm";
+import { TaskEntity } from './../task/task.entity';
+import { Column, Entity, OneToMany } from "typeorm";
 import { BaseEntity } from "../base/base.entity";
 import { EEventStatus } from "src/common/enum/enum";
+import { BudgetEntity } from "../budget/budget.entity";
 
 @Entity({ name: 'event' })
 export class EventEntity extends BaseEntity {
@@ -38,5 +40,11 @@ export class EventEntity extends BaseEntity {
         default: EEventStatus.PENDING,
     })
     status: EEventStatus;
+
+    @OneToMany(() => BudgetEntity, (budget) => budget.event, { onDelete: 'CASCADE' })
+    budgets: BudgetEntity[];
+
+    @OneToMany(() => TaskEntity, (task) => task.event, { onDelete: 'CASCADE' })
+    tasks: TaskEntity[];
 
 }
