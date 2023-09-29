@@ -14,7 +14,7 @@ export const databaseConnection = [
       database: configService.get('MYSQL_DB'),
       entities: ['dist/**/*.entity.{ts,js}'],
       synchronize: true,
-      logging: true,
+      logging: false,
       autoLoadEntities: true,
       legacySpatialSupport: false,
       charset: 'utf8mb4',
