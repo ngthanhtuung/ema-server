@@ -3,11 +3,11 @@ import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { ERole } from 'src/common/enum/enum';
 import { ROLES_KEY } from 'src/decorators/role.decorator';
-import { PayloadAccount } from 'src/modules/account/dto/account.response';
+import { PayloadUser } from 'src/modules/user/dto/user.response';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector) { }
 
   canActivate(
     context: ExecutionContext,
@@ -18,7 +18,7 @@ export class RolesGuard implements CanActivate {
     ]);
     if (!requiredRoles) return true;
     const req = context.switchToHttp().getRequest();
-    const user: PayloadAccount = JSON.parse(req.user) as PayloadAccount;
+    const user: PayloadUser = JSON.parse(req.user) as PayloadUser;
 
     return requiredRoles.some((role) => user.role === role);
   }

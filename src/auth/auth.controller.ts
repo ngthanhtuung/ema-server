@@ -11,13 +11,13 @@ import { ERole } from 'src/common/enum/enum';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { Public } from 'src/decorators/public.decorator';
 import { Roles } from 'src/decorators/role.decorator';
-import { AccountCreateRequest } from 'src/modules/account/dto/account.request';
+import { UserCreateRequest } from 'src/modules/user/dto/user.request';
 
 @ApiBearerAuth()
 @Controller('auth')
 @ApiTags('auth-controller')
 export class AuthenticationController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   /**
    * http://localhost:6969/api/v1/login(Post)
@@ -32,14 +32,18 @@ export class AuthenticationController {
   async login(@Body() data: LoginDto): Promise<any> {
     return this.authService.login(data.email, data.password);
   }
-
+  /**
+   *  http://localhost:6969/api/v1/sign-up(Post)
+   * @param userRequest 
+   * @returns 
+   */
   @Public()
   @Post('sign-up')
-  async signUp(@Body() accountRequest: AccountCreateRequest) {
-    return await this.authService.signUp(accountRequest);
+  async signUp(@Body() userRequest: UserCreateRequest) {
+    return await this.authService.signUp(userRequest);
   }
 
-  @Roles(ERole.EMPLOYEE, ERole.ADMIN)
+  @Roles(ERole.EMPLOYEE)
   @Get('me')
   async getMe(@GetUser() user) {
     return JSON.parse(user);

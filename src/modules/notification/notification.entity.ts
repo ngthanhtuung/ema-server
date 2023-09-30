@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne } from "typeorm";
 import { BaseEntity } from "../base/base.entity";
-import { AccountEntity } from "../account/account.entity";
+import { UserEntity } from "../user/user.entity";
 
 @Entity({ name: 'notification' })
 export class NotificationEntity extends BaseEntity {
@@ -17,7 +17,7 @@ export class NotificationEntity extends BaseEntity {
     })
     readFlag: boolean;
 
-    @ManyToOne(() => AccountEntity, (account) => account.notifications, { onDelete: 'CASCADE' })
-    account: AccountEntity;
+    @ManyToOne(() => UserEntity, (user) => user.notifications, { onDelete: 'CASCADE' })
+    user: UserEntity;
 
 }

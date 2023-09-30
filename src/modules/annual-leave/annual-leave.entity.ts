@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne } from "typeorm";
 import { BaseEntity } from "../base/base.entity";
-import { AccountEntity } from "../account/account.entity";
+import { UserEntity } from "../user/user.entity";
 
 @Entity({ name: 'annual_leave' })
 export class AnnualLeaveEntity extends BaseEntity {
@@ -11,6 +11,6 @@ export class AnnualLeaveEntity extends BaseEntity {
     @Column({ type: 'float' })
     amount: number;
 
-    @ManyToOne(() => AccountEntity, (account) => account.annualLeaves, { onDelete: 'CASCADE' })
-    account: AccountEntity;
+    @ManyToOne(() => UserEntity, (user) => user.annualLeaves, { onDelete: 'CASCADE' })
+    user: UserEntity;
 }

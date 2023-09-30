@@ -1,7 +1,7 @@
 import { EReplyRequest } from "src/common/enum/enum";
 import { BaseEntity } from "../base/base.entity";
 import { Column, Entity, ManyToOne } from "typeorm";
-import { AccountEntity } from "../account/account.entity";
+import { UserEntity } from "../user/user.entity";
 import { RequestTypeEntity } from "../request-type/request-type.entity";
 
 @Entity({ name: 'request' })
@@ -23,8 +23,8 @@ export class RequestEntity extends BaseEntity {
     @Column({ type: 'varchar' })
     replyMessage: string;
 
-    @ManyToOne(() => AccountEntity, (account) => account.requests, { onDelete: 'CASCADE' })
-    account: AccountEntity;
+    @ManyToOne(() => UserEntity, (user) => user.requests, { onDelete: 'CASCADE' })
+    user: UserEntity;
 
     @ManyToOne(() => RequestTypeEntity, (requestType) => requestType.requests, { onDelete: 'CASCADE' })
     requestType: RequestTypeEntity;

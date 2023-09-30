@@ -8,9 +8,10 @@ import { DivisionEntity } from '../division/division.entity';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import { TaskEntity } from '../task/task.entity';
 import { CommentEntity } from '../comment/comment.entity';
+import { EUserStatus } from 'src/common/enum/enum';
 
-@Entity({ name: 'account' })
-export class AccountEntity extends BaseEntity {
+@Entity({ name: 'user' })
+export class UserEntity extends BaseEntity {
   @Column({ unique: true, type: 'varchar', length: 50 })
   email: string;
 
@@ -23,27 +24,37 @@ export class AccountEntity extends BaseEntity {
   @Column({ type: 'datetime', nullable: true })
   issueDate: Date;
 
-  @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.account, { onDelete: 'CASCADE' })
+  @Column({
+    enum: EUserStatus,
+    type: 'enum',
+    default: EUserStatus.ACTIVE,
+  })
+  status: EUserStatus;
+
+  @Column({ type: 'varchar', nullable: true })
+  refreshToken: string;
+
+  @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.user, { onDelete: 'CASCADE' })
   timesheets: TimesheetEntity[];
 
-  @OneToMany(() => RequestEntity, (request) => request.account, { onDelete: 'CASCADE' })
+  @OneToMany(() => RequestEntity, (request) => request.user, { onDelete: 'CASCADE' })
   requests: RequestEntity[];
 
-  @OneToMany(() => NotificationEntity, (notification) => notification.account, { onDelete: 'CASCADE' })
+  @OneToMany(() => NotificationEntity, (notification) => notification.user, { onDelete: 'CASCADE' })
   notifications: NotificationEntity[];
 
-  @OneToMany(() => DeviceEntity, (device) => device.account, { onDelete: 'CASCADE' })
+  @OneToMany(() => DeviceEntity, (device) => device.user, { onDelete: 'CASCADE' })
   devices: DeviceEntity[];
 
-  @ManyToOne(() => DivisionEntity, (division) => division.accounts, { onDelete: 'CASCADE' })
+  @ManyToOne(() => DivisionEntity, (division) => division.users, { onDelete: 'CASCADE' })
   division: DivisionEntity;
 
-  @OneToMany(() => AnnualLeaveEntity, (annualLeaves) => annualLeaves.account, { onDelete: 'CASCADE' })
+  @OneToMany(() => AnnualLeaveEntity, (annualLeaves) => annualLeaves.user, { onDelete: 'CASCADE' })
   annualLeaves: AnnualLeaveEntity[];
 
-  @OneToMany(() => TaskEntity, (tasks) => tasks.account, { onDelete: 'CASCADE' })
+  @OneToMany(() => TaskEntity, (tasks) => tasks.user, { onDelete: 'CASCADE' })
   tasks: TaskEntity[];
 
-  @OneToMany(() => CommentEntity, (comments) => comments.account, { onDelete: 'CASCADE' })
+  @OneToMany(() => CommentEntity, (comments) => comments.user, { onDelete: 'CASCADE' })
   comments: CommentEntity[];
 }

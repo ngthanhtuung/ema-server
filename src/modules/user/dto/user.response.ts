@@ -1,8 +1,8 @@
 import { OmitType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { EAccountStatus } from 'src/common/enum/enum';
+import { EUserStatus } from 'src/common/enum/enum';
 
-export class AccountResponse {
+export class UserResponse {
   @Expose()
   id: string;
 
@@ -13,10 +13,10 @@ export class AccountResponse {
   password: string;
 
   @Expose()
-  status: EAccountStatus;
+  status: EUserStatus;
 }
 
-export class PayloadAccount extends OmitType(AccountResponse, ['password']) {
+export class PayloadUser extends OmitType(UserResponse, ['password']) {
   @Expose()
   fullName: string;
 }

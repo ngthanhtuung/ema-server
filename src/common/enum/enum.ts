@@ -1,5 +1,4 @@
 export enum ERole {
-  ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
   STAFF = 'STAFF',
   EMPLOYEE = 'EMPLOYEE',
@@ -10,7 +9,7 @@ export enum EGender {
   FEMALE = 'FEMALE',
 }
 
-export enum EAccountStatus {
+export enum EUserStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
 }

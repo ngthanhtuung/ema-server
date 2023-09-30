@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { BaseEntity } from "../base/base.entity";
 import { TaskEntity } from "../task/task.entity";
 import { CommentFileEntity } from "../commentfile/commentfile.entity";
-import { AccountEntity } from "../account/account.entity";
+import { UserEntity } from "../user/user.entity";
 
 @Entity({ name: 'comment' })
 export class CommentEntity extends BaseEntity {
@@ -22,6 +22,6 @@ export class CommentEntity extends BaseEntity {
     @OneToMany(() => CommentFileEntity, (commentFile) => commentFile.comment, { onDelete: 'CASCADE' })
     commentFiles: CommentFileEntity[];
 
-    @ManyToOne(() => AccountEntity, (account) => account.comments, { onDelete: 'CASCADE' })
-    account: AccountEntity;
+    @ManyToOne(() => UserEntity, (user) => user.comments, { onDelete: 'CASCADE' })
+    user: UserEntity;
 }
