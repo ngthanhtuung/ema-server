@@ -14,8 +14,8 @@ import { Roles } from 'src/decorators/role.decorator';
 import { AccountCreateRequest } from 'src/modules/account/dto/account.request';
 
 @ApiBearerAuth()
-@Controller('auth1')
-@ApiTags('auth-controller1')
+@Controller('auth')
+@ApiTags('auth-controller')
 export class AuthenticationController {
   constructor(private readonly authService: AuthService) {}
 
