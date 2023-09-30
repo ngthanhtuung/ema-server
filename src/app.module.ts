@@ -5,7 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 import { ProfileModule } from 'src/modules/profile/profile.module';
-import { AccountModule } from 'src/modules/account/account.module';
+import { UserModule } from 'src/modules/user/user.module';
 import { AuthenticationModule } from 'src/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/config/jwt.config';
@@ -36,7 +36,7 @@ import { TransformInterceptor } from 'src/middleware/transform.interceptor';
     }),
     AuthenticationModule,
     ProfileModule,
-    AccountModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

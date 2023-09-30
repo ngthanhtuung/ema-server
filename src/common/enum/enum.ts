@@ -9,7 +9,7 @@ export enum EGender {
   FEMALE = 'FEMALE',
 }
 
-export enum EAccountStatus {
+export enum EUserStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
 }

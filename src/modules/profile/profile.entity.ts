@@ -1,5 +1,5 @@
-import { EAccountStatus, EGender, ERole } from 'src/common/enum/enum';
-import { AccountEntity } from 'src/modules/account/account.entity';
+import { EGender, ERole } from 'src/common/enum/enum';
+import { UserEntity } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'profile' })
@@ -31,19 +31,9 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 255 })
   avatar: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  refreshToken: string;
-
-  @Column({
-    enum: EAccountStatus,
-    type: 'enum',
-    default: EAccountStatus.INACTIVE,
-  })
-  status: EAccountStatus;
-
-  @OneToOne(() => AccountEntity, {
+  @OneToOne(() => UserEntity, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'profileId', referencedColumnName: 'id' })
-  account: AccountEntity;
+  user: UserEntity;
 }

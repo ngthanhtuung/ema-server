@@ -4,14 +4,10 @@ import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 import * as moment from 'moment';
 import { EGender } from 'src/common/enum/enum';
 
-export class AccountCreateRequest {
+export class UserCreateRequest {
   @ApiProperty({ default: 'bao@gmail.com' })
   @IsEmail()
   email: string;
-
-  @ApiProperty({ default: '123' })
-  @IsNotEmpty()
-  password: string;
 
   @ApiProperty({ default: '12345678' })
   @IsNotEmpty()

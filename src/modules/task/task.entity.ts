@@ -4,7 +4,7 @@ import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { EventEntity } from "../event/event.entity";
 import { TaskFileEntity } from "../taskfile/taskfile.entity";
 import { CommentEntity } from "../comment/comment.entity";
-import { AccountEntity } from "../account/account.entity";
+import { UserEntity } from "../user/user.entity";
 
 @Entity({ name: 'task' })
 export class TaskEntity extends BaseEntity {
@@ -52,6 +52,6 @@ export class TaskEntity extends BaseEntity {
     @OneToMany(() => CommentEntity, (comment) => comment.task, { onDelete: 'CASCADE' })
     comments: CommentEntity[];
 
-    @ManyToOne(() => AccountEntity, (account) => account.tasks, { onDelete: 'CASCADE' })
-    account: AccountEntity;
+    @ManyToOne(() => UserEntity, (user) => user.tasks, { onDelete: 'CASCADE' })
+    user: UserEntity;
 }
