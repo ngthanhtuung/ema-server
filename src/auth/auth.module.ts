@@ -9,4 +9,4 @@ import { SharedModule } from 'src/shared/shared.module';
   controllers: [AuthenticationController],
   providers: [AuthService],
 })
-export class AuthenticationModule { }
+export class AuthenticationModule {}

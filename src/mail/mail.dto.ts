@@ -1,14 +1,12 @@
-import { AutoMap } from "@automapper/classes";
+import { AutoMap } from '@automapper/classes';
 
 export class MailDTO {
+  @AutoMap()
+  public id: number;
 
-    @AutoMap()
-    public id: number;
+  @AutoMap()
+  public mailTitle: string;
 
-    @AutoMap()
-    public mailTitle: string;
-
-    @AutoMap()
-    public mailText: string;
-
+  @AutoMap()
+  public mailText: string;
 }

@@ -1,50 +1,50 @@
 import { TaskEntity } from './../task/task.entity';
-import { Column, Entity, OneToMany } from "typeorm";
-import { BaseEntity } from "../base/base.entity";
-import { EEventStatus } from "src/common/enum/enum";
-import { BudgetEntity } from "../budget/budget.entity";
+import { Column, Entity, OneToMany } from 'typeorm';
+import { BaseEntity } from '../base/base.entity';
+import { EEventStatus } from 'src/common/enum/enum';
+import { BudgetEntity } from '../budget/budget.entity';
 
 @Entity({ name: 'event' })
 export class EventEntity extends BaseEntity {
+  @Column({ type: 'varchar' })
+  eventName: string;
 
-    @Column({ type: 'varchar' })
-    eventName: string;
+  @Column({ type: 'date' })
+  startDate: Date;
 
-    @Column({ type: 'date' })
-    startDate: Date;
+  @Column({ type: 'date' })
+  processDate: Date;
 
-    @Column({ type: 'date' })
-    processDate: Date;
+  @Column({ type: 'date' })
+  endDate: Date;
 
-    @Column({ type: 'date' })
-    endDate: Date;
+  @Column({ type: 'varchar' })
+  location: string;
 
-    @Column({ type: 'varchar' })
-    location: string;
+  @Column({ type: 'float' })
+  income: number;
 
-    @Column({ type: 'float' })
-    income: number;
+  @Column({ type: 'float' })
+  outcome: number;
 
-    @Column({ type: 'float' })
-    outcome: number;
+  @Column({ type: 'varchar' })
+  coverUrl: string;
 
-    @Column({ type: 'varchar' })
-    coverUrl: string;
+  @Column({ type: 'float' })
+  estBugdet: number;
 
-    @Column({ type: 'float' })
-    estBugdet: number;
+  @Column({
+    enum: EEventStatus,
+    type: 'enum',
+    default: EEventStatus.PENDING,
+  })
+  status: EEventStatus;
 
-    @Column({
-        enum: EEventStatus,
-        type: 'enum',
-        default: EEventStatus.PENDING,
-    })
-    status: EEventStatus;
+  @OneToMany(() => BudgetEntity, (budget) => budget.event, {
+    onDelete: 'CASCADE',
+  })
+  budgets: BudgetEntity[];
 
-    @OneToMany(() => BudgetEntity, (budget) => budget.event, { onDelete: 'CASCADE' })
-    budgets: BudgetEntity[];
-
-    @OneToMany(() => TaskEntity, (task) => task.event, { onDelete: 'CASCADE' })
-    tasks: TaskEntity[];
-
+  @OneToMany(() => TaskEntity, (task) => task.event, { onDelete: 'CASCADE' })
+  tasks: TaskEntity[];
 }

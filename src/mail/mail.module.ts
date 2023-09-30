@@ -3,10 +3,8 @@ import { MailService } from './mail.service';
 import { TypeOrmExModule } from 'src/type-orm/typeorm-ex.module';
 import MailRepository from './mail.repository';
 @Module({
-  imports: [
-    TypeOrmExModule.forCustomRepository([MailRepository])
-  ],
+  imports: [TypeOrmExModule.forCustomRepository([MailRepository])],
   providers: [MailService],
-  exports: [MailService]
+  exports: [MailService],
 })
-export class MailModule { }
+export class MailModule {}

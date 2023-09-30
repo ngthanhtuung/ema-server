@@ -5,7 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
   });
@@ -45,7 +45,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(port, () => {
-    console.log(`Server is running at ${server_host}:${port}/${pathOpenApi}`);
+    console.info(`Server is running at ${server_host}:${port}/${pathOpenApi}`);
   });
 }
 bootstrap();

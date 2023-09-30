@@ -18,7 +18,7 @@ export class LoggerMiddleware implements NestMiddleware {
       if (statusCode >= 500) return this.logger.error(message);
       if (statusCode >= 400) return this.logger.warn(message);
       // save db
-      console.log(
+      console.info(
         contentLength,
         ip,
         method,

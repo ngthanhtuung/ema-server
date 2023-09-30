@@ -12,12 +12,13 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 import { Public } from 'src/decorators/public.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 import { UserCreateRequest } from 'src/modules/user/dto/user.request';
+import { PayloadUser } from 'src/modules/user/dto/user.response';
 
 @ApiBearerAuth()
 @Controller('auth')
 @ApiTags('auth-controller')
 export class AuthenticationController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   /**
    * http://localhost:6969/api/v1/login(Post)
@@ -29,23 +30,26 @@ export class AuthenticationController {
   @Public()
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ description: 'Login successfully' })
-  async login(@Body() data: LoginDto): Promise<any> {
+  async login(@Body() data: LoginDto): Promise<{
+    access_token: string;
+    refresh_token: string;
+  }> {
     return this.authService.login(data.email, data.password);
   }
   /**
    *  http://localhost:6969/api/v1/sign-up(Post)
-   * @param userRequest 
-   * @returns 
+   * @param userRequest
+   * @returns
    */
   @Public()
   @Post('sign-up')
-  async signUp(@Body() userRequest: UserCreateRequest) {
+  async signUp(@Body() userRequest: UserCreateRequest): Promise<string> {
     return await this.authService.signUp(userRequest);
   }
 
   @Roles(ERole.EMPLOYEE)
   @Get('me')
-  async getMe(@GetUser() user) {
+  getMe(@GetUser() user: string): PayloadUser {
     return JSON.parse(user);
   }
 }

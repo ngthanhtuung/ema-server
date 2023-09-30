@@ -36,8 +36,6 @@ export class UserSeed implements Seeder {
           avatar: 'https://picsum.photos/200/300',
         })
         .execute();
-
-      console.log();
     }
   }
 }

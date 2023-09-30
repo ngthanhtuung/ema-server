@@ -1,57 +1,60 @@
-import { EPriority, ETaskStatus } from "src/common/enum/enum";
-import { BaseEntity } from "../base/base.entity";
-import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
-import { EventEntity } from "../event/event.entity";
-import { TaskFileEntity } from "../taskfile/taskfile.entity";
-import { CommentEntity } from "../comment/comment.entity";
-import { UserEntity } from "../user/user.entity";
+import { EPriority, ETaskStatus } from 'src/common/enum/enum';
+import { BaseEntity } from '../base/base.entity';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { EventEntity } from '../event/event.entity';
+import { TaskFileEntity } from '../taskfile/taskfile.entity';
+import { CommentEntity } from '../comment/comment.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'task' })
 export class TaskEntity extends BaseEntity {
+  @Column({ type: 'varchar', nullable: false })
+  title: string;
 
-    @Column({ type: 'varchar', nullable: false })
-    title: string;
+  @Column({ type: 'datetime' })
+  startDate: Date;
 
-    @Column({ type: 'datetime' })
-    startDate: Date;
+  @Column({ type: 'datetime' })
+  endDate: Date;
 
-    @Column({ type: 'datetime' })
-    endDate: Date;
+  @Column({ type: 'varchar' })
+  description: string;
 
-    @Column({ type: 'varchar' })
-    description: string;
+  @Column({
+    type: 'enum',
+    enum: EPriority,
+  })
+  priority: EPriority;
 
-    @Column({
-        type: 'enum',
-        enum: EPriority,
-    })
-    priority: EPriority;
+  @Column({ type: 'varchar', nullable: true })
+  hasParent: string;
 
-    @Column({ type: 'varchar', nullable: true })
-    hasParent: string;
+  @Column({
+    type: 'enum',
+    enum: ETaskStatus,
+    default: ETaskStatus.PENDING,
+  })
+  status: ETaskStatus;
 
-    @Column({
-        type: 'enum',
-        enum: ETaskStatus,
-        default: ETaskStatus.PENDING,
-    })
-    status: ETaskStatus;
+  @Column({ type: 'int' })
+  estimationTime: number;
 
-    @Column({ type: 'int' })
-    estimationTime: number;
+  @Column({ type: 'int' })
+  effort: number;
 
-    @Column({ type: 'int' })
-    effort: number;
+  @ManyToOne(() => EventEntity, (event) => event.tasks, { onDelete: 'CASCADE' })
+  event: EventEntity;
 
-    @ManyToOne(() => EventEntity, (event) => event.tasks, { onDelete: 'CASCADE' })
-    event: EventEntity;
+  @OneToMany(() => TaskFileEntity, (taskFile) => taskFile.task, {
+    onDelete: 'CASCADE',
+  })
+  taskFiles: TaskFileEntity[];
 
-    @OneToMany(() => TaskFileEntity, (taskFile) => taskFile.task, { onDelete: 'CASCADE' })
-    taskFiles: TaskFileEntity[];
+  @OneToMany(() => CommentEntity, (comment) => comment.task, {
+    onDelete: 'CASCADE',
+  })
+  comments: CommentEntity[];
 
-    @OneToMany(() => CommentEntity, (comment) => comment.task, { onDelete: 'CASCADE' })
-    comments: CommentEntity[];
-
-    @ManyToOne(() => UserEntity, (user) => user.tasks, { onDelete: 'CASCADE' })
-    user: UserEntity;
+  @ManyToOne(() => UserEntity, (user) => user.tasks, { onDelete: 'CASCADE' })
+  user: UserEntity;
 }

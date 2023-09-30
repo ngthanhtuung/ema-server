@@ -29,7 +29,7 @@ export class BaseService<T extends BaseEntity> {
   async transaction(
     fn: (queryRunner: QueryRunner) => Promise<void>,
     queryRunner: QueryRunner,
-  ) {
+  ): Promise<void> {
     // establish real database connection using our new query runner
     await queryRunner.connect();
 
