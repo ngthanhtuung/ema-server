@@ -1,6 +1,22 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+export const databaseConfig = {
+  type: 'mysql',
+  host: process.env.MYSQL_HOST,
+  port: +process.env.MYSQL_PORT,
+  username: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DB,
+  dropSchema: true,
+  synchronize: true,
+  autoLoadEntities: true,
+  logging: true,
+  entities: [__dirname + '/../**/*.entity.{js,ts}'],
+  factories: [__dirname + '/factory/**/*{.ts,.js}'],
+  seeds: [__dirname + '/seeds/**/*{.ts,.js}'],
+};
+
 export const databaseConnection = [
   TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
@@ -20,6 +36,8 @@ export const databaseConnection = [
       charset: 'utf8mb4',
       collation: 'utf8mb4_unicode_ci',
       timezone: '+07:00',
+      migrationsTableName: 'hrea_migration',
+      migrations: ['dist/migrations/*{.ts,.js}'],
     }),
   }),
 ];
