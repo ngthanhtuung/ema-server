@@ -25,7 +25,7 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 255 })
   address: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 100 })
   phoneNumber: string;
 
   @Column({ type: 'varchar', length: 255 })
