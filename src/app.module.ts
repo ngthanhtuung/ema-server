@@ -16,6 +16,7 @@ import { RolesGuard } from 'src/guards/role.guard';
 import { AllExceptionsFilter } from 'src/exception/catch-all-http.exception';
 import { LoggerMiddleware } from 'src/middleware/logger.middleware';
 import { TransformInterceptor } from 'src/middleware/transform.interceptor';
+import { DivisionModule } from './modules/division/division.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { TransformInterceptor } from 'src/middleware/transform.interceptor';
     AuthenticationModule,
     ProfileModule,
     UserModule,
+    DivisionModule
   ],
   controllers: [AppController],
   providers: [
