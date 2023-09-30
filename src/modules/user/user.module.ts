@@ -9,4 +9,4 @@ import { SharedModule } from 'src/shared/shared.module';
   providers: [UserService],
   exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}

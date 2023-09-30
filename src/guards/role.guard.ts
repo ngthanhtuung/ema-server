@@ -7,7 +7,7 @@ import { PayloadUser } from 'src/modules/user/dto/user.response';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(
     context: ExecutionContext,

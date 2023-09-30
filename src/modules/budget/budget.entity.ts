@@ -1,22 +1,23 @@
-import { Column, Entity, ManyToOne } from "typeorm";
-import { BaseEntity } from "../base/base.entity";
-import { EventEntity } from "../event/event.entity";
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { BaseEntity } from '../base/base.entity';
+import { EventEntity } from '../event/event.entity';
 
 @Entity({ name: 'budget' })
 export class BudgetEntity extends BaseEntity {
+  @Column({ type: 'varchar' })
+  budgetName: string;
 
-    @Column({ type: 'varchar' })
-    budgetName: string;
+  @Column({ type: 'boolean', default: true })
+  expense: boolean;
 
-    @Column({ type: 'boolean', default: true })
-    expense: boolean;
+  @Column({ type: 'float', default: 0 })
+  amount: number;
 
-    @Column({ type: 'float', default: 0 })
-    amount: number;
+  @Column({ type: 'varchar' })
+  description: string;
 
-    @Column({ type: 'varchar' })
-    description: string;
-
-    @ManyToOne(() => EventEntity, (event) => event.budgets, { onDelete: 'CASCADE' })
-    event: EventEntity;
+  @ManyToOne(() => EventEntity, (event) => event.budgets, {
+    onDelete: 'CASCADE',
+  })
+  event: EventEntity;
 }

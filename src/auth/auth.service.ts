@@ -12,12 +12,12 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private sharedService: SharedService,
-  ) { }
+  ) {}
 
   async login(
     email: string,
     password: string,
-  ): Promise<{ access_token: string, refresh_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.userService.findByEmail(email);
 
     if (!user) {
@@ -59,7 +59,7 @@ export class AuthService {
     }
   }
 
-  async signUp(userRequest: UserCreateRequest) {
+  async signUp(userRequest: UserCreateRequest): Promise<string> {
     return await this.userService.insertUser(userRequest);
   }
 }

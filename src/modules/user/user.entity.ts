@@ -34,27 +34,41 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
 
-  @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.user, {
+    onDelete: 'CASCADE',
+  })
   timesheets: TimesheetEntity[];
 
-  @OneToMany(() => RequestEntity, (request) => request.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => RequestEntity, (request) => request.user, {
+    onDelete: 'CASCADE',
+  })
   requests: RequestEntity[];
 
-  @OneToMany(() => NotificationEntity, (notification) => notification.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
+    onDelete: 'CASCADE',
+  })
   notifications: NotificationEntity[];
 
-  @OneToMany(() => DeviceEntity, (device) => device.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => DeviceEntity, (device) => device.user, {
+    onDelete: 'CASCADE',
+  })
   devices: DeviceEntity[];
 
-  @ManyToOne(() => DivisionEntity, (division) => division.users, { onDelete: 'CASCADE' })
+  @ManyToOne(() => DivisionEntity, (division) => division.users, {
+    onDelete: 'CASCADE',
+  })
   division: DivisionEntity;
 
-  @OneToMany(() => AnnualLeaveEntity, (annualLeaves) => annualLeaves.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => AnnualLeaveEntity, (annualLeaves) => annualLeaves.user, {
+    onDelete: 'CASCADE',
+  })
   annualLeaves: AnnualLeaveEntity[];
 
   @OneToMany(() => TaskEntity, (tasks) => tasks.user, { onDelete: 'CASCADE' })
   tasks: TaskEntity[];
 
-  @OneToMany(() => CommentEntity, (comments) => comments.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => CommentEntity, (comments) => comments.user, {
+    onDelete: 'CASCADE',
+  })
   comments: CommentEntity[];
 }

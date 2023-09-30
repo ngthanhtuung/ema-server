@@ -4,10 +4,7 @@ import { plainToClass } from 'class-transformer';
 import { AUTH_ERROR_MESSAGE } from 'src/common/constants/constants';
 import { UserEntity } from 'src/modules/user/user.entity';
 import { UserCreateRequest } from 'src/modules/user/dto/user.request';
-import {
-  UserResponse,
-  PayloadUser,
-} from 'src/modules/user/dto/user.response';
+import { UserResponse, PayloadUser } from 'src/modules/user/dto/user.response';
 import { BaseService } from 'src/modules/base/base.service';
 import { ProfileEntity } from 'src/modules/profile/profile.entity';
 import { SharedService } from 'src/shared/shared.service';
@@ -31,7 +28,7 @@ export class UserService extends BaseService<UserEntity> {
 
   /**
    * generalBuilderUser
-   * @returns 
+   * @returns
    */
   generalBuilderUser(): SelectQueryBuilder<UserEntity> {
     return this.userRepository.createQueryBuilder('user');
@@ -39,8 +36,8 @@ export class UserService extends BaseService<UserEntity> {
 
   /**
    * findByEmail
-   * @param email 
-   * @returns 
+   * @param email
+   * @returns
    */
   async findByEmail(email: string): Promise<UserResponse> {
     const query = this.generalBuilderUser();
@@ -64,10 +61,10 @@ export class UserService extends BaseService<UserEntity> {
 
   /**
    * findById
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
-  async findById(id: string) {
+  async findById(id: string): Promise<PayloadUser> {
     const query = this.generalBuilderUser();
     query
       .leftJoin('profile', 'profile', 'user.id = profile.profileId')
@@ -89,17 +86,15 @@ export class UserService extends BaseService<UserEntity> {
 
   /**
    * insertUser
-   * @param userCreateRequest 
-   * @returns 
+   * @param userCreateRequest
+   * @returns
    */
-  async insertUser(
-    userCreateRequest: UserCreateRequest,
-  ): Promise<string> {
+  async insertUser(userCreateRequest: UserCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    let { email, ...profile } = userCreateRequest;
+    const { email, ...profile } = userCreateRequest;
     const generatePassword = this.shareService.generatePassword(8);
     const password = await this.shareService.hashPassword(generatePassword);
-    const callback = async (queryRunner: QueryRunner) => {
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const userExist = await queryRunner.manager.findOne(UserEntity, {
         where: { email: userCreateRequest.email },
       });
@@ -126,14 +121,17 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   /**
- * updateRefreshToken
- * @param id 
- * @param refreshToken 
- * @returns 
- */
-  async updateRefreshToken(id: string, refreshToken: string): Promise<any | undefined> {
+   * updateRefreshToken
+   * @param id
+   * @param refreshToken
+   * @returns
+   */
+  async updateRefreshToken(id: string, refreshToken: string): Promise<boolean> {
     try {
-      await this.userRepository.update({ id: id }, { refreshToken: refreshToken });
+      await this.userRepository.update(
+        { id: id },
+        { refreshToken: refreshToken },
+      );
       return true;
     } catch (err) {
       return false;

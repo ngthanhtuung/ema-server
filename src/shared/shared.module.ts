@@ -7,4 +7,4 @@ import { MailModule } from 'src/mail/mail.module';
   providers: [SharedService],
   exports: [SharedService],
 })
-export class SharedModule { }
+export class SharedModule {}

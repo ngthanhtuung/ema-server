@@ -19,12 +19,12 @@ export class AuthGuard implements CanActivate {
     private configService: ConfigService,
     private userService: UserService,
     private reflector: Reflector,
-  ) { }
+  ) {}
 
   /**
    * canActivate
-   * @param context 
-   * @returns 
+   * @param context
+   * @returns
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
