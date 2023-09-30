@@ -1,5 +1,4 @@
 export enum ERole {
-  ADMIN = 'ADMIN',
   MANAGER = 'MANAGER',
   STAFF = 'STAFF',
   EMPLOYEE = 'EMPLOYEE',

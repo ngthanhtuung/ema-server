@@ -17,7 +17,7 @@ import { AccountCreateRequest } from 'src/modules/account/dto/account.request';
 @Controller('auth')
 @ApiTags('auth-controller')
 export class AuthenticationController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   /**
    * http://localhost:6969/api/v1/login(Post)
@@ -39,7 +39,7 @@ export class AuthenticationController {
     return await this.authService.signUp(accountRequest);
   }
 
-  @Roles(ERole.EMPLOYEE, ERole.ADMIN)
+  @Roles(ERole.EMPLOYEE)
   @Get('me')
   async getMe(@GetUser() user) {
     return JSON.parse(user);

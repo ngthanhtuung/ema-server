@@ -8,10 +8,10 @@ export default class Mail {
     public id: number;
 
     @AutoMap()
-    @Column('varchar', { name: 'mailTitle', nullable: false, length: 500 })
+    @Column('nvarchar', { name: 'mailTitle', nullable: false, length: 500 })
     public mailTitle: string;
 
     @AutoMap()
-    @Column('varchar', { name: 'mailText', nullable: false, length: 500 })
+    @Column('nvarchar', { name: 'mailText', nullable: false, length: 500 })
     public mailText: string;
 }
