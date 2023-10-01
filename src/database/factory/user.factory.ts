@@ -4,6 +4,7 @@ import { define } from 'typeorm-seeding';
 
 define(UserEntity, () => {
   const account = new UserEntity();
+  
   account.email = faker.internet.email();
   account.password = '123';
   return account;
