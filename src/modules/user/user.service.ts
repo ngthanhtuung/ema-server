@@ -89,6 +89,7 @@ export class UserService extends BaseService<UserEntity> {
       .select('profile.role as role')
       .addSelect([
         'user.id as id',
+        'user.email as email',
         'user.status as status',
         'profile.role as role',
         'profile.fullName as fullName',
@@ -100,6 +101,7 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   /**
+   * findByIdV2
    * @param id
    * @returns
    */
@@ -248,6 +250,13 @@ export class UserService extends BaseService<UserEntity> {
     }
   }
 
+  /**
+   * updateStatus
+   * @param userId
+   * @param status
+   * @param loginUserId
+   * @returns
+   */
   async updateStatus(
     userId: string,
     status: EUserStatus,
@@ -265,6 +274,62 @@ export class UserService extends BaseService<UserEntity> {
       return status === EUserStatus.ACTIVE
         ? 'Active user success'
         : 'Inactive user success';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * updateStatus
+   * @param userId
+   * @param status
+   * @param loginUserId
+   * @returns
+   */
+  async updatePassword(
+    password: string,
+    modifiedDate: Date,
+    loginUserId: string,
+  ): Promise<void> {
+    try {
+      await this.userRepository.update(
+        { id: loginUserId },
+        {
+          password: password,
+          updatedAt: modifiedDate,
+        },
+      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * updateCodeAndIssueDate
+   * @param userId
+   * @param authCode
+   * @param issueDate
+   * @returns
+   */
+  async updateCodeAndIssueDate(
+    userId: string,
+    authCode: string,
+    issueDate: string,
+  ): Promise<void> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const callback = async (queryRunner: QueryRunner): Promise<void> => {
+        await queryRunner.manager.update(
+          UserEntity,
+          { id: userId },
+          {
+            issueDate: issueDate,
+            authCode: authCode,
+          },
+        );
+      };
+
+      await this.transaction(callback, queryRunner);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
