@@ -22,7 +22,6 @@ export class PayloadUser extends OmitType(UserResponse, ['password']) {
 }
 
 export class UserProfile extends OmitType(UserResponse, ['password']) {
-
   @Expose()
   fullName: string;
 
@@ -33,7 +32,6 @@ export class UserProfile extends OmitType(UserResponse, ['password']) {
   phoneNumber: string;
 
   @Expose()
-
   dob: string;
 
   @Expose()

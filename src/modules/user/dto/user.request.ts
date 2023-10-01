@@ -41,6 +41,4 @@ export class UserCreateRequest {
   avatar: string;
 }
 
-export class UserPagination extends FilterPaginationBase {
-
-}
+export class UserPagination extends FilterPaginationBase {}

@@ -1,25 +1,27 @@
 import { DivisionService } from './division.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Body, Param, Get, Put, Controller, Post, Query } from '@nestjs/common';
-import { DivisionCreateRequest, DivisionUpdateRequest } from './dto/division.request';
+import {
+  DivisionCreateRequest,
+  DivisionUpdateRequest,
+} from './dto/division.request';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
+import { IPaginateResponse } from '../base/filter.pagination';
+import { DivisionResponse } from './dto/division.response';
 
 @Controller('division')
 @ApiBearerAuth()
 @ApiTags('division-controller')
-
 export class DivisionController {
-  constructor(
-    private readonly divisionService: DivisionService,
-  ) { }
+  constructor(private readonly divisionService: DivisionService) {}
 
   @Get()
   @Roles(ERole.MANAGER, ERole.STAFF)
   async getAllDivision(
-    @Query() divisionPagination: DivisionPagination
-  ): Promise<any | { message: string }> {
+    @Query() divisionPagination: DivisionPagination,
+  ): Promise<IPaginateResponse<DivisionResponse>> {
     return await this.divisionService.getAllDivision(divisionPagination);
   }
 
@@ -30,7 +32,9 @@ export class DivisionController {
 
   @Get('/:divisionId')
   @Roles(ERole.MANAGER)
-  async getDivisionById(@Param('divisionId') id: string): Promise<any | undefined> {
+  async getDivisionById(
+    @Param('divisionId') id: string,
+  ): Promise<DivisionResponse> {
     return await this.divisionService.getDivisionById(id);
   }
 
@@ -40,8 +44,9 @@ export class DivisionController {
    */
 
   @Post()
-
-  async createDivision(data: DivisionCreateRequest): Promise<string | undefined> {
+  async createDivision(
+    data: DivisionCreateRequest,
+  ): Promise<string | undefined> {
     return await this.divisionService.createDivision(data);
   }
 
@@ -54,14 +59,15 @@ export class DivisionController {
   @Roles(ERole.MANAGER)
   async updateDivision(
     @Param('divisionId') id: string,
-    @Body() data: DivisionUpdateRequest
+    @Body() data: DivisionUpdateRequest,
   ): Promise<string | undefined> {
     return await this.divisionService.updateDivision(id, data);
   }
 
   @Put('/:divisionId/status')
-  async updateStatus(@Param('divisionId') id: string): Promise<string | undefined> {
+  async updateStatus(
+    @Param('divisionId') id: string,
+  ): Promise<string | undefined> {
     return await this.divisionService.updateStatus(id);
   }
 }
-

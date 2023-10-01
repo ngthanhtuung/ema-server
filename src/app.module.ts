@@ -38,7 +38,7 @@ import { DivisionModule } from './modules/division/division.module';
     AuthenticationModule,
     ProfileModule,
     UserModule,
-    DivisionModule
+    DivisionModule,
   ],
   controllers: [AppController],
   providers: [
