@@ -45,7 +45,7 @@ export class AccountService extends BaseService<AccountEntity> {
       .addSelect([
         'account.id as id',
         'account.password as password',
-        'profile.status as status',
+        'account.status as status',
       ]);
 
     const data = await query.execute();
@@ -63,7 +63,7 @@ export class AccountService extends BaseService<AccountEntity> {
       .select('profile.role as role')
       .addSelect([
         'account.id as id',
-        'profile.status as status',
+        'account.status as status',
         'profile.role as role',
         'profile.fullName as fullName',
       ]);

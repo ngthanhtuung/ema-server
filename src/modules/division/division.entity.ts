@@ -4,8 +4,12 @@ import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'division' })
 export class DivisionEntity extends BaseEntity {
-  @Column({ type: 'varchar', nullable: false })
+
+  @Column({ type: 'varchar', nullable: false, unique: true })
   divisionName: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  description: string;
 
   @Column({ type: 'boolean', default: true })
   status: boolean;
