@@ -4,7 +4,6 @@ import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'division' })
 export class DivisionEntity extends BaseEntity {
-
   @Column({ type: 'varchar', nullable: false, unique: true })
   divisionName: string;
 

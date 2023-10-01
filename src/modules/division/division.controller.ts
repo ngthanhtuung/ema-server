@@ -1,10 +1,10 @@
-
 import { DivisionService } from './division.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Body, Param, Get, Put, Controller, Post } from '@nestjs/common';
+import { Body, Param, Get, Put, Controller, Post, Query } from '@nestjs/common';
 import { DivisionCreateRequest, DivisionUpdateRequest } from './dto/division.request';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
+import { DivisionPagination } from './dto/division.pagination';
 
 @Controller('division')
 @ApiBearerAuth()
@@ -15,8 +15,17 @@ export class DivisionController {
     private readonly divisionService: DivisionService,
   ) { }
 
+  @Get()
+  @Roles(ERole.MANAGER, ERole.STAFF)
+  async getAllDivision(
+    @Query() divisionPagination: DivisionPagination
+  ): Promise<any | { message: string }> {
+    return await this.divisionService.getAllDivision(divisionPagination);
+  }
+
   /**
    *  Get all division
+   * @param data
    */
 
   @Get('/:divisionId')
@@ -48,6 +57,11 @@ export class DivisionController {
     @Body() data: DivisionUpdateRequest
   ): Promise<string | undefined> {
     return await this.divisionService.updateDivision(id, data);
+  }
+
+  @Put('/:divisionId/status')
+  async updateStatus(@Param('divisionId') id: string): Promise<string | undefined> {
+    return await this.divisionService.updateStatus(id);
   }
 }
 
