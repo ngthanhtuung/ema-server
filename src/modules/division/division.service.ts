@@ -37,6 +37,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
   async createDivision(division: DivisionCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
+      queryRunner.startTransaction();
       const divisionExist = await queryRunner.manager.findOne(DivisionEntity, {
         where: { divisionName: division.divisionName },
       });
@@ -45,6 +46,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
       }
       await queryRunner.manager.insert(DivisionEntity, {
         divisionName: division.divisionName,
+        description: division.description,
         status: true,
       });
       await queryRunner.commitTransaction();

@@ -45,7 +45,7 @@ export class DivisionController {
 
   @Post()
   async createDivision(
-    data: DivisionCreateRequest,
+    @Body() data: DivisionCreateRequest,
   ): Promise<string | undefined> {
     return await this.divisionService.createDivision(data);
   }
