@@ -1,10 +1,10 @@
 import { UserPagination } from './dto/user.request';
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, Put } from '@nestjs/common';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { UserService } from './user.service';
 import { Roles } from 'src/decorators/role.decorator';
-import { ERole } from 'src/common/enum/enum';
+import { ERole, EUserStatus } from 'src/common/enum/enum';
 import { UserProfile } from './dto/user.response';
 import { IPaginateResponse } from '../base/filter.pagination';
 
@@ -25,11 +25,33 @@ export class UserController {
     return await this.userService.findByIdV2(userId);
   }
 
-  @Get('division/:divisionId')
+  @Get('')
   async getUserByDivision(
-    @Param('divisionId') divisionId: string,
+    @Query('divisionId') divisionId: string,
     @Query() userPagination: UserPagination,
+    @GetUser() user: string,
   ): Promise<IPaginateResponse<UserProfile>> {
-    return await this.userService.findByDivision(divisionId, userPagination);
+    const role = JSON.parse(user).role;
+    return await this.userService.findByDivision(
+      divisionId,
+      userPagination,
+      role,
+    );
+  }
+
+  @Put('/:userId/:status')
+  @Roles(ERole.MANAGER)
+  @ApiParam({ name: 'status', enum: EUserStatus })
+  async upadateStatus(
+    @Param('userId') userId: string,
+    @Param('status') status: EUserStatus,
+    @GetUser()
+    user: string,
+  ): Promise<string> {
+    return await this.userService.updateStatus(
+      userId,
+      status,
+      JSON.parse(user).id,
+    );
   }
 }

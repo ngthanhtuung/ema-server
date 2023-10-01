@@ -1,3 +1,4 @@
+import { EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
   Injectable,
@@ -27,6 +28,7 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
+import { ERole } from 'src/common/enum/enum';
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
@@ -97,6 +99,11 @@ export class UserService extends BaseService<UserEntity> {
     return plainToClass(PayloadUser, data[0]);
   }
 
+  /**
+   * @param id
+   * @returns
+   */
+
   async findByIdV2(id: string): Promise<UserProfile> {
     try {
       const query = this.generalBuilderUser();
@@ -128,9 +135,17 @@ export class UserService extends BaseService<UserEntity> {
     }
   }
 
+  /**
+   *
+   * @param divisionId
+   * @param userPagination
+   * @param role
+   * @returns
+   */
   async findByDivision(
     divisionId: string,
     userPagination: UserPagination,
+    role: string,
   ): Promise<IPaginateResponse<UserProfile>> {
     try {
       const { currentPage, sizePage } = userPagination;
@@ -140,6 +155,9 @@ export class UserService extends BaseService<UserEntity> {
         .leftJoin('profile', 'profile', 'user.id = profile.profileId')
         .leftJoin('division', 'division', 'division.id = user.divisionId')
         .where('division.id = :divisionId', { divisionId });
+      if (role === ERole.STAFF) {
+        query.andWhere('user.status = :status', { status: EUserStatus.ACTIVE });
+      }
       query
         .select('profile.role as role')
         .addSelect([
@@ -153,6 +171,7 @@ export class UserService extends BaseService<UserEntity> {
           'profile.address as address',
           'profile.avatar as avatar',
           'division.divisionName as divisionName',
+          'user.status as status',
         ]);
       const [result, total] = await Promise.all([
         query
@@ -174,6 +193,7 @@ export class UserService extends BaseService<UserEntity> {
       throw new InternalServerErrorException(err.message);
     }
   }
+
   /**
    * insertUser
    * @param userCreateRequest
@@ -225,6 +245,28 @@ export class UserService extends BaseService<UserEntity> {
       return true;
     } catch (err) {
       return false;
+    }
+  }
+
+  async updateStatus(
+    userId: string,
+    status: EUserStatus,
+    loginUserId: string,
+  ): Promise<string> {
+    try {
+      const userExisted = await this.findById(userId);
+      if (!userExisted) {
+        throw new BadRequestException('User not found');
+      }
+      if (userExisted.id === loginUserId) {
+        throw new BadRequestException('Can not change status of yourself');
+      }
+      await this.userRepository.update({ id: userId }, { status: status });
+      return status === EUserStatus.ACTIVE
+        ? 'Active user success'
+        : 'Inactive user success';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

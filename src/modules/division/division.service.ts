@@ -113,10 +113,16 @@ export class DivisionService extends BaseService<DivisionEntity> {
     try {
       const { currentPage, sizePage } = divisionPagination;
       const query = this.generalBuilderDivision();
+      query.select([
+        'division.id as id',
+        'division.divisionName as divisionName',
+        'division.description as description',
+        'division.status as status',
+      ]);
       const [result, total] = await Promise.all([
         query
-          .skip((sizePage as number) * ((currentPage as number) - 1))
-          .take(sizePage as number)
+          .offset((sizePage as number) * ((currentPage as number) - 1))
+          .limit(sizePage as number)
           .execute(),
         query.getCount(),
       ]);

@@ -23,8 +23,8 @@ export class TransformInterceptor<T>
     return next.handle().pipe(
       map((data: T) => {
         return {
-          result: data,
           statusCode: context.switchToHttp().getResponse<Response>().statusCode,
+          result: data,
         };
       }),
     );
