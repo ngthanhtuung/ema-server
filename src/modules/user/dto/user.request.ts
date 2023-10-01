@@ -3,6 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 import * as moment from 'moment';
 import { EGender } from 'src/common/enum/enum';
+import { FilterPaginationBase } from 'src/modules/base/filter.pagination';
 
 export class UserCreateRequest {
   @ApiProperty({ default: 'bao@gmail.com' })
@@ -39,3 +40,5 @@ export class UserCreateRequest {
   @IsNotEmpty()
   avatar: string;
 }
+
+export class UserPagination extends FilterPaginationBase {}

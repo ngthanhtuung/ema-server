@@ -5,7 +5,7 @@ export const databaseConfig = {
   type: 'mysql',
   host: process.env.MYSQL_HOST,
   port: +process.env.MYSQL_PORT,
-  username: process.env.MYSQL_USER,
+  username: process.env.MYSQL_USER || 'root',
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
   dropSchema: true,
