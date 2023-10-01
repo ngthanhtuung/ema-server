@@ -27,7 +27,7 @@ export class UserSeed implements Seeder {
         .values({
           fullName: faker.person.fullName(),
           profileId: user['identifiers'][0]['id'],
-          role: ERole.STAFF,
+          role: ERole.EMPLOYEE,
           dob: faker.date.anytime(),
           nationalId: '111',
           gender: faker.person.sex().toUpperCase() as EGender,
