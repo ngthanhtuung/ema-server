@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { UserEntity } from '../../modules/user/user.entity';
+import { UserEntity } from 'src/modules/user/user.entity';
 import { define } from 'typeorm-seeding';
 
 define(UserEntity, () => {
