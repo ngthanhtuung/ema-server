@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH_ERROR_MESSAGE } from 'src/common/constants/constants';
 import { EUserStatus } from 'src/common/enum/enum';
@@ -6,6 +10,9 @@ import { jwtConstants } from 'src/config/jwt.config';
 import { UserService } from 'src/modules/user/user.service';
 import { UserCreateRequest } from 'src/modules/user/dto/user.request';
 import { SharedService } from 'src/shared/shared.service';
+import ChangePasswordDto from './dto/changePassword.dto';
+import { UserEntity } from 'src/modules/user/user.entity';
+import * as moment from 'moment-timezone';
 @Injectable()
 export class AuthService {
   constructor(
@@ -14,6 +21,12 @@ export class AuthService {
     private sharedService: SharedService,
   ) {}
 
+  /**
+   * login-service
+   * @param email
+   * @param password
+   * @returns
+   */
   async login(
     email: string,
     password: string,
@@ -32,34 +45,135 @@ export class AuthService {
       password,
       user.password,
     );
-
-    if (user && isMatch) {
-      const payload = {
-        id: user.id,
-        role: user.role,
-      };
-      // Create accessToken
-      const accessToken = this.jwtService.sign(payload, {
-        secret: jwtConstants.accessTokenSecret,
-        expiresIn: '3d',
-      });
-      // Create refreshToken
-      const refreshToken = this.jwtService.sign(
-        { id: payload.id },
-        {
-          secret: jwtConstants.refreshTokenSecret,
-          expiresIn: '60days',
-        },
-      );
-      this.userService.updateRefreshToken(user.id, refreshToken);
-      return {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      };
+    if (!user || !isMatch) {
+      throw new BadRequestException('Sai email hoặc mật khẩu !!!');
     }
+    const payload = {
+      id: user.id,
+      role: user.role,
+      email: email,
+    };
+    // Create accessToken
+    const accessToken = this.jwtService.sign(payload, {
+      secret: jwtConstants.accessTokenSecret,
+      expiresIn: '3d',
+    });
+    // Create refreshToken
+    const refreshToken = this.jwtService.sign(
+      { id: payload.id },
+      {
+        secret: jwtConstants.refreshTokenSecret,
+        expiresIn: '60days',
+      },
+    );
+    this.userService.updateRefreshToken(user.id, refreshToken);
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
 
+  /**
+   * signUp
+   * @param userRequest
+   * @returns
+   */
   async signUp(userRequest: UserCreateRequest): Promise<string> {
     return await this.userService.insertUser(userRequest);
   }
+
+  /**
+   * changePassword
+   * @param data
+   * @param user
+   * @returns
+   */
+  async changePassword(
+    data: ChangePasswordDto,
+    user: UserEntity,
+  ): Promise<string> {
+    try {
+      const loginUser = await this.userService.findByEmail(user.email);
+      const { oldPassword, newPassword, confirmPassword } = data;
+      if (newPassword !== confirmPassword) {
+        throw new BadRequestException('Confirm password is not match');
+      }
+      const checkPassword = await this.sharedService.comparePassword(
+        oldPassword,
+        loginUser.password,
+      );
+      if (!checkPassword) {
+        throw new BadRequestException('Old password is not match');
+      }
+      const hashPassword = await this.sharedService.hashPassword(newPassword);
+      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      await this.userService.updatePassword(
+        hashPassword,
+        currentDate,
+        loginUser.id,
+      );
+      return 'Change password successfully';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * sendCodeByEmail
+   * @param email
+   * @returns
+   */
+  async sendCodeByEmail(email: string): Promise<string> {
+    try {
+      const user = await this.userService.findByEmail(email);
+      if (!user) {
+        throw new BadRequestException("Account don't exist");
+      }
+      // generate code
+      const code = this.sharedService.generateUniqueRandomNumber();
+      // time current
+      const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+      // update code and issueDate
+      await this.userService.updateCodeAndIssueDate(
+        user?.id,
+        code,
+        currentTime,
+      );
+      // send code email
+      await this.sharedService.sendCodeEmail(email, code);
+      return 'Send Code Successfully';
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  // /**
+  //  * verifyCode
+  //  * @param email
+  //  * @param code
+  //  * @returns
+  //  */
+  // async verifyCode(email: string, code: string): Promise<string> {
+  //   try {
+  //     const user = await this.userService.findByEmail(email);
+  //     if (!user) {
+  //       throw new BadRequestException("Account don't exist");
+  //     }
+  //     // generate code
+  //     const code = this.sharedService.generateUniqueRandomNumber();
+  //     // time current
+  //     const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+  //     // update code and issueDate
+  //     await this.userService.updateCodeAndIssueDate(
+  //       user?.id,
+  //       code,
+  //       currentTime,
+  //     );
+  //     // send code email
+  //     await this.sharedService.sendCodeEmail(email, code);
+  //     return 'Send Code Successfully';
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(error.message);
+  //   }
+  // }
 }

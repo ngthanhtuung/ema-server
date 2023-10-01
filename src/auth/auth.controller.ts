@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Response } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Res,
+  HttpStatus,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -13,6 +22,9 @@ import { Public } from 'src/decorators/public.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 import { UserCreateRequest } from 'src/modules/user/dto/user.request';
 import { PayloadUser } from 'src/modules/user/dto/user.response';
+import ChangePasswordDto from './dto/changePassword.dto';
+import SendCodeRequest from './dto/sendCode.dto';
+// import VerifyCodeRequest from './dto/verifyCode.dto';
 
 @ApiBearerAuth()
 @Controller('auth')
@@ -21,7 +33,7 @@ export class AuthenticationController {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * http://localhost:6969/api/v1/login(Post)
+   * http://localhost:6969/api/v1/auth/login(Post)
    * login
    * @param user
    * @returns
@@ -30,11 +42,26 @@ export class AuthenticationController {
   @Public()
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ description: 'Login successfully' })
-  async login(@Body() data: LoginDto): Promise<{
-    access_token: string;
-    refresh_token: string;
-  }> {
-    return this.authService.login(data.email, data.password);
+  async login(
+    @Body() data: LoginDto,
+    @Res() res: Response,
+  ): Promise<
+    Response<
+      {
+        access_token: string;
+        refresh_token: string;
+      },
+      Record<
+        string,
+        {
+          access_token: string;
+          refresh_token: string;
+        }
+      >
+    >
+  > {
+    const data1 = await this.authService.login(data.email, data.password);
+    return res.status(HttpStatus.OK).send(data1);
   }
   /**
    *  http://localhost:6969/api/v1/sign-up(Post)
@@ -52,4 +79,45 @@ export class AuthenticationController {
   getMe(@GetUser() user: string): PayloadUser {
     return JSON.parse(user);
   }
+
+  /**
+   * http://localhost:6969/api/v1/user/change-password(Put)
+   * changePassword
+   * @param data
+   * @param user
+   * @returns
+   */
+  @Put('/change-password')
+  async changePassword(
+    @Body() data: ChangePasswordDto,
+    @GetUser() user: string,
+  ): Promise<string> {
+    return await this.authService.changePassword(data, JSON.parse(user));
+  }
+
+  /**
+   * sendCodeByEmail
+   * @param account
+   * @returns
+   */
+  @Post('/send-code')
+  @Public()
+  @ApiBody({ type: SendCodeRequest })
+  @ApiOkResponse({ description: 'Send Code Successfully' })
+  async sendCodeByEmail(@Body() account: SendCodeRequest): Promise<string> {
+    return await this.authService.sendCodeByEmail(account?.email);
+  }
+
+  // /**
+  //  * verifyCode
+  //  * @param account
+  //  * @returns
+  //  */
+  // @Post('/verify-code')
+  // @Public()
+  // @ApiBody({ type: VerifyCodeRequest })
+  // @ApiOkResponse({ description: 'Send Code Successfully' })
+  // async verifyCode(@Body() account: VerifyCodeRequest): Promise<string> {
+  //   return await this.authService.verifyCode(account?.email, account?.code);
+  // }
 }

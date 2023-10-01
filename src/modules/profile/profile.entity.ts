@@ -31,9 +31,6 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 255 })
   avatar: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  refreshToken: string;
-
   @OneToOne(() => UserEntity, {
     onDelete: 'CASCADE',
   })

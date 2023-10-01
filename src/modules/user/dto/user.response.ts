@@ -19,6 +19,8 @@ export class UserResponse {
 export class PayloadUser extends OmitType(UserResponse, ['password']) {
   @Expose()
   fullName: string;
+  @Expose()
+  email: string;
 }
 
 export class UserProfile extends OmitType(UserResponse, ['password']) {
