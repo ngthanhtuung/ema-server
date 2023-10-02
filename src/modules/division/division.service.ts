@@ -37,12 +37,12 @@ export class DivisionService extends BaseService<DivisionEntity> {
   async createDivision(division: DivisionCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
-      queryRunner.startTransaction();
+      await queryRunner.startTransaction();
       const divisionExist = await queryRunner.manager.findOne(DivisionEntity, {
         where: { divisionName: division.divisionName },
       });
       if (divisionExist) {
-        throw new InternalServerErrorException('Division already exists');
+        throw new BadRequestException('Division already exists');
       }
       await queryRunner.manager.insert(DivisionEntity, {
         divisionName: division.divisionName,

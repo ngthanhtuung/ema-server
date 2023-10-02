@@ -71,7 +71,6 @@ export class MailService {
    */
   async sendCodeByEmail(
     toUser: string,
-    username: string,
     code: string,
   ): Promise<MessagesSendResult> {
     try {

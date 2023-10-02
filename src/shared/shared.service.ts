@@ -109,17 +109,9 @@ export class SharedService {
    * @param username
    * @returns
    */
-  public async sendCodeEmail(
-    email: string,
-    username: string,
-    code: string,
-  ): Promise<boolean> {
+  public async sendCodeEmail(email: string, code: string): Promise<boolean> {
     try {
-      const response = await this.mailService.sendCodeByEmail(
-        email,
-        username,
-        code,
-      );
+      const response = await this.mailService.sendCodeByEmail(email, code);
       if (response) {
         return true;
       }
