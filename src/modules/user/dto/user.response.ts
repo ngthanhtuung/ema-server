@@ -48,3 +48,11 @@ export class UserProfile extends OmitType(UserResponse, ['password']) {
   @Expose()
   avatar: string;
 }
+
+export class VerifyCode {
+  @Expose()
+  authCode: string;
+
+  @Expose()
+  issueDate: string;
+}

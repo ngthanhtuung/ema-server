@@ -147,33 +147,63 @@ export class AuthService {
     }
   }
 
-  // /**
-  //  * verifyCode
-  //  * @param email
-  //  * @param code
-  //  * @returns
-  //  */
-  // async verifyCode(email: string, code: string): Promise<string> {
-  //   try {
-  //     const user = await this.userService.findByEmail(email);
-  //     if (!user) {
-  //       throw new BadRequestException("Account don't exist");
-  //     }
-  //     // generate code
-  //     const code = this.sharedService.generateUniqueRandomNumber();
-  //     // time current
-  //     const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
-  //     // update code and issueDate
-  //     await this.userService.updateCodeAndIssueDate(
-  //       user?.id,
-  //       code,
-  //       currentTime,
-  //     );
-  //     // send code email
-  //     await this.sharedService.sendCodeEmail(email, code);
-  //     return 'Send Code Successfully';
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(error.message);
-  //   }
-  // }
+  /**
+   * verifyCode
+   * @param email
+   * @param code
+   * @returns
+   */
+  async verifyCode(email: string, code: string): Promise<string> {
+    try {
+      const user = await this.userService.getAuthCodeAndIssueDate(email);
+      if (!user) {
+        throw new BadRequestException("Account don't exist");
+      }
+      const issueDateFormat = moment(user.issueDate).format(
+        'YYYY-MM-DD HH:mm:ss',
+      );
+      const issueDateAfter10Minutes = moment(user.issueDate)
+        .add(10, 'minutes')
+        .format('YYYY-MM-DD HH:mm:ss');
+      const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+      const checkTime = moment(currentTime).isBetween(
+        issueDateFormat,
+        issueDateAfter10Minutes,
+      );
+      if (!checkTime) {
+        throw new BadRequestException('The authCode has expired!! ');
+      }
+      if (code !== user.authCode) {
+        throw new BadRequestException("The authCode hasn't match!! ");
+      }
+      return 'Verify successfully';
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  /**
+   * verifyCode
+   * @param email
+   * @param password
+   * @returns
+   */
+  async forgetPassword(email: string, password: string): Promise<string> {
+    try {
+      const loginUser = await this.userService.findByEmail(email);
+      if (!loginUser) {
+        throw new BadRequestException("Account don't exist");
+      }
+      const hashPassword = await this.sharedService.hashPassword(password);
+      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      await this.userService.updatePassword(
+        hashPassword,
+        currentDate,
+        loginUser.id,
+      );
+      return 'Update password successfully!!';
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
 }

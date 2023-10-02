@@ -17,6 +17,7 @@ import {
   UserResponse,
   PayloadUser,
   UserProfile,
+  VerifyCode,
 } from 'src/modules/user/dto/user.response';
 import { BaseService } from 'src/modules/base/base.service';
 import { ProfileEntity } from 'src/modules/profile/profile.entity';
@@ -333,5 +334,19 @@ export class UserService extends BaseService<UserEntity> {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  /**
+   * findByEmail
+   * @param email
+   * @returns
+   */
+  async getAuthCodeAndIssueDate(email: string): Promise<VerifyCode> {
+    const query = this.generalBuilderUser();
+    query
+      .select(['user.authCode as authCode', 'user.issueDate as issueDate'])
+      .where('user.email = :email', { email });
+    const data = await query.execute();
+    return plainToClass(VerifyCode, data[0]);
   }
 }

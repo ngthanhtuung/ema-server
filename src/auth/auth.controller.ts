@@ -24,6 +24,8 @@ import { UserCreateRequest } from 'src/modules/user/dto/user.request';
 import { PayloadUser } from 'src/modules/user/dto/user.response';
 import ChangePasswordDto from './dto/changePassword.dto';
 import SendCodeRequest from './dto/sendCode.dto';
+import VerifyCodeRequest from './dto/verifyCode.dto';
+import ForgetPasswordRequest from './dto/fortgetPassword.dto';
 // import VerifyCodeRequest from './dto/verifyCode.dto';
 
 @ApiBearerAuth()
@@ -64,7 +66,7 @@ export class AuthenticationController {
     return res.status(HttpStatus.OK).send(data1);
   }
   /**
-   *  http://localhost:6969/api/v1/sign-up(Post)
+   *  http://localhost:6969/api/v1/auth/sign-up(Post)
    * @param userRequest
    * @returns
    */
@@ -81,7 +83,7 @@ export class AuthenticationController {
   }
 
   /**
-   * http://localhost:6969/api/v1/user/change-password(Put)
+   * http://localhost:6969/api/v1/auth/change-password(Put)
    * changePassword
    * @param data
    * @param user
@@ -108,16 +110,34 @@ export class AuthenticationController {
     return await this.authService.sendCodeByEmail(account?.email);
   }
 
-  // /**
-  //  * verifyCode
-  //  * @param account
-  //  * @returns
-  //  */
-  // @Post('/verify-code')
-  // @Public()
-  // @ApiBody({ type: VerifyCodeRequest })
-  // @ApiOkResponse({ description: 'Send Code Successfully' })
-  // async verifyCode(@Body() account: VerifyCodeRequest): Promise<string> {
-  //   return await this.authService.verifyCode(account?.email, account?.code);
-  // }
+  /**
+   * verifyCode
+   * @param account
+   * @returns
+   */
+  @Post('/verify-code')
+  @Public()
+  @ApiBody({ type: VerifyCodeRequest })
+  @ApiOkResponse({ description: 'Verify Code Successfully' })
+  async verifyCode(@Body() account: VerifyCodeRequest): Promise<string> {
+    return await this.authService.verifyCode(account?.email, account?.code);
+  }
+
+  /**
+   * verifyCode
+   * @param account
+   * @returns
+   */
+  @Put('/forget-password')
+  @Public()
+  @ApiBody({ type: ForgetPasswordRequest })
+  @ApiOkResponse({ description: 'Update password Successfully' })
+  async forgetPassword(
+    @Body() account: ForgetPasswordRequest,
+  ): Promise<string> {
+    return await this.authService.forgetPassword(
+      account?.email,
+      account?.password,
+    );
+  }
 }
