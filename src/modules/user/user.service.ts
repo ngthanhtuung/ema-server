@@ -12,6 +12,7 @@ import { UserEntity } from 'src/modules/user/user.entity';
 import {
   UserCreateRequest,
   UserPagination,
+  // UserProfileUpdateRequest,
 } from 'src/modules/user/dto/user.request';
 import {
   UserResponse,
@@ -29,11 +30,14 @@ import {
 } from 'typeorm';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { ERole } from 'src/common/enum/enum';
+import { DivisionEntity } from '../division/division.entity';
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(ProfileEntity)
+    private readonly profileRepository: Repository<ProfileEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
     private shareService: SharedService,
@@ -213,9 +217,18 @@ export class UserService extends BaseService<UserEntity> {
         throw new BadRequestException(AUTH_ERROR_MESSAGE.EMAIL_EXIST);
       }
 
+      const division = await queryRunner.manager.findOne(DivisionEntity, {
+        where: { id: userCreateRequest.divisionId },
+      });
+
+      if (!division) {
+        throw new BadRequestException('Division not found');
+      }
+
       const createUser = await queryRunner.manager.insert(UserEntity, {
         email,
         password,
+        division,
       });
 
       await queryRunner.manager.insert(ProfileEntity, {
