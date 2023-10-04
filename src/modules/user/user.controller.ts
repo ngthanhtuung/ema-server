@@ -1,5 +1,9 @@
-import { UserPagination } from './dto/user.request';
-import { Controller, Get, Param, Query, Put } from '@nestjs/common';
+import {
+  UserPagination,
+  UserProfileUpdateRequest,
+  UserProfileUpdateRequestV2,
+} from './dto/user.request';
+import { Controller, Get, Param, Query, Put, Body } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { UserService } from './user.service';
@@ -52,6 +56,31 @@ export class UserController {
       userId,
       status,
       JSON.parse(user).id,
+    );
+  }
+
+  @Put('profile')
+  async updateProfile(
+    @GetUser() user: string,
+    @Body() updateBody: UserProfileUpdateRequest,
+  ): Promise<string> {
+    return await this.userService.updateProfile(
+      JSON.parse(user).id,
+      updateBody,
+    );
+  }
+
+  @Put('/:userId')
+  @Roles(ERole.MANAGER)
+  async UpdateProfileV2(
+    @GetUser() user: string,
+    @Body() updateProfile: UserProfileUpdateRequestV2,
+    @Param('userId') userId: string,
+  ): Promise<string> {
+    return await this.userService.updateProfileV2(
+      JSON.parse(user).id,
+      updateProfile,
+      userId,
     );
   }
 }

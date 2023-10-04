@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 import * as moment from 'moment';
@@ -39,6 +39,21 @@ export class UserCreateRequest {
   @ApiProperty({ default: 'test' })
   @IsNotEmpty()
   avatar: string;
+
+  @IsNotEmpty()
+  @ApiProperty({})
+  divisionId: string;
 }
 
 export class UserPagination extends FilterPaginationBase {}
+
+export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
+  'email',
+  'nationalId',
+  'gender',
+  'divisionId',
+]) {}
+
+export class UserProfileUpdateRequestV2 extends OmitType(UserCreateRequest, [
+  'divisionId',
+]) {}
