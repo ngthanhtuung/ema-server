@@ -10,7 +10,7 @@ export class UserSeed implements Seeder {
     const defaultPassword = '123';
     const salt: string = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(defaultPassword, salt);
-    for (let index = 0; index < 100; index++) {
+    for (let index = 0; index < 10; index++) {
       const user = await connection
         .createQueryBuilder()
         .insert()
@@ -27,7 +27,7 @@ export class UserSeed implements Seeder {
         .values({
           fullName: faker.person.fullName(),
           profileId: user['identifiers'][0]['id'],
-          role: ERole.STAFF,
+          role: ERole.EMPLOYEE,
           dob: faker.date.anytime(),
           nationalId: '111',
           gender: faker.person.sex().toUpperCase() as EGender,
