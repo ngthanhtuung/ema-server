@@ -53,3 +53,7 @@ export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
   'gender',
   'divisionId',
 ]) {}
+
+export class UserProfileUpdateRequestV2 extends OmitType(UserCreateRequest, [
+  'divisionId',
+]) {}

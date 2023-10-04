@@ -7,11 +7,17 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { AUTH_ERROR_MESSAGE } from 'src/common/constants/constants';
+import {
+  AUTH_ERROR_MESSAGE,
+  DIVISION_ERROR_MESSAGE,
+  USER_ERROR_MESSAGE,
+} from 'src/common/constants/constants';
 import { UserEntity } from 'src/modules/user/user.entity';
 import {
   UserCreateRequest,
   UserPagination,
+  UserProfileUpdateRequest,
+  UserProfileUpdateRequestV2,
   // UserProfileUpdateRequest,
 } from 'src/modules/user/dto/user.request';
 import {
@@ -225,7 +231,9 @@ export class UserService extends BaseService<UserEntity> {
       });
 
       if (!division) {
-        throw new BadRequestException('Division not found');
+        throw new BadRequestException(
+          DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
+        );
       }
 
       const createUser = await queryRunner.manager.insert(UserEntity, {
@@ -279,10 +287,10 @@ export class UserService extends BaseService<UserEntity> {
     try {
       const userExisted = await this.findById(userId);
       if (!userExisted) {
-        throw new BadRequestException('User not found');
+        throw new BadRequestException(USER_ERROR_MESSAGE.USER_NOT_EXIST);
       }
       if (userExisted.id === loginUserId) {
-        throw new BadRequestException('Can not change status of yourself');
+        throw new BadRequestException(USER_ERROR_MESSAGE.CANT_CHANGE);
       }
       await this.userRepository.update({ id: userId }, { status: status });
       return status === EUserStatus.ACTIVE
@@ -361,5 +369,80 @@ export class UserService extends BaseService<UserEntity> {
       .where('user.email = :email', { email });
     const data = await query.execute();
     return plainToClass(VerifyCode, data[0]);
+  }
+
+  /**
+   * updateProfile
+   * @param userId
+   * @param data
+   * @returns
+   */
+  async updateProfile(
+    userId: string,
+    data: UserProfileUpdateRequest,
+  ): Promise<string> {
+    try {
+      const existedUser = await this.findById(userId);
+      if (!existedUser) {
+        throw new BadRequestException(USER_ERROR_MESSAGE.USER_NOT_EXIST);
+      }
+      const queryRunner = this.dataSource.createQueryRunner();
+      const result = await queryRunner.manager.update(
+        ProfileEntity,
+        { profileId: userId },
+        {
+          ...data,
+        },
+      );
+      if (result.affected > 0) {
+        return 'Update profile successfully';
+      }
+      return 'Update fail';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async updateProfileV2(
+    loginUserId: string,
+    data: UserProfileUpdateRequestV2,
+    userIdUpdate: string,
+  ): Promise<string> {
+    try {
+      const existedUser = await this.findById(userIdUpdate);
+      if (!existedUser) {
+        throw new BadRequestException(USER_ERROR_MESSAGE.USER_NOT_EXIST);
+      }
+      if (loginUserId === userIdUpdate) {
+        throw new BadRequestException(USER_ERROR_MESSAGE.CANT_CHANGE);
+      }
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.manager.update(
+        UserEntity,
+        { id: userIdUpdate },
+        {
+          email: data.email,
+        },
+      );
+      const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
+        await queryRunner.manager.update(
+          ProfileEntity,
+          { profileId: userIdUpdate },
+          {
+            phoneNumber: data.phoneNumber,
+            fullName: data.fullName,
+            dob: data.dob,
+            nationalId: data.nationalId,
+            gender: data.gender,
+            address: data.address,
+            avatar: data.avatar,
+          },
+        );
+      };
+      await this.transaction(callbacks, queryRunner);
+      return 'Update profile successfully';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }
