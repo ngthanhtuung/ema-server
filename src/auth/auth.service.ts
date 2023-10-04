@@ -56,7 +56,7 @@ export class AuthService {
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtConstants.accessTokenSecret,
-      expiresIn: '3d',
+      expiresIn: '1d',
     });
     // Create refreshToken
     const refreshToken = this.jwtService.sign(
@@ -66,7 +66,7 @@ export class AuthService {
         expiresIn: '60days',
       },
     );
-    this.userService.updateRefreshToken(user.id, refreshToken);
+    await this.userService.updateRefreshToken(user.id, refreshToken);
     return {
       access_token: accessToken,
       refresh_token: refreshToken,

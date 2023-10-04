@@ -16,10 +16,8 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { LoginDto } from 'src/auth/dto/login.dto';
-import { ERole } from 'src/common/enum/enum';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { Public } from 'src/decorators/public.decorator';
-import { Roles } from 'src/decorators/role.decorator';
 import { UserCreateRequest } from 'src/modules/user/dto/user.request';
 import { PayloadUser } from 'src/modules/user/dto/user.response';
 import ChangePasswordDto from './dto/changePassword.dto';
@@ -62,8 +60,8 @@ export class AuthenticationController {
       >
     >
   > {
-    const data1 = await this.authService.login(data.email, data.password);
-    return res.status(HttpStatus.OK).send(data1);
+    const dataUser = await this.authService.login(data.email, data.password);
+    return res.status(HttpStatus.OK).send(dataUser);
   }
   /**
    *  http://localhost:6969/api/v1/auth/sign-up(Post)
@@ -76,7 +74,6 @@ export class AuthenticationController {
     return await this.authService.signUp(userRequest);
   }
 
-  @Roles(ERole.EMPLOYEE)
   @Get('me')
   getMe(@GetUser() user: string): PayloadUser {
     return JSON.parse(user);
