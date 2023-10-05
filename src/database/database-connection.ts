@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 export const databaseConfig = {
   type: 'mysql',
   host: process.env.MYSQL_HOST,
-  port: process.env.MYSQL_PORT,
+  port: +process.env.MYSQL_PORT,
   username: process.env.MYSQL_USER || 'root',
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
@@ -28,7 +28,9 @@ export const databaseConnection = [
       username: configService.get('MYSQL_USER') || 'root',
       password: configService.get('MYSQL_PASSWORD'),
       database: configService.get('MYSQL_DB'),
-      entities: ['dist/**/*.entity.{ts,js}'],
+      entities: [
+        __dirname.replace('/database', '') + '/modules/**/*.entity.{ts,js}',
+      ],
       synchronize: true,
       logging: true,
       autoLoadEntities: true,
