@@ -3,7 +3,6 @@ orbs:
   node: circleci/node@5.0.0
 #  slack: circleci/slack@4.8.2
   docker: circleci/docker@1.6.0
-  discord: antonioned/discord@0.1.0
 
 jobs:
   test:
@@ -53,11 +52,6 @@ jobs:
     #  - slack/notify:
     #      event: pass
     #      template: basic_success_1
-     - discord/status:
-          fail_only: false
-          failure_message: "**${CIRCLE_USERNAME}**'s build: **${CIRCLE_JOB}** failed."
-          webhook: "${DISCORD_STATUS_WEBHOOK}"
-          success_message: "**${CIRCLE_USERNAME}** deployed api to prod."
 workflows:
   test-and-deploy:
     jobs:
