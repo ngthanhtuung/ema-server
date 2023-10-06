@@ -4,15 +4,15 @@ services:
   mysqldb:
     container_name: HREA-DB
     platform: linux/x86_64
-    image: mysql:5.7
+    image: mysql:8.0.22
     restart: unless-stopped
     env_file:
-      - ./.env
+      - ./docker.env
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD
       - MYSQL_DATABASE=$MYSQL_DB
     ports:
-      - $MYSQL_PORT:3306
+      - 3307:$MYSQL_PORT
     volumes:
       - db:/var/lib/mysql
     command:
@@ -21,5 +21,20 @@ services:
         '--character-set-server=utf8mb4',
         '--collation-server=utf8mb4_unicode_ci'
       ]
+  be: 
+    container_name: HERA-BE
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    restart: unless-stopped
+    env_file:
+      - ./docker.env
+    depends_on:
+      - mysqldb
+    ports:
+      - $PORT:$PORT
+    stdin_open: true
+    tty: true
 volumes:
   db:
+    name: db
