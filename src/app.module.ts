@@ -22,7 +22,7 @@ import { DivisionModule } from './modules/division/division.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env'],
+      envFilePath: ['./.env'],
       validationSchema: Joi.object({
         MYSQL_PORT: Joi.number().required(),
         PORT: Joi.number(),

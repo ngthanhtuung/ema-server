@@ -66,7 +66,7 @@ export class AuthService {
         expiresIn: '60days',
       },
     );
-    this.userService.updateRefreshToken(user.id, refreshToken);
+    await this.userService.updateRefreshToken(user.id, refreshToken);
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
