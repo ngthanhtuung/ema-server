@@ -23,9 +23,7 @@ services:
       ]
   be: 
     container_name: HERA-BE
-    build: 
-      dockerfile: Dockerfile
-      context: .
+    image: ngthanhtuung/hrea-capstone:latest
     restart: unless-stopped
     env_file:
       - ./docker.env
