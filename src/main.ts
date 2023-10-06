@@ -45,7 +45,13 @@ async function bootstrap(): Promise<void> {
 
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(port, () => {
-    console.info(`Server is running at ${server_host}:${port}/${pathOpenApi}`);
+    if (environment === 'dev') {
+      console.info(
+        `Server is running at ${server_host}:${port}/${pathOpenApi}`,
+      );
+    } else {
+      console.info(`Server is running at ${server_host}/${pathOpenApi}`);
+    }
   });
 }
 bootstrap();
