@@ -56,7 +56,7 @@ export class AuthService {
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtConstants.accessTokenSecret,
-      expiresIn: '3d',
+      expiresIn: '1d',
     });
     // Create refreshToken
     const refreshToken = this.jwtService.sign(
