@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
-import { TypeOrmExModule } from 'src/type-orm/typeorm-ex.module';
-import MailRepository from './mail.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import Mail from './mail.entity';
 @Module({
-  imports: [TypeOrmExModule.forCustomRepository([MailRepository])],
+  imports: [TypeOrmModule.forFeature([Mail])],
   providers: [MailService],
   exports: [MailService],
 })
