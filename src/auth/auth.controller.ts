@@ -23,8 +23,7 @@ import { PayloadUser } from 'src/modules/user/dto/user.response';
 import ChangePasswordDto from './dto/changePassword.dto';
 import SendCodeRequest from './dto/sendCode.dto';
 import VerifyCodeRequest from './dto/verifyCode.dto';
-// import ForgetPasswordRequest from './dto/fortgetPassword.dto';
-// import VerifyCodeRequest from './dto/verifyCode.dto';
+import ForgetPasswordRequest from './dto/fortgetPassword.dto';
 
 @ApiBearerAuth()
 @Controller('auth')
@@ -125,16 +124,16 @@ export class AuthenticationController {
    * @param account
    * @returns
    */
-  // @Put('/forget-password')
-  // @Public()
-  // @ApiBody({ type: ForgetPasswordRequest })
-  // @ApiOkResponse({ description: 'Update password Successfully' })
-  // async forgetPassword(
-  //   @Body() account: ForgetPasswordRequest,
-  // ): Promise<string> {
-  //   return await this.authService.forgetPassword(
-  //     account?.email,
-  //     account?.password,
-  //   );
-  // }
+  @Put('/forget-password')
+  @Public()
+  @ApiBody({ type: ForgetPasswordRequest })
+  @ApiOkResponse({ description: 'Update password Successfully' })
+  async forgetPassword(
+    @Body() account: ForgetPasswordRequest,
+  ): Promise<string> {
+    return await this.authService.forgetPassword(
+      account?.email,
+      account?.password,
+    );
+  }
 }
