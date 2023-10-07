@@ -251,7 +251,7 @@ export class UserService extends BaseService<UserEntity> {
 
     await this.transaction(callback, queryRunner);
 
-    return 'create user success';
+    return 'Create user successfully';
   }
 
   /**
