@@ -6,7 +6,6 @@ import { NotificationEntity } from '../notification/notification.entity';
 import { DeviceEntity } from '../device/device.entity';
 import { DivisionEntity } from '../division/division.entity';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
-import { TaskEntity } from '../task/task.entity';
 import { CommentEntity } from '../comment/comment.entity';
 import { EUserStatus } from 'src/common/enum/enum';
 
@@ -63,9 +62,6 @@ export class UserEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   annualLeaves: AnnualLeaveEntity[];
-
-  @OneToMany(() => TaskEntity, (tasks) => tasks.user, { onDelete: 'CASCADE' })
-  tasks: TaskEntity[];
 
   @OneToMany(() => CommentEntity, (comments) => comments.user, {
     onDelete: 'CASCADE',

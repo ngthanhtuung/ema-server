@@ -17,6 +17,8 @@ import { AllExceptionsFilter } from 'src/exception/catch-all-http.exception';
 import { LoggerMiddleware } from 'src/middleware/logger.middleware';
 import { TransformInterceptor } from 'src/middleware/transform.interceptor';
 import { DivisionModule } from './modules/division/division.module';
+import { TaskModule } from './modules/task/task.module';
+import { AssignTaskModule } from './modules/assign-task/assign-task.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { DivisionModule } from './modules/division/division.module';
     ProfileModule,
     UserModule,
     DivisionModule,
+    TaskModule,
+    AssignTaskModule,
   ],
   controllers: [AppController],
   providers: [

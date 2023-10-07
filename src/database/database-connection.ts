@@ -28,9 +28,7 @@ export const databaseConnection = [
       username: configService.get('MYSQL_USER') || 'root',
       password: configService.get('MYSQL_PASSWORD'),
       database: configService.get('MYSQL_DB'),
-      entities: [
-        __dirname.replace('/database', '') + '/modules/**/*.entity.{ts,js}',
-      ],
+      entities: [process.cwd() + '/dist/modules/**/*.entity.{ts,js}'],
       synchronize: true,
       logging: true,
       autoLoadEntities: true,

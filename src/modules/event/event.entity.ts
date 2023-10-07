@@ -4,7 +4,7 @@ import { BaseEntity } from '../base/base.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { BudgetEntity } from '../budget/budget.entity';
 
-@Entity({ name: 'event' })
+@Entity({ name: 'events' })
 export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   eventName: string;
@@ -45,6 +45,6 @@ export class EventEntity extends BaseEntity {
   })
   budgets: BudgetEntity[];
 
-  @OneToMany(() => TaskEntity, (task) => task.event, { onDelete: 'CASCADE' })
+  @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
   tasks: TaskEntity[];
 }
