@@ -9,5 +9,6 @@ import { AssignEventModule } from '../assign-event/assign-event.module';
   imports: [AssignEventModule, TypeOrmModule.forFeature([EventEntity])],
   controllers: [EventController],
   providers: [EventService],
+  exports: [EventService],
 })
 export class EventModule {}

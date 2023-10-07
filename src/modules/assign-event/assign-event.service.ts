@@ -16,7 +16,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
   }
 
   generalBuilderAssignEvent(): SelectQueryBuilder<AssignEventEntity> {
-    return this.assignEventRepository.createQueryBuilder('assign_event');
+    return this.assignEventRepository.createQueryBuilder('assign_events');
   }
 
   /**

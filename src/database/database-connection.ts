@@ -12,9 +12,13 @@ export const databaseConfig = {
   synchronize: true,
   autoLoadEntities: true,
   logging: true,
-  entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  factories: [__dirname + '/factory/**/*{.ts,.js}'],
-  seeds: [__dirname + '/seeds/**/*{.ts,.js}'],
+  // entities: [__dirname + '/../**/*.entity.{js,ts}'],
+  // entities: [process.cwd() + '/dist/modules/**/*.entity.{ts,js}'],
+  // factories: [process.cwd() + '/factory/**/*{.ts,.js}'],
+  // seeds: [process.cwd() + '/seeds/**/*{.ts,.js}'],
+  entities: [process.cwd() + '/dist/**/*.entity{.ts,.js}'],
+  factories: [process.cwd() + '/dist/**/*.factory{.ts,.js}'],
+  seeds: [process.cwd() + '/dist/**/*.seed{.ts,.js}'],
 };
 
 export const databaseConnection = [

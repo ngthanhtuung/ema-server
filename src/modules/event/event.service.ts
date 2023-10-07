@@ -4,7 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, SelectQueryBuilder } from 'typeorm';
+import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -36,7 +36,7 @@ export class EventService extends BaseService<EventEntity> {
   }
 
   generalBuilderEvent(): SelectQueryBuilder<EventEntity> {
-    return this.eventRepository.createQueryBuilder('event');
+    return this.eventRepository.createQueryBuilder('events');
   }
 
   /**
@@ -51,17 +51,17 @@ export class EventService extends BaseService<EventEntity> {
       const { currentPage, sizePage } = eventPagination;
       const query = this.generalBuilderEvent();
       query.select([
-        'event.id as id',
-        'event.eventName as eventName',
-        'event.description as description',
-        'event.coverUrl as coverUrl',
-        'event.startDate as startDate',
-        'event.endDate as endDate',
-        'event.location as location',
-        'event.estBudget as estBudget',
-        'event.createdAt as createdAt',
-        'event.updatedAt as updatedAt',
-        'event.status as status',
+        'events.id as id',
+        'events.eventName as eventName',
+        'events.description as description',
+        'events.coverUrl as coverUrl',
+        'events.startDate as startDate',
+        'events.endDate as endDate',
+        'events.location as location',
+        'events.estBudget as estBudget',
+        'events.createdAt as createdAt',
+        'events.updatedAt as updatedAt',
+        'events.status as status',
       ]);
       const [result, total] = await Promise.all([
         query
@@ -167,10 +167,9 @@ export class EventService extends BaseService<EventEntity> {
    */
   async updateEvent(event: EventUpdateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    try {
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const checkExist = await this.getEventById(event.eventId);
       if (checkExist) {
-        await queryRunner.startTransaction();
         await queryRunner.manager.update(
           EventEntity,
           { id: event.eventId },
@@ -189,16 +188,13 @@ export class EventService extends BaseService<EventEntity> {
           eventId: event.eventId,
           divisionId: event.divisionId,
         };
-        await this.editDivisionIntoEvent(dataEditDivision);
-        await queryRunner.commitTransaction();
-        return `Update event successfully`;
+        await this.editDivisionIntoEvent(dataEditDivision, queryRunner);
       } else {
         throw new NotFoundException("Event don't exist!!!");
       }
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(err);
-    }
+    };
+    await this.transaction(callback, queryRunner);
+    return 'Update event successfully!!!';
   }
 
   /**
@@ -206,58 +202,58 @@ export class EventService extends BaseService<EventEntity> {
    * @param data
    * @returns
    */
-  async editDivisionIntoEvent(data: EventAssignRequest): Promise<string> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    try {
-      await queryRunner.startTransaction();
-      // check division exist in event
-      const listFindDivision = data.divisionId.map((division) =>
-        queryRunner.manager.findOne(AssignEventEntity, {
-          where: {
-            event: { id: data.eventId },
-            division: { id: division },
-          },
-        }),
-      );
-      const checkExistDivision = (await Promise.all(listFindDivision)).filter(
-        (item) => item !== null,
-      );
-      let arrayPromise = [];
-      if (data.mode === 1 && checkExistDivision.length > 0) {
-        throw new BadRequestException('Division already exists in event');
-      } else if (
-        data.mode === 2 &&
-        checkExistDivision.length === 0 &&
-        data.divisionId.length !== 0
-      ) {
-        throw new BadRequestException("Division don't exists in event");
-      }
-      // Mode 1: assign division
-      if (data.mode === 1) {
-        arrayPromise = data.divisionId.map((id) =>
-          queryRunner.manager.insert(AssignEventEntity, {
-            event: { id: data.eventId },
-            division: { id: id },
-          }),
-        );
-      } else {
-        // Mode 2: remove division
-        arrayPromise = data.divisionId.map((id) =>
-          queryRunner.manager.delete(AssignEventEntity, {
-            event: { id: data.eventId },
-            division: { id: id },
-          }),
-        );
-      }
-      await Promise.all(arrayPromise);
-      await queryRunner.commitTransaction();
-      return data.mode === 1
-        ? `Add division into event successfully!!!`
-        : 'Remove division into event successfully!!!';
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(err);
+  async editDivisionIntoEvent(
+    data: EventAssignRequest,
+    queryRunner?: QueryRunner,
+  ): Promise<string> {
+    if (!queryRunner) {
+      queryRunner = this.dataSource.createQueryRunner();
     }
+    // check division exist in event
+    const listFindDivision = data.divisionId.map((division) =>
+      queryRunner.manager.findOne(AssignEventEntity, {
+        where: {
+          event: { id: data.eventId },
+          division: { id: division },
+        },
+      }),
+    );
+    const checkExistDivision = (await Promise.all(listFindDivision)).filter(
+      (item) => item !== null,
+    );
+    if (data.mode === 1 && checkExistDivision.length > 0) {
+      throw new BadRequestException('Division already exists in event');
+    } else if (data.mode === 2 && checkExistDivision.length === 0) {
+      throw new BadRequestException("Division don't exists in event");
+    }
+    // Mode 1: assign division
+    const data1 = data.divisionId.map((item) => {
+      return {
+        event: { id: data.eventId },
+        division: { id: item },
+      };
+    });
+    if (data.mode === 1) {
+      console.log('Test mode 1');
+      await queryRunner.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AssignEventEntity)
+        .values(data1)
+        .execute();
+    } else {
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(AssignEventEntity)
+        .where('id In(:id)', {
+          id: checkExistDivision.map((item) => item.id).join(','),
+        })
+        .execute();
+    }
+    return data.mode === 1
+      ? `Add division into event successfully!!!`
+      : 'Remove division into event successfully!!!';
   }
 
   /**

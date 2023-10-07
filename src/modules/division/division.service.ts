@@ -31,7 +31,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
   }
 
   generalBuilderDivision(): SelectQueryBuilder<DivisionEntity> {
-    return this.divisionRepository.createQueryBuilder('division');
+    return this.divisionRepository.createQueryBuilder('divisions');
   }
 
   /**

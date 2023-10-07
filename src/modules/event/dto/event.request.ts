@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class EventCreateRequest {
   @IsString()
@@ -62,6 +68,7 @@ export class EventAssignRequest {
   eventId: string;
 
   @IsArray()
+  @ArrayMinSize(1)
   @IsNotEmpty()
   @ApiProperty({ default: ['1a73eb86-99ee-46c4-92c3-a9ae091c0caf'] })
   divisionId: Array<string>;

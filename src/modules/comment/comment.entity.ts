@@ -4,7 +4,7 @@ import { TaskEntity } from '../task/task.entity';
 import { CommentFileEntity } from '../commentfile/commentfile.entity';
 import { UserEntity } from '../user/user.entity';
 
-@Entity({ name: 'comment' })
+@Entity({ name: 'comments' })
 export class CommentEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   text: string;

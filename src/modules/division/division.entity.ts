@@ -3,7 +3,7 @@ import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 
-@Entity({ name: 'division' })
+@Entity({ name: 'divisions' })
 export class DivisionEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false, unique: true })
   divisionName: string;

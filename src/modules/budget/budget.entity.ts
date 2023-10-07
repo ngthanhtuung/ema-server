@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { EventEntity } from '../event/event.entity';
 
-@Entity({ name: 'budget' })
+@Entity({ name: 'budgets' })
 export class BudgetEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   budgetName: string;

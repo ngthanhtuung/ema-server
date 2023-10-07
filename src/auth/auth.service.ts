@@ -19,7 +19,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private sharedService: SharedService,
-  ) {}
+  ) { }
 
   /**
    * login-service
