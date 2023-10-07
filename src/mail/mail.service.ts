@@ -2,13 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Mailgun, { MessagesSendResult } from 'mailgun.js';
 import * as FormData from 'form-data';
-import MailRepository from './mail.repository';
 import { IMailgunClient } from 'mailgun.js/Interfaces';
+import { InjectRepository } from '@nestjs/typeorm';
+import Mail from './mail.entity';
+import { Repository } from 'typeorm';
 @Injectable()
 export class MailService {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly mailRepository: MailRepository,
+    @InjectRepository(Mail)
+    private readonly mailRepository: Repository<Mail>,
+    private readonly configService: ConfigService, // private readonly mailRepository: MailRepository,
   ) {}
 
   /**
@@ -40,8 +43,9 @@ export class MailService {
   ): Promise<MessagesSendResult> {
     try {
       const mg = await this.getConnection();
-      const mailData = await this.mailRepository.getDetailMailTemplate(1);
-      console.info('mailData:', mailData);
+      const mailData = await this.mailRepository.findOne({
+        where: { id: 1 },
+      });
       const htmlMail = mailData?.mailText
         ?.replace('${email}', toUser)
         ?.replace('${password}', password);
@@ -75,9 +79,9 @@ export class MailService {
   ): Promise<MessagesSendResult> {
     try {
       const mg = await this.getConnection();
-      // Get ID : 2
-      const mailData = await this.mailRepository.getDetailMailTemplate(2);
-      console.info('mailData:', mailData);
+      const mailData = await this.mailRepository.findOne({
+        where: { id: 2 },
+      });
       const htmlMail = mailData?.mailText
         ?.replace('${email}', toUser)
         ?.replace('${code}', code);
