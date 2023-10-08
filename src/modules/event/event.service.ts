@@ -162,17 +162,21 @@ export class EventService extends BaseService<EventEntity> {
 
   /**
    * updateEvent
+   * @param eventId
    * @param event
    * @returns
    */
-  async updateEvent(event: EventUpdateRequest): Promise<string> {
+  async updateEvent(
+    eventId: string,
+    event: EventUpdateRequest,
+  ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      const checkExist = await this.getEventById(event.eventId);
+      const checkExist = await this.getEventById(eventId);
       if (checkExist) {
         await queryRunner.manager.update(
           EventEntity,
-          { id: event.eventId },
+          { id: eventId },
           {
             eventName: event.eventName,
             description: event.description,
@@ -185,7 +189,7 @@ export class EventService extends BaseService<EventEntity> {
         );
         const dataEditDivision: EventAssignRequest = {
           mode: event.mode,
-          eventId: event.eventId,
+          eventId: eventId,
           divisionId: event.divisionId,
         };
         await this.editDivisionIntoEvent(dataEditDivision, queryRunner);
@@ -227,7 +231,7 @@ export class EventService extends BaseService<EventEntity> {
       throw new BadRequestException("Division don't exists in event");
     }
     // Mode 1: assign division
-    const data1 = data.divisionId.map((item) => {
+    const dataInsert = data.divisionId.map((item) => {
       return {
         event: { id: data.eventId },
         division: { id: item },
@@ -239,7 +243,7 @@ export class EventService extends BaseService<EventEntity> {
         .createQueryBuilder()
         .insert()
         .into(AssignEventEntity)
-        .values(data1)
+        .values(dataInsert)
         .execute();
     } else {
       await queryRunner.manager

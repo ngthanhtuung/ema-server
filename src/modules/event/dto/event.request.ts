@@ -75,13 +75,6 @@ export class EventAssignRequest {
 }
 
 export class EventUpdateRequest extends EventCreateRequest {
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({
-    default: 'bf27aaa9-5fc7-4c23-b1ab-aaf57489cfaf',
-  })
-  eventId: string;
-
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty({

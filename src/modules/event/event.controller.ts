@@ -74,12 +74,13 @@ export class EventController {
    * createEvent
    * @param data
    */
-  @Put()
+  @Put('/:eventId')
   @Roles(ERole.MANAGER)
   async updateEvent(
+    @Param('eventId') eventId: string,
     @Body() data: EventUpdateRequest,
   ): Promise<string | undefined> {
-    return await this.eventService.updateEvent(data);
+    return await this.eventService.updateEvent(eventId, data);
   }
 
   /**

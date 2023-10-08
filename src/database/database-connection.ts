@@ -13,12 +13,9 @@ export const databaseConfig = {
   autoLoadEntities: true,
   logging: true,
   // entities: [__dirname + '/../**/*.entity.{js,ts}'],
-  // entities: [process.cwd() + '/dist/modules/**/*.entity.{ts,js}'],
-  // factories: [process.cwd() + '/factory/**/*{.ts,.js}'],
-  // seeds: [process.cwd() + '/seeds/**/*{.ts,.js}'],
-  entities: [process.cwd() + '/dist/**/*.entity{.ts,.js}'],
-  factories: [process.cwd() + '/dist/**/*.factory{.ts,.js}'],
-  seeds: [process.cwd() + '/dist/**/*.seed{.ts,.js}'],
+  entities: [process.cwd() + '/dist/modules/**/*.entity.{ts,js}'],
+  factories: [process.cwd() + '/factory/**/*{.ts,.js}'],
+  seeds: [process.cwd() + '/dist/database/seeds/data.seed.js'],
 };
 
 export const databaseConnection = [
