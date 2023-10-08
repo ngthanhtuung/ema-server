@@ -10,6 +10,7 @@ import { ERole } from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { DivisionResponse } from './dto/division.response';
+import { Public } from 'src/decorators/public.decorator';
 
 @Controller('division')
 @ApiBearerAuth()
@@ -26,7 +27,7 @@ export class DivisionController {
   }
 
   /**
-   *  Get all division
+   *  Get getDivisionById
    * @param data
    */
 
@@ -44,6 +45,7 @@ export class DivisionController {
    */
 
   @Post()
+  @Public()
   async createDivision(
     @Body() data: DivisionCreateRequest,
   ): Promise<string | undefined> {

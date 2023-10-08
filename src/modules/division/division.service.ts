@@ -34,6 +34,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
     return this.divisionRepository.createQueryBuilder('division');
   }
 
+  /**
+   * createDivision
+   * @param division
+   * @returns
+   */
   async createDivision(division: DivisionCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
@@ -57,6 +62,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
     }
   }
 
+  /**
+   * getDivisionById
+   * @param id
+   * @returns
+   */
   async getDivisionById(id: string): Promise<DivisionResponse> {
     try {
       const division = await this.findOne({
@@ -109,6 +119,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
     }
   }
 
+  /**
+   * getAllDivision
+   * @param divisionPagination
+   * @returns
+   */
   async getAllDivision(
     divisionPagination: DivisionPagination,
   ): Promise<IPaginateResponse<DivisionResponse>> {
@@ -142,6 +157,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
     }
   }
 
+  /**
+   * updateStatus
+   * @param divisionId
+   * @returns
+   */
   async updateStatus(divisionId: string): Promise<string> {
     try {
       const division = await this.getDivisionById(divisionId);

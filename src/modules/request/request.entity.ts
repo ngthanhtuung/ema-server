@@ -4,7 +4,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { RequestTypeEntity } from '../request-type/request-type.entity';
 
-@Entity({ name: 'request' })
+@Entity({ name: 'requests' })
 export class RequestEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   title: string;

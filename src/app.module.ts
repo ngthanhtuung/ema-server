@@ -17,6 +17,8 @@ import { AllExceptionsFilter } from 'src/exception/catch-all-http.exception';
 import { LoggerMiddleware } from 'src/middleware/logger.middleware';
 import { TransformInterceptor } from 'src/middleware/transform.interceptor';
 import { DivisionModule } from './modules/division/division.module';
+import { EventModule } from './modules/event/event.module';
+import { AssignEventModule } from './modules/assign-event/assign-event.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { DivisionModule } from './modules/division/division.module';
     ProfileModule,
     UserModule,
     DivisionModule,
+    EventModule,
+    AssignEventModule,
   ],
   controllers: [AppController],
   providers: [

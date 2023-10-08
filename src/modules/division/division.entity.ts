@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
+import { AssignEventEntity } from '../assign-event/assign-event.entity';
 
 @Entity({ name: 'division' })
 export class DivisionEntity extends BaseEntity {
@@ -15,4 +16,9 @@ export class DivisionEntity extends BaseEntity {
 
   @OneToMany(() => UserEntity, (user) => user.division, { onDelete: 'CASCADE' })
   users: UserEntity[];
+
+  @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
+    onDelete: 'CASCADE',
+  })
+  assignEvents: [];
 }

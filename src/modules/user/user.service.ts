@@ -78,6 +78,7 @@ export class UserService extends BaseService<UserEntity> {
         'user.id as id',
         'user.password as password',
         'user.status as status',
+        'user.divisionId as divisionId',
       ]);
 
     const data = await query.execute();
@@ -104,6 +105,7 @@ export class UserService extends BaseService<UserEntity> {
         'user.status as status',
         'profile.role as role',
         'profile.fullName as fullName',
+        'user.divisionId as divisionId',
       ]);
 
     const data = await query.execute();

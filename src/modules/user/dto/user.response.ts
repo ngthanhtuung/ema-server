@@ -14,6 +14,9 @@ export class UserResponse {
 
   @Expose()
   status: EUserStatus;
+
+  @Expose()
+  divisionId: string;
 }
 
 export class PayloadUser extends OmitType(UserResponse, ['password']) {
