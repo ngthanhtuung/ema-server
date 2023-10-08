@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 
-@Entity({ name: 'notification' })
+@Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   title: string;

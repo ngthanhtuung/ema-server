@@ -1,12 +1,12 @@
 import { EPriority, ETaskStatus } from 'src/common/enum/enum';
 import { BaseEntity } from '../base/base.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
-import { EventEntity } from '../event/event.entity';
-import { TaskFileEntity } from '../taskfile/taskfile.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { CommentEntity } from '../comment/comment.entity';
-import { UserEntity } from '../user/user.entity';
+import { AssignTaskEntity } from '../assign-task/assign-task.entity';
+import { EventEntity } from '../event/event.entity';
+import { TaskFileEntity } from '../taskfile/taskFile.entity';
 
-@Entity({ name: 'task' })
+@Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   title: string;
@@ -27,7 +27,7 @@ export class TaskEntity extends BaseEntity {
   priority: EPriority;
 
   @Column({ type: 'varchar', nullable: true })
-  hasParent: string;
+  parentTask: string;
 
   @Column({
     type: 'enum',
@@ -42,10 +42,23 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'int' })
   effort: number;
 
+  @Column({ type: 'varchar' })
+  createdBy: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  modifiedBy: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  approvedBy: string;
+
+  @Column({ type: String })
+  eventID: string;
+
   @ManyToOne(() => EventEntity, (event) => event.tasks, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'eventID', referencedColumnName: 'id' })
   event: EventEntity;
 
-  @OneToMany(() => TaskFileEntity, (taskFile) => taskFile.task, {
+  @OneToMany(() => TaskFileEntity, (taskFiles) => taskFiles.task, {
     onDelete: 'CASCADE',
   })
   taskFiles: TaskFileEntity[];
@@ -55,6 +68,8 @@ export class TaskEntity extends BaseEntity {
   })
   comments: CommentEntity[];
 
-  @ManyToOne(() => UserEntity, (user) => user.tasks, { onDelete: 'CASCADE' })
-  user: UserEntity;
+  @OneToMany(() => AssignTaskEntity, (assignTasks) => assignTasks.task, {
+    onDelete: 'CASCADE',
+  })
+  assignTasks: AssignTaskEntity[];
 }

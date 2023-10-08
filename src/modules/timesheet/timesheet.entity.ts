@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 
-@Entity({ name: 'timesheet' })
+@Entity({ name: 'timesheets' })
 export class TimesheetEntity extends BaseEntity {
   @Column({ type: 'date' })
   date: Date;

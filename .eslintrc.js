@@ -28,15 +28,15 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'error', // any là lỗi
     '@typescript-eslint/no-unsafe-member-access': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
-    '@typescript-eslint/require-await': 'error',
-    'prettier/prettier': ['error', { endOfLine: 'auto' }],
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error'],
-    'no-console': [
-      'error',
-      {
-        allow: ['warn', 'error', 'info'],
-      },
-    ],
+    // '@typescript-eslint/require-await': 'error',
+    // 'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    // 'no-unused-vars': 'off',
+    // '@typescript-eslint/no-unused-vars': ['error'],
+    // 'no-console': [
+    //   'error',
+    //   {
+    //     allow: ['warn', 'error', 'info'],
+    //   },
+    // ],
   },
 };

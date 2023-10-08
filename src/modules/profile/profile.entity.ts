@@ -2,7 +2,7 @@ import { EGender, ERole } from 'src/common/enum/enum';
 import { UserEntity } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
-@Entity({ name: 'profile' })
+@Entity({ name: 'profiles' })
 export class ProfileEntity {
   @PrimaryColumn()
   public profileId: string;

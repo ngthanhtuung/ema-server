@@ -3,8 +3,9 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { BudgetEntity } from '../budget/budget.entity';
+import { AssignEventEntity } from '../assign-event/assign-event.entity';
 
-@Entity({ name: 'event' })
+@Entity({ name: 'events' })
 export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   eventName: string;
@@ -13,25 +14,19 @@ export class EventEntity extends BaseEntity {
   startDate: Date;
 
   @Column({ type: 'date' })
-  processDate: Date;
-
-  @Column({ type: 'date' })
   endDate: Date;
 
   @Column({ type: 'varchar' })
   location: string;
 
-  @Column({ type: 'float' })
-  income: number;
-
-  @Column({ type: 'float' })
-  outcome: number;
+  @Column({ type: 'varchar' })
+  description: string;
 
   @Column({ type: 'varchar' })
   coverUrl: string;
 
   @Column({ type: 'float' })
-  estBugdet: number;
+  estBudget: number;
 
   @Column({
     enum: EEventStatus,
@@ -45,6 +40,11 @@ export class EventEntity extends BaseEntity {
   })
   budgets: BudgetEntity[];
 
-  @OneToMany(() => TaskEntity, (task) => task.event, { onDelete: 'CASCADE' })
+  @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
   tasks: TaskEntity[];
+
+  @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
+    onDelete: 'CASCADE',
+  })
+  assignEvents: [];
 }
