@@ -9,7 +9,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
 import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { TaskCreateReq } from './dto/task.request';
-import { TaskfileService } from '../taskfile/taskFile.service';
+import { TaskfileService } from 'src/modules/taskfile/taskFile.service';
 import { Inject } from '@nestjs/common/decorators';
 import { forwardRef } from '@nestjs/common/utils';
 import { EventEntity } from '../event/event.entity';

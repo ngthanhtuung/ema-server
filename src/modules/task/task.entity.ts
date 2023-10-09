@@ -4,7 +4,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { CommentEntity } from '../comment/comment.entity';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { EventEntity } from '../event/event.entity';
-import { TaskFileEntity } from '../taskfile/taskFile.entity';
+import { TaskFileEntity } from 'src/modules/taskfile/taskFile.entity';
 
 @Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
