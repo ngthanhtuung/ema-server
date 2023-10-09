@@ -71,7 +71,18 @@ export class EventController {
   }
 
   /**
-   * createEvent
+   * editDivisionIntoEvent
+   * @param data
+   */
+  @Put('/edit-division')
+  @Roles(ERole.MANAGER)
+  async editDivisionIntoEvent(
+    @Body() data: EventAssignRequest,
+  ): Promise<string | undefined> {
+    return await this.eventService.editDivisionIntoEvent(data);
+  }
+  /**
+   * updateEvent
    * @param data
    */
   @Put('/:eventId')
@@ -81,18 +92,6 @@ export class EventController {
     @Body() data: EventUpdateRequest,
   ): Promise<string | undefined> {
     return await this.eventService.updateEvent(eventId, data);
-  }
-
-  /**
-   *  assignDivisionIntoEvent
-   * @param data
-   */
-  @Put('/edit-division')
-  @Roles(ERole.MANAGER)
-  async editDivisionIntoEvent(
-    @Body() data: EventAssignRequest,
-  ): Promise<string | undefined> {
-    return await this.eventService.editDivisionIntoEvent(data);
   }
 
   @Put('/:eventId/:status')

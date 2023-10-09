@@ -70,9 +70,13 @@ export class EventService extends BaseService<EventEntity> {
           .execute(),
         query.getCount(),
       ]);
+      const listStaffOfDivision =
+        await this.assignEventService.getListStaffDivisionAllEvent();
+      console.log('listStaffOfDivision:', listStaffOfDivision);
       const mapData = result?.map((item) => {
         item.startDate = moment(item.startDate).format('YYYY-MM-DD');
         item.endDate = moment(item.endDate).format('YYYY-MM-DD');
+        item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
         return item;
       });
       if (total === 0) {
@@ -99,11 +103,13 @@ export class EventService extends BaseService<EventEntity> {
       const event = await this.findOne({
         where: { id: id },
       });
-
       if (!event) {
         throw new NotFoundException('Event not found');
       }
-      return plainToClass(EventResponse, event);
+      const listStaffOfDivision =
+        await this.assignEventService.getListStaffDivisionByEventID(id);
+      const finalRes = { ...event, listDivision: listStaffOfDivision || [] };
+      return plainToClass(EventResponse, finalRes);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -238,7 +244,6 @@ export class EventService extends BaseService<EventEntity> {
       };
     });
     if (data.mode === 1) {
-      console.log('Test mode 1');
       await queryRunner.manager
         .createQueryBuilder()
         .insert()
