@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TaskfileService } from './taskFile.service';
-import { TaskfileController } from './taskFile.controller';
+import { TaskfileService } from './taskfile.service';
+import { TaskfileController } from './taskfile.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TaskFileEntity } from './taskFile.entity';
+import { TaskFileEntity } from './taskfile.entity';
 import { TaskModule } from '../task/task.module';
 import { forwardRef } from '@nestjs/common/utils';
 
