@@ -96,9 +96,9 @@ export class DivisionService extends BaseService<DivisionEntity> {
         query.leftJoin(
           'account',
           'account',
-          'account.divisionId = division.id',
+          'account.divisionId = divisions.id',
         );
-        query.where('division.id = :id', { id: id });
+        query.where('divisions.id = :id', { id: id });
         query.andWhere('account.status = :status', {
           status: EUserStatus.ACTIVE,
         });
@@ -131,10 +131,10 @@ export class DivisionService extends BaseService<DivisionEntity> {
       const { currentPage, sizePage } = divisionPagination;
       const query = this.generalBuilderDivision();
       query.select([
-        'division.id as id',
-        'division.divisionName as divisionName',
-        'division.description as description',
-        'division.status as status',
+        'divisions.id as id',
+        'divisions.divisionName as divisionName',
+        'divisions.description as description',
+        'divisions.status as status',
       ]);
       const [result, total] = await Promise.all([
         query
