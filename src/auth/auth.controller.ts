@@ -24,6 +24,7 @@ import ChangePasswordDto from './dto/changePassword.dto';
 import SendCodeRequest from './dto/sendCode.dto';
 import VerifyCodeRequest from './dto/verifyCode.dto';
 import ForgetPasswordRequest from './dto/fortgetPassword.dto';
+// import VerifyCodeRequest from './dto/verifyCode.dto';
 
 @ApiBearerAuth()
 @Controller('auth')
