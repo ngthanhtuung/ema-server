@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
-import { TaskFileEntity } from './taskFile.entity';
+import { TaskFileEntity } from './taskfile.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   DataSource,
