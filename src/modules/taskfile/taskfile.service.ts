@@ -5,9 +5,13 @@ import {
 } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { TaskFileEntity } from './taskFile.entity';
-import TaskFileRepository from './taskFile.repository';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import {
+  DataSource,
+  QueryRunner,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { TaskFileCreateReq } from './dto/taskFile.request';
 import { TaskService } from '../task/task.service';
 import { Inject } from '@nestjs/common/decorators';
@@ -19,7 +23,7 @@ import { TASK_ERROR_MESSAGE } from 'src/common/constants/constants';
 export class TaskfileService extends BaseService<TaskFileEntity> {
   constructor(
     @InjectRepository(TaskFileEntity)
-    private readonly taskFileRepository: TaskFileRepository,
+    private readonly taskFileRepository: Repository<TaskFileEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
     @Inject(forwardRef(() => TaskService))
