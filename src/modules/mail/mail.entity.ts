@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { AutoMap } from '@automapper/classes';
 
-@Entity()
+@Entity({ name: 'mails' })
 export default class Mail {
   @PrimaryGeneratedColumn('increment')
   public id: number;

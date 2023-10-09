@@ -57,7 +57,7 @@ export class UserService extends BaseService<UserEntity> {
    * @returns
    */
   generalBuilderUser(): SelectQueryBuilder<UserEntity> {
-    return this.userRepository.createQueryBuilder('user');
+    return this.userRepository.createQueryBuilder('users');
   }
 
   /**
@@ -69,15 +69,16 @@ export class UserService extends BaseService<UserEntity> {
     const query = this.generalBuilderUser();
 
     query
-      .leftJoin('profile', 'profile', 'user.id = profile.profileId')
-      .where('user.email = :email', { email });
+      .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+      .where('users.email = :email', { email });
 
     query
-      .select('profile.role as role')
+      .select('profiles.role as role')
       .addSelect([
-        'user.id as id',
-        'user.password as password',
-        'user.status as status',
+        'users.id as id',
+        'users.password as password',
+        'users.status as status',
+        'users.divisionId as divisionId',
       ]);
 
     const data = await query.execute();
@@ -93,17 +94,18 @@ export class UserService extends BaseService<UserEntity> {
   async findById(id: string): Promise<PayloadUser> {
     const query = this.generalBuilderUser();
     query
-      .leftJoin('profile', 'profile', 'user.id = profile.profileId')
-      .where('user.id = :id', { id });
+      .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+      .where('users.id = :id', { id });
 
     query
-      .select('profile.role as role')
+      .select('profiles.role as role')
       .addSelect([
-        'user.id as id',
-        'user.email as email',
-        'user.status as status',
-        'profile.role as role',
-        'profile.fullName as fullName',
+        'users.id as id',
+        'users.email as email',
+        'users.status as status',
+        'profiles.role as role',
+        'profiles.fullName as fullName',
+        'users.divisionId as divisionId',
       ]);
 
     const data = await query.execute();
@@ -121,22 +123,22 @@ export class UserService extends BaseService<UserEntity> {
     try {
       const query = this.generalBuilderUser();
       query
-        .leftJoin('profile', 'profile', 'user.id = profile.profileId')
-        .leftJoin('division', 'division', 'division.id = user.divisionId')
-        .where('user.id = :id', { id });
+        .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+        .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
+        .where('users.id = :id', { id });
       query
-        .select('profile.role as role')
+        .select('profiles.role as role')
         .addSelect([
-          'user.id as id',
-          'profile.fullName as fullName',
-          'user.email as email',
-          'profile.phoneNumber as phoneNumber',
-          'profile.dob as dob',
-          'profile.nationalId as nationalId',
-          'profile.gender as gender',
-          'profile.address as address',
-          'profile.avatar as avatar',
-          'division.divisionName as divisionName',
+          'users.id as id',
+          'profiles.fullName as fullName',
+          'users.email as email',
+          'profiles.phoneNumber as phoneNumber',
+          'profiles.dob as dob',
+          'profiles.nationalId as nationalId',
+          'profiles.gender as gender',
+          'profiles.address as address',
+          'profiles.avatar as avatar',
+          'divisions.divisionName as divisionName',
         ]);
       const data = await query.execute();
       if (!data) {
@@ -165,26 +167,30 @@ export class UserService extends BaseService<UserEntity> {
       const query = this.generalBuilderUser();
 
       query
-        .leftJoin('profile', 'profile', 'user.id = profile.profileId')
-        .leftJoin('division', 'division', 'division.id = user.divisionId')
-        .where('division.id = :divisionId', { divisionId });
+        .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+        .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId');
+      if (divisionId) {
+        query.where('divisions.id = :divisionId', { divisionId });
+      }
       if (role === ERole.STAFF) {
-        query.andWhere('user.status = :status', { status: EUserStatus.ACTIVE });
+        query.andWhere('users.status = :status', {
+          status: EUserStatus.ACTIVE,
+        });
       }
       query
-        .select('profile.role as role')
+        .select('profiles.role as role')
         .addSelect([
-          'user.id as id',
-          'profile.fullName as fullName',
-          'user.email as email',
-          'profile.phoneNumber as phoneNumber',
-          'profile.dob as dob',
-          'profile.nationalId as nationalId',
-          'profile.gender as gender',
-          'profile.address as address',
-          'profile.avatar as avatar',
-          'division.divisionName as divisionName',
-          'user.status as status',
+          'users.id as id',
+          'profiles.fullName as fullName',
+          'users.email as email',
+          'profiles.phoneNumber as phoneNumber',
+          'profiles.dob as dob',
+          'profiles.nationalId as nationalId',
+          'profiles.gender as gender',
+          'profiles.address as address',
+          'profiles.avatar as avatar',
+          'divisions.divisionName as divisionName',
+          'users.status as status',
         ]);
       const [result, total] = await Promise.all([
         query
@@ -365,8 +371,8 @@ export class UserService extends BaseService<UserEntity> {
   async getAuthCodeAndIssueDate(email: string): Promise<VerifyCode> {
     const query = this.generalBuilderUser();
     query
-      .select(['user.authCode as authCode', 'user.issueDate as issueDate'])
-      .where('user.email = :email', { email });
+      .select(['users.authCode as authCode', 'users.issueDate as issueDate'])
+      .where('users.email = :email', { email });
     const data = await query.execute();
     return plainToClass(VerifyCode, data[0]);
   }

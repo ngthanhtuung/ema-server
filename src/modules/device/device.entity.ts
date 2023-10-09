@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 
-@Entity({ name: 'device' })
+@Entity({ name: 'devices' })
 export class DeviceEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   deviceToken: string;

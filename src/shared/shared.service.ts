@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { MailService } from 'src/mail/mail.service';
+import { MailService } from 'src/modules/mail/mail.service';
 
 @Injectable()
 export class SharedService {
