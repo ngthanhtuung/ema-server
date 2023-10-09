@@ -1,10 +1,10 @@
 import {
   UserPagination,
   UserProfileUpdateRequest,
-  // UserProfileUpdateRequestV2,
+  UserProfileUpdateRequestV2,
 } from './dto/user.request';
 import { Controller, Get, Param, Query, Put, Body } from '@nestjs/common';
-import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { UserService } from './user.service';
 import { Roles } from 'src/decorators/role.decorator';
@@ -30,10 +30,6 @@ export class UserController {
   }
 
   @Get('')
-  @ApiQuery({
-    name: 'divisionId',
-    required: false,
-  })
   async getUserByDivision(
     @Query('divisionId') divisionId: string,
     @Query() userPagination: UserPagination,
@@ -74,17 +70,17 @@ export class UserController {
     );
   }
 
-  // @Put('/:userId')
-  // @Roles(ERole.MANAGER)
-  // async UpdateProfileV2(
-  //   @GetUser() user: string,
-  //   @Body() updateProfile: UserProfileUpdateRequestV2,
-  //   @Param('userId') userId: string,
-  // ): Promise<string> {
-  //   return await this.userService.updateProfileV2(
-  //     JSON.parse(user).id,
-  //     updateProfile,
-  //     userId,
-  //   );
-  // }
+  @Put('/:userId')
+  @Roles(ERole.MANAGER)
+  async UpdateProfileV2(
+    @GetUser() user: string,
+    @Body() updateProfile: UserProfileUpdateRequestV2,
+    @Param('userId') userId: string,
+  ): Promise<string> {
+    return await this.userService.updateProfileV2(
+      JSON.parse(user).id,
+      updateProfile,
+      userId,
+    );
+  }
 }

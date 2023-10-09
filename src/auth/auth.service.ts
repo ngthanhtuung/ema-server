@@ -201,7 +201,7 @@ export class AuthService {
         currentDate,
         loginUser.id,
       );
-      return 'Update password successfully';
+      return 'Update password successfully!!';
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

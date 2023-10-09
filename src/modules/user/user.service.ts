@@ -163,12 +163,11 @@ export class UserService extends BaseService<UserEntity> {
     try {
       const { currentPage, sizePage } = userPagination;
       const query = this.generalBuilderUser();
+
       query
         .leftJoin('profile', 'profile', 'user.id = profile.profileId')
-        .leftJoin('division', 'division', 'division.id = user.divisionId');
-      if (divisionId) {
-        query.where('division.id = :divisionId', { divisionId });
-      }
+        .leftJoin('division', 'division', 'division.id = user.divisionId')
+        .where('division.id = :divisionId', { divisionId });
       if (role === ERole.STAFF) {
         query.andWhere('user.status = :status', { status: EUserStatus.ACTIVE });
       }
@@ -194,7 +193,6 @@ export class UserService extends BaseService<UserEntity> {
           .execute(),
         query.getCount(),
       ]);
-      console.info(query.getSql());
       if (total === 0) {
         throw new NotFoundException('User not found');
       }
@@ -253,7 +251,7 @@ export class UserService extends BaseService<UserEntity> {
 
     await this.transaction(callback, queryRunner);
 
-    return 'Create user successfully';
+    return 'create user success';
   }
 
   /**
