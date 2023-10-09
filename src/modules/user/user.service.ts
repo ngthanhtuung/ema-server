@@ -192,7 +192,7 @@ export class UserService extends BaseService<UserEntity> {
           'profiles.gender as gender',
           'profiles.address as address',
           'profiles.avatar as avatar',
-          'divisions.divisionId as divisionId',
+          'divisions.id as divisionId',
           'divisions.divisionName as divisionName',
           'users.status as status',
         ]);
