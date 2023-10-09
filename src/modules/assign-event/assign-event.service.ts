@@ -27,21 +27,21 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
   async getEventByDivisionID(id: string): Promise<Array<EventResponse>> {
     try {
       const query = this.generalBuilderAssignEvent();
-      query.leftJoin('event', 'event', 'assign_event.eventId = event.id');
+      query.leftJoin('events', 'events', 'assign_events.eventId = events.id');
       query.select([
-        'event.id as id',
-        'event.eventName as eventName',
-        'event.description as description',
-        'event.coverUrl as coverUrl',
-        'event.startDate as startDate',
-        'event.endDate as endDate',
-        'event.location as location',
-        'event.estBudget as estBudget',
-        'event.createdAt as createdAt',
-        'event.updatedAt as updatedAt',
-        'event.status as status',
+        'events.id as id',
+        'events.eventName as eventName',
+        'events.description as description',
+        'events.coverUrl as coverUrl',
+        'events.startDate as startDate',
+        'events.endDate as endDate',
+        'events.location as location',
+        'events.estBudget as estBudget',
+        'events.createdAt as createdAt',
+        'events.updatedAt as updatedAt',
+        'events.status as status',
       ]);
-      query.where('assign_event.divisionId = :divisionId', {
+      query.where('assign_events.divisionId = :divisionId', {
         divisionId: id,
       });
       const data = await query.execute();
