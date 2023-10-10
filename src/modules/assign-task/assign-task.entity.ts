@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { TaskEntity } from '../task/task.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'assign-tasks' })
 export class AssignTaskEntity extends BaseEntity {
@@ -21,4 +22,8 @@ export class AssignTaskEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'taskID', referencedColumnName: 'id' })
   task: TaskEntity;
+
+  @ManyToOne(() => UserEntity, (user) => user.assignee, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'assignee', referencedColumnName: 'id' })
+  user: UserEntity;
 }

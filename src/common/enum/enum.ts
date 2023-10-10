@@ -40,3 +40,8 @@ export enum EReplyRequest {
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
 }
+
+export enum SortEnum {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}

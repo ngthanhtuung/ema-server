@@ -8,7 +8,7 @@ import { TaskEntity } from './task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
 import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
-import { TaskCreateReq } from './dto/task.request';
+import { FilterTask, TaskCreateReq } from './dto/task.request';
 import { TaskfileService } from '../taskfile/taskfile.service';
 import { Inject } from '@nestjs/common/decorators';
 import { forwardRef } from '@nestjs/common/utils';
@@ -52,7 +52,12 @@ export class TaskService extends BaseService<TaskEntity> {
     try {
       results = await this.taskRepository.find({
         where: whereCondition,
-        relations: { taskFiles: true, event: true },
+        relations: {
+          taskFiles: true,
+          event: true,
+          subTask: true,
+          parent: true,
+        },
       });
       if (!results || results.length == 0) {
         throw new BadRequestException('No tasks found');
@@ -149,5 +154,31 @@ export class TaskService extends BaseService<TaskEntity> {
     }
 
     return true;
+  }
+
+  async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
+    const { assignee, priority, sort, status } = filter;
+    let result;
+    try {
+      result = await this.taskRepository.find({
+        where: {
+          priority,
+          status,
+          assignTasks: {
+            assignee,
+          },
+        },
+        relations: {
+          event: true,
+          taskFiles: true,
+        },
+        order: {
+          endDate: { direction: sort },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+    return result;
   }
 }
