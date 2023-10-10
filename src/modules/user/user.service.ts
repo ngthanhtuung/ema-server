@@ -431,6 +431,7 @@ export class UserService extends BaseService<UserEntity> {
         { id: userIdUpdate },
         {
           email: data.email,
+          status: data.status,
         },
       );
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
