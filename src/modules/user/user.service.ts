@@ -165,7 +165,6 @@ export class UserService extends BaseService<UserEntity> {
     try {
       const { currentPage, sizePage } = userPagination;
       const query = this.generalBuilderUser();
-
       query
         .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId');
@@ -174,6 +173,64 @@ export class UserService extends BaseService<UserEntity> {
       }
       query.andWhere('profiles.role != :role', {
         role: ERole.MANAGER,
+      });
+      if (role === ERole.STAFF) {
+        query.andWhere('users.status = :status', {
+          status: EUserStatus.ACTIVE,
+        });
+      }
+      query
+        .select('profiles.role as role')
+        .addSelect([
+          'users.id as id',
+          'profiles.fullName as fullName',
+          'users.email as email',
+          'profiles.phoneNumber as phoneNumber',
+          'profiles.dob as dob',
+          'profiles.nationalId as nationalId',
+          'profiles.gender as gender',
+          'profiles.address as address',
+          'profiles.avatar as avatar',
+          'divisions.id as divisionId',
+          'divisions.divisionName as divisionName',
+          'users.status as status',
+        ]);
+      const [result, total] = await Promise.all([
+        query
+          .offset(sizePage * (currentPage - 1))
+          .limit(sizePage)
+          .execute(),
+        query.getCount(),
+      ]);
+      if (total === 0) {
+        throw new NotFoundException('User not found');
+      }
+      const listUser = plainToInstance(UserProfile, result);
+      return paginateResponse<UserProfile>(
+        [listUser, total],
+        currentPage as number,
+        sizePage as number,
+      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async findByDivisionV2(
+    divisionId: string,
+    userPagination: UserPagination,
+    roleFilter: string,
+    role: string,
+  ): Promise<IPaginateResponse<UserProfile>> {
+    try {
+      const { currentPage, sizePage } = userPagination;
+      const query = this.generalBuilderUser();
+      query
+        .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+        .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId');
+      query.where('users.divisionId = :divisionId', { divisionId });
+      query.andWhere('profiles.role = :role', {
+        role: roleFilter,
       });
       if (role === ERole.STAFF) {
         query.andWhere('users.status = :status', {

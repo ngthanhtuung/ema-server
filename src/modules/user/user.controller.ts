@@ -47,6 +47,32 @@ export class UserController {
     );
   }
 
+  @Get('division/:divisionId')
+  @Roles(ERole.MANAGER, ERole.STAFF)
+  @ApiQuery({
+    name: 'role',
+    enum: ERole,
+    required: true,
+  })
+  @ApiParam({
+    name: 'divisionId',
+    required: true,
+  })
+  async getUserByDivisionAndRole(
+    @Param('divisionId') divisionId: string,
+    @Query('role') role: ERole,
+    @Query() userPagination: UserPagination,
+    @GetUser() user: string,
+  ): Promise<IPaginateResponse<UserProfile>> {
+    const roleLogin = JSON.parse(user).role;
+    return await this.userService.findByDivisionV2(
+      divisionId,
+      userPagination,
+      role,
+      roleLogin,
+    );
+  }
+
   @Put('/:userId/:status')
   @Roles(ERole.MANAGER)
   @ApiParam({ name: 'status', enum: EUserStatus })

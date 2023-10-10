@@ -11,7 +11,6 @@ import {
   TaskUpdateStatusReq,
 } from './dto/task.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
-import { UserEntity } from '../user/user.entity';
 import { TaskEntity } from './task.entity';
 
 @Controller('task')
