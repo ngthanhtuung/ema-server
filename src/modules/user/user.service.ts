@@ -172,6 +172,9 @@ export class UserService extends BaseService<UserEntity> {
       if (divisionId) {
         query.where('divisions.id = :divisionId', { divisionId });
       }
+      query.andWhere('profiles.role != :role', {
+        role: ERole.MANAGER,
+      });
       if (role === ERole.STAFF) {
         query.andWhere('users.status = :status', {
           status: EUserStatus.ACTIVE,
@@ -189,6 +192,7 @@ export class UserService extends BaseService<UserEntity> {
           'profiles.gender as gender',
           'profiles.address as address',
           'profiles.avatar as avatar',
+          'divisions.id as divisionId',
           'divisions.divisionName as divisionName',
           'users.status as status',
         ]);

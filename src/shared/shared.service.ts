@@ -61,7 +61,7 @@ export class SharedService {
     let uniqueNumber;
     const usedNumbers = new Set();
     do {
-      uniqueNumber = Math.floor(100000 + Math.random() * 900000);
+      uniqueNumber = Math.floor(1000 + Math.random() * 9000);
     } while (usedNumbers.has(uniqueNumber));
 
     usedNumbers.add(uniqueNumber);
