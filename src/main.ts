@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { ServiceAccount } from 'firebase-admin';
+import * as firebaseAdmin from 'firebase-admin';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -42,6 +44,22 @@ async function bootstrap(): Promise<void> {
   }
 
   // end seup swagger
+
+  //setup firebase
+  const firebaseConfig: ServiceAccount = {
+    projectId: configService.get('PROJECT_ID'),
+    privateKey: configService
+      .get<string>('FIREBASE_PRIVATE_KEY')
+      .replace(/\\n/g, '\n'),
+    clientEmail: configService.get<string>('FIREBASE_CLIENT_EMAIL'),
+  };
+
+  firebaseAdmin.initializeApp({
+    credential: firebaseAdmin.credential.cert(firebaseConfig),
+    storageBucket: configService.get<string>('FIREBASE_STORAGE_BUCKET'),
+  });
+
+  //end set up firebase
 
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(port, () => {
