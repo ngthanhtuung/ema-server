@@ -29,43 +29,43 @@ export class UserController {
     return await this.userService.findByIdV2(userId);
   }
 
-  @Get('')
-  @ApiQuery({
-    name: 'divisionId',
-    required: false,
-  })
-  async getUserByDivision(
-    @Query('divisionId') divisionId: string,
-    @Query() userPagination: UserPagination,
-    @GetUser() user: string,
-  ): Promise<IPaginateResponse<UserProfile>> {
-    const role = JSON.parse(user).role;
-    return await this.userService.findByDivision(
-      divisionId,
-      userPagination,
-      role,
-    );
-  }
+  // @Get('')
+  // @ApiQuery({
+  //   name: 'divisionId',
+  //   required: false,
+  // })
+  // async getUserByDivision(
+  //   @Query('divisionId') divisionId: string,
+  //   @Query() userPagination: UserPagination,
+  //   @GetUser() user: string,
+  // ): Promise<IPaginateResponse<UserProfile>> {
+  //   const role = JSON.parse(user).role;
+  //   return await this.userService.findByDivision(
+  //     divisionId,
+  //     userPagination,
+  //     role,
+  //   );
+  // }
 
-  @Get('division/:divisionId')
+  @Get('')
   @Roles(ERole.MANAGER, ERole.STAFF)
   @ApiQuery({
     name: 'role',
     enum: [ERole.STAFF, ERole.EMPLOYEE],
     required: false,
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'divisionId',
-    required: true,
+    required: false,
   })
   async getUserByDivisionAndRole(
-    @Param('divisionId') divisionId: string,
+    @Query('divisionId') divisionId: string,
     @Query('role') role: ERole,
     @Query() userPagination: UserPagination,
     @GetUser() user: string,
   ): Promise<IPaginateResponse<UserProfile>> {
     const roleLogin = JSON.parse(user).role;
-    return await this.userService.findByDivisionV2(
+    return await this.userService.findByDivision(
       divisionId,
       userPagination,
       role,
