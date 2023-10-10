@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Query, Param, Put, Get } from '@nestjs/common';
+import { Controller, Post, Body, Query, Put, Get } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/role.decorator';
@@ -11,7 +11,6 @@ import {
   TaskUpdateStatusReq,
 } from './dto/task.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
-import { UserEntity } from '../user/user.entity';
 import { TaskEntity } from './task.entity';
 
 @Controller('task')

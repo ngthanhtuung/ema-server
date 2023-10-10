@@ -120,7 +120,6 @@ export class TaskService extends BaseService<TaskEntity> {
       }
     };
     await this.transaction(callback, queryRunner);
-
     return 'create task success';
   }
 
