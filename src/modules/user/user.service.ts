@@ -228,10 +228,14 @@ export class UserService extends BaseService<UserEntity> {
       query
         .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId');
+
       query.where('users.divisionId = :divisionId', { divisionId });
-      query.andWhere('profiles.role = :role', {
-        role: roleFilter,
-      });
+      if (roleFilter !== undefined) {
+        query.andWhere('profiles.role = :role', {
+          role: roleFilter,
+        });
+      }
+
       if (role === ERole.STAFF) {
         query.andWhere('users.status = :status', {
           status: EUserStatus.ACTIVE,
