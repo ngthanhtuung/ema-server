@@ -22,6 +22,7 @@ import { AssignEventModule } from './modules/assign-event/assign-event.module';
 import { TaskModule } from './modules/task/task.module';
 import { AssignTaskModule } from './modules/assign-task/assign-task.module';
 // import { TaskfileModule } from './modules/taskfile/taskFile.module';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { AssignTaskModule } from './modules/assign-task/assign-task.module';
     AssignEventModule,
     TaskModule,
     AssignTaskModule,
+    FileModule,
   ],
   controllers: [AppController],
   providers: [
