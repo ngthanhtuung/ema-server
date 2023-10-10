@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { AssignTaskEntity } from './assign-task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
