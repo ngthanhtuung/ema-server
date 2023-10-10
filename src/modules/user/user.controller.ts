@@ -51,8 +51,8 @@ export class UserController {
   @Roles(ERole.MANAGER, ERole.STAFF)
   @ApiQuery({
     name: 'role',
-    enum: ERole,
-    required: true,
+    enum: [ERole.STAFF, ERole.EMPLOYEE],
+    required: false,
   })
   @ApiParam({
     name: 'divisionId',
