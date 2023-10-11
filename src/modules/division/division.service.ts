@@ -93,13 +93,9 @@ export class DivisionService extends BaseService<DivisionEntity> {
       }
       if (data.status !== divisionExist.status) {
         const query = this.generalBuilderDivision();
-        query.leftJoin(
-          'account',
-          'account',
-          'account.divisionId = divisions.id',
-        );
+        query.leftJoin('users', 'users', 'users.divisionId = divisions.id');
         query.where('divisions.id = :id', { id: id });
-        query.andWhere('account.status = :status', {
+        query.andWhere('users.status = :status', {
           status: EUserStatus.ACTIVE,
         });
         const account = await query.getCount();
@@ -170,9 +166,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
       }
       if (division.status === true) {
         const query = this.generalBuilderDivision();
-        query.leftJoin('user', 'user', 'user.divisionId = division.id');
-        query.where('division.id = :id', { id: divisionId });
-        query.andWhere('user.status = :status', { status: EUserStatus.ACTIVE });
+        query.leftJoin('users', 'users', 'users.divisionId = divisions.id');
+        query.where('divisions.id = :id', { id: divisionId });
+        query.andWhere('users.status = :status', {
+          status: EUserStatus.ACTIVE,
+        });
         const account = await query.getCount();
         if (account > 0) {
           throw new BadRequestException(
