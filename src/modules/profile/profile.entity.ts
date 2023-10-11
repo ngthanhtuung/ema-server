@@ -28,7 +28,7 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 100 })
   phoneNumber: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text' })
   avatar: string;
 
   @OneToOne(() => UserEntity, {
