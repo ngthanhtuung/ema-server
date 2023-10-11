@@ -29,9 +29,6 @@ export class TaskCreateReq {
   @ApiProperty()
   estimationTime: number;
 
-  @ApiProperty()
-  effort: number;
-
   @ApiProperty({ required: false })
   assignee: [string];
 

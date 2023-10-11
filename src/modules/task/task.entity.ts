@@ -39,7 +39,7 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'int' })
   estimationTime: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: true })
   effort: number;
 
   @Column({ type: 'varchar' })

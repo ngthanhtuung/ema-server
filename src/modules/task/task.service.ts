@@ -79,7 +79,6 @@ export class TaskService extends BaseService<TaskEntity> {
       priority,
       parentTask,
       estimationTime,
-      effort,
       assignee,
       fileUrl,
       leader,
@@ -103,7 +102,6 @@ export class TaskService extends BaseService<TaskEntity> {
         description: desc,
         parentTask,
         estimationTime,
-        effort,
         priority,
         eventID,
       };
