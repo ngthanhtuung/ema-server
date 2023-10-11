@@ -59,7 +59,7 @@ export class TaskService extends BaseService<TaskEntity> {
         where: whereCondition,
         relations: {
           taskFiles: true,
-          // event: true,
+          assignTasks: true,
           subTask: true,
           parent: true,
         },
