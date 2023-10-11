@@ -36,6 +36,11 @@ export class TaskService extends BaseService<TaskEntity> {
     return this.taskRepository.createQueryBuilder('tasks');
   }
 
+  /**
+   * getTaskInfo
+   * @param condition
+   * @returns
+   */
   async getTaskInfo(condition: object): Promise<TaskEntity> {
     if (!condition['fieldName']) {
       throw new BadRequestException('Undefined field name!');
@@ -54,12 +59,12 @@ export class TaskService extends BaseService<TaskEntity> {
         where: whereCondition,
         relations: {
           taskFiles: true,
-          event: true,
+          // event: true,
           subTask: true,
           parent: true,
         },
       });
-      if (!results || results.length == 0) {
+      if ((!results || results.length == 0) && fieldName !== 'eventID') {
         throw new BadRequestException('No tasks found');
       }
     } catch (error) {
@@ -68,6 +73,12 @@ export class TaskService extends BaseService<TaskEntity> {
     return results;
   }
 
+  /**
+   * createTask
+   * @param task
+   * @param user
+   * @returns
+   */
   async createTask(task: TaskCreateReq, user: string): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     const {
@@ -94,18 +105,19 @@ export class TaskService extends BaseService<TaskEntity> {
         throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
       }
 
-      const oNewTask = {
+      const createTask = await queryRunner.manager.insert(TaskEntity, {
+        title: title,
         createdBy: createBy,
-        title,
-        startDate,
-        endDate,
+        eventID: eventID,
+        startDate: startDate,
+        endDate: endDate,
         description: desc,
-        parentTask,
-        estimationTime,
-        priority,
-        eventID,
-      };
-      const createTask = await queryRunner.manager.insert(TaskEntity, oNewTask);
+        estimationTime: estimationTime,
+        priority: priority,
+        parent: {
+          id: parentTask,
+        },
+      });
 
       if (assignee.length > 0) {
         const oAssignTask = {
@@ -126,13 +138,14 @@ export class TaskService extends BaseService<TaskEntity> {
     return 'create task success';
   }
 
+  /**
+   * updateTask
+   * @param taskID
+   * @param data
+   * @returns
+   */
   async updateTask(taskID: string, data: object): Promise<boolean> {
     const queryRunner = this.dataSource.createQueryRunner();
-    for (const key in data) {
-      if (data[key]?.trim().length == 0) {
-        throw new InternalServerErrorException(`${key} is empty`);
-      }
-    }
     if (!taskID) {
       throw new InternalServerErrorException(`TaskID is empty`);
     }
@@ -154,6 +167,11 @@ export class TaskService extends BaseService<TaskEntity> {
     return true;
   }
 
+  /**
+   * filterTaskByAssignee
+   * @param filter
+   * @returns
+   */
   async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
     const { assignee, priority, sort, status } = filter;
     let result;

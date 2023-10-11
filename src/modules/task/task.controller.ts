@@ -53,7 +53,13 @@ export class TaskController {
       modifiedBy: oUser.id,
     };
     for (const key in req) {
-      if (req[key]) {
+      if (req[key] && key === 'parentTask') {
+        Object.assign(data, {
+          parent: {
+            id: req[key],
+          },
+        });
+      } else if (req[key]) {
         Object.assign(data, { [key]: req[key] });
       }
     }
