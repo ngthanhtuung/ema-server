@@ -26,8 +26,8 @@ export class TaskEntity extends BaseEntity {
   })
   priority: EPriority;
 
-  @Column({ type: 'varchar', nullable: true })
-  parentTask: string;
+  // @Column({ type: 'varchar', nullable: true })
+  // parentTask: string;
 
   @Column({
     type: 'enum',
@@ -53,6 +53,13 @@ export class TaskEntity extends BaseEntity {
 
   @Column({ type: String })
   eventID: string;
+
+  @ManyToOne(() => TaskEntity, (task) => task.subTask)
+  @JoinColumn({ name: 'parentTask' })
+  parent: TaskEntity;
+
+  @OneToMany(() => TaskEntity, (task) => task.parent)
+  subTask: TaskEntity[];
 
   @ManyToOne(() => EventEntity, (event) => event.tasks, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventID', referencedColumnName: 'id' })

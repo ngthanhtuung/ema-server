@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
 import {
+  FilterTask,
   TaskConditonFind,
   TaskCreateReq,
   TaskIDReq,
@@ -22,6 +23,13 @@ export class TaskController {
   @Get()
   async getTaskById(@Query() condition: TaskConditonFind): Promise<TaskEntity> {
     return await this.taskService.getTaskInfo(condition);
+  }
+
+  @Get('/filterByAssignee')
+  async filterTaskByCondition(
+    @Query() filter: FilterTask,
+  ): Promise<TaskEntity> {
+    return await this.taskService.filterTaskByAssignee(filter);
   }
 
   @Post('createTask')

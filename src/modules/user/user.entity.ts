@@ -8,6 +8,7 @@ import { DivisionEntity } from '../division/division.entity';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import { CommentEntity } from '../comment/comment.entity';
 import { EUserStatus } from 'src/common/enum/enum';
+import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -67,4 +68,7 @@ export class UserEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   comments: CommentEntity[];
+
+  @OneToMany(() => AssignTaskEntity, (assignee) => assignee.user)
+  assignee: AssignTaskEntity[];
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { EPriority, ETaskStatus } from 'src/common/enum/enum';
+import { EPriority, ETaskStatus, SortEnum } from 'src/common/enum/enum';
 
 export class TaskCreateReq {
   @ApiProperty()
@@ -98,4 +98,30 @@ export class TaskConditonFind {
 
   @ApiProperty({ required: true })
   conValue: string;
+}
+
+export class FilterTask {
+  @ApiProperty({ required: false })
+  assignee: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: EPriority,
+    required: false,
+  })
+  priority: EPriority;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+  })
+  sort: SortEnum;
+
+  @ApiProperty({
+    required: false,
+    type: 'enum',
+    enum: ETaskStatus,
+  })
+  status: ETaskStatus;
 }
