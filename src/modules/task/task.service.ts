@@ -18,6 +18,7 @@ import {
   TASK_ERROR_MESSAGE,
 } from 'src/common/constants/constants';
 import { AssignTaskService } from '../assign-task/assign-task.service';
+import * as asyn from 'async';
 
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
@@ -173,7 +174,7 @@ export class TaskService extends BaseService<TaskEntity> {
    * @returns
    */
   async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
-    const { assignee, priority, sort, status } = filter;
+    const { assignee, priority, sort, status, eventID } = filter;
     let result;
     try {
       result = await this.taskRepository.find({
@@ -182,6 +183,9 @@ export class TaskService extends BaseService<TaskEntity> {
           status,
           assignTasks: {
             assignee,
+          },
+          event: {
+            id: eventID,
           },
         },
         relations: {

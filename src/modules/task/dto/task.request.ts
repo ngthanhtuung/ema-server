@@ -101,6 +101,9 @@ export class FilterTask {
   @ApiProperty({ required: false })
   assignee: string;
 
+  @ApiProperty({ required: false })
+  eventID: string;
+
   @ApiProperty({
     type: 'enum',
     enum: EPriority,

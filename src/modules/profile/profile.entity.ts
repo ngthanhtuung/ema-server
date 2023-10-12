@@ -1,7 +1,7 @@
 import { EGender, ERole } from 'src/common/enum/enum';
 import { UserEntity } from 'src/modules/user/user.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-
+import { AutoMap } from '@automapper/classes';
 @Entity({ name: 'profiles' })
 export class ProfileEntity {
   @PrimaryColumn()
@@ -31,9 +31,9 @@ export class ProfileEntity {
   @Column({ type: 'text' })
   avatar: string;
 
-  @OneToOne(() => UserEntity, {
+  @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'profileId', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'id' })
   user: UserEntity;
 }
