@@ -7,7 +7,7 @@ export class CommentFileEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   fileType: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   fileUrl: string;
 
   @ManyToOne(() => CommentEntity, (comment) => comment.commentFiles, {
