@@ -11,8 +11,8 @@ import { FileRequest } from './dto/file.request';
 export class FileService {
   async uploadFile(data: FileRequest, folderName: string): Promise<string> {
     try {
-      if (parseInt(data.fileSize) > 50000) {
-        throw new BadRequestException('File is less than 50MB');
+      if (parseInt(data.fileSize) > (10*1024*1024)) {
+        throw new BadRequestException('File is less than 10MB');
       }
       const bucket = firebaseAdmin.storage().bucket();
       const uniqueFileName = uuidv4();

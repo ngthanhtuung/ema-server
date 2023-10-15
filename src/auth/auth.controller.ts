@@ -27,9 +27,9 @@ import ForgetPasswordRequest from './dto/fortgetPassword.dto';
 
 @ApiBearerAuth()
 @Controller('auth')
-@ApiTags('auth-controller')
+@ApiTags('Authentication')
 export class AuthenticationController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   /**
    * http://localhost:6969/api/v1/auth/login(Post)
