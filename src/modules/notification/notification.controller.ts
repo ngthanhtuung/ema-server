@@ -13,28 +13,28 @@ import { NotificationResponse } from './dto/notification.response';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) { }
 
-  @Get()
-  async getAllNotifications(
-    @GetUser() user: string,
-    @Query() notificationPagination: QueryNotificationDto): Promise<IPaginateResponse<NotificationResponse>> {
-    return await this.notificationService.getMyNotifications(
-      JSON.parse(user).id,
-      notificationPagination
-    )
-  }
+  // @Get()
+  // async getAllNotifications(
+  //   @GetUser() user: string,
+  //   @Query() notificationPagination: QueryNotificationDto): Promise<IPaginateResponse<NotificationResponse>> {
+  //   return await this.notificationService.getMyNotifications(
+  //     JSON.parse(user).id,
+  //     notificationPagination
+  //   )
+  // }
 
-  @Put('/seen')
-  async seenNotification(
-    @Query('notificationId') notificationId: string,
-  ): Promise<string> {
-    return await this.notificationService.seenNotification(notificationId)
-  }
+  // @Put('/seen')
+  // async seenNotification(
+  //   @Query('notificationId') notificationId: string,
+  // ): Promise<string> {
+  //   return await this.notificationService.seenNotification(notificationId)
+  // }
 
-  @Put('/seen-all')
-  async seenAllNotifications(
-    @GetUser() user: string,
-  ): Promise<string> {
-    return await this.notificationService.seenAllNotification(JSON.parse(user).id)
-  }
+  // @Put('/seen-all')
+  // async seenAllNotifications(
+  //   @GetUser() user: string,
+  // ): Promise<string> {
+  //   return await this.notificationService.seenAllNotification(JSON.parse(user).id)
+  // }
 
 }
