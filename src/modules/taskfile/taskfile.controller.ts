@@ -5,9 +5,9 @@ import { TaskFileCreateReq } from './dto/taskFile.request';
 
 @Controller('taskFile')
 @ApiBearerAuth()
-@ApiTags('taskFile-controller')
+@ApiTags('Task File')
 export class TaskfileController {
-  constructor(private readonly taskfileService: TaskfileService) {}
+  constructor(private readonly taskfileService: TaskfileService) { }
 
   @Post()
   async insertTaskFile(@Body() req: TaskFileCreateReq): Promise<string> {

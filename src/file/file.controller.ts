@@ -12,10 +12,10 @@ import { plainToInstance } from 'class-transformer';
 import { FileRequest } from './dto/file.request';
 
 @Controller('file')
-@ApiTags('file-controller')
+@ApiTags('File Upload')
 @ApiBearerAuth()
 export class FileController {
-  constructor(private readonly fileService: FileService) {}
+  constructor(private readonly fileService: FileService) { }
 
   @Post('/upload')
   @ApiConsumes('multipart/form-data')
@@ -40,7 +40,6 @@ export class FileController {
     @UploadedFile('file') file: Express.Multer.File,
     @Body('folderName') folderName: string,
   ): Promise<string | undefined> {
-    console.log(file);
     const fileDto = plainToInstance(FileRequest, {
       fileName: file.originalname,
       fileType: file.mimetype,

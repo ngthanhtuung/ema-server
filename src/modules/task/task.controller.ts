@@ -16,7 +16,7 @@ import { TaskEntity } from './task.entity';
 
 @Controller('task')
 @ApiBearerAuth()
-@ApiTags('task-controller')
+@ApiTags('Task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 

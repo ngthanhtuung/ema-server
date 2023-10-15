@@ -14,9 +14,9 @@ import { Public } from 'src/decorators/public.decorator';
 
 @Controller('division')
 @ApiBearerAuth()
-@ApiTags('division-controller')
+@ApiTags('Division')
 export class DivisionController {
-  constructor(private readonly divisionService: DivisionService) {}
+  constructor(private readonly divisionService: DivisionService) { }
 
   @Get()
   @Roles(ERole.MANAGER, ERole.STAFF)

@@ -14,9 +14,9 @@ import { IPaginateResponse } from '../base/filter.pagination';
 
 @ApiBearerAuth()
 @Controller('user')
-@ApiTags('user-controller')
+@ApiTags('User')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get('profile')
   async getProfile(@GetUser() user: string): Promise<UserProfile> {
@@ -24,7 +24,7 @@ export class UserController {
   }
 
   @Get('/:userId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.STAFF)
   async getUserById(@Param('userId') userId: string): Promise<UserProfile> {
     return await this.userService.findByIdV2(userId);
   }
