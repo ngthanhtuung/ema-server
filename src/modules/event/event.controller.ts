@@ -8,6 +8,7 @@ import {
   EventAssignRequest,
   EventCreateRequest,
   EventUpdateRequest,
+  FilterEvent,
 } from './dto/event.request';
 import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
@@ -31,6 +32,22 @@ export class EventController {
   ): Promise<Array<EventResponse>> {
     return await this.eventService.getAllEventByDivisionID(
       JSON.parse(user).divisionId,
+    );
+  }
+
+  /**
+   *
+   * @param filter
+   * @returns
+   */
+  @Get('/filterEventByCondition')
+  async filterEventByCondition(
+    @Query() filter: FilterEvent,
+    @Query() eventPagination: EventPagination,
+  ): Promise<IPaginateResponse<EventResponse>> {
+    return await this.eventService.filterEventByCondition(
+      filter,
+      eventPagination,
     );
   }
 

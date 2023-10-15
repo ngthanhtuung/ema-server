@@ -4,7 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Like, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -18,6 +18,7 @@ import {
   EventAssignRequest,
   EventCreateRequest,
   EventUpdateRequest,
+  FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { EEventStatus } from 'src/common/enum/enum';
@@ -76,12 +77,24 @@ export class EventService extends BaseService<EventEntity> {
       ]);
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      const mapData = result?.map((item) => {
-        item.startDate = moment(item.startDate).format('YYYY-MM-DD');
-        item.endDate = moment(item.endDate).format('YYYY-MM-DD');
-        item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
-        return item;
-      });
+      const mapData = result
+        ?.map((item) => {
+          item.startDate = moment(item.startDate).format('YYYY-MM-DD');
+          item.endDate = moment(item.endDate).format('YYYY-MM-DD');
+          item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+          item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
+          return item;
+        })
+        .sort((a, b) => {
+          const dateA = moment(a.createdAt).isAfter(a.updatedAt)
+            ? a.createdAt
+            : a.updatedAt;
+          const dateB = moment(b.createdAt).isAfter(b.updatedAt)
+            ? b.createdAt
+            : b.updatedAt;
+          return dateB.localeCompare(dateA);
+        });
       if (total === 0) {
         throw new NotFoundException('Event not found');
       }
@@ -93,6 +106,59 @@ export class EventService extends BaseService<EventEntity> {
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * filterEventByCondition
+   * @param filter
+   * @returns
+   */
+  async filterEventByCondition(
+    filter: FilterEvent,
+    eventPagination: EventPagination,
+  ): Promise<IPaginateResponse<EventResponse>> {
+    const { eventName, monthYear, nameSort, sort, status } = filter;
+    const { currentPage, sizePage } = eventPagination;
+    let result;
+    const whereCondition = {
+      status,
+    };
+    if (eventName) {
+      whereCondition['eventName'] = Like('%' + eventName + '%');
+    }
+    try {
+      result = await this.eventRepository.find({
+        where: whereCondition,
+        order: {
+          [nameSort]: { direction: sort },
+        },
+        skip: sizePage * (currentPage - 1),
+        take: sizePage,
+      });
+      if (monthYear) {
+        result = result.filter((item) =>
+          moment(item[`${nameSort}`], 'YYYY-MM').isSame(monthYear),
+        );
+      }
+      const listStaffOfDivision =
+        await this.assignEventService.getListStaffDivisionAllEvent();
+      result = result?.map((item) => {
+        item.startDate = moment(item.startDate).format('YYYY-MM-DD');
+        item.endDate = moment(item.endDate).format('YYYY-MM-DD');
+        item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+        item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
+        return item;
+      });
+      const data = plainToInstance(EventResponse, result);
+      return paginateResponse<EventResponse>(
+        [data, result.length],
+        currentPage,
+        sizePage,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
   }
 
