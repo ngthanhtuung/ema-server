@@ -50,6 +50,7 @@ export class EventService extends BaseService<EventEntity> {
     try {
       const { currentPage, sizePage } = eventPagination;
       const query = this.generalBuilderEvent();
+      query.leftJoin('tasks', 'tasks', 'tasks.eventID = events.id');
       query.select([
         'events.id as id',
         'events.eventName as eventName',
@@ -62,7 +63,10 @@ export class EventService extends BaseService<EventEntity> {
         'events.createdAt as createdAt',
         'events.updatedAt as updatedAt',
         'events.status as status',
+        'COUNT(tasks.id) as taskCount',
       ]);
+      query.where('tasks.parentTask IS NULL');
+      query.groupBy('events.id');
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
@@ -72,7 +76,6 @@ export class EventService extends BaseService<EventEntity> {
       ]);
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      console.log('listStaffOfDivision:', listStaffOfDivision);
       const mapData = result?.map((item) => {
         item.startDate = moment(item.startDate).format('YYYY-MM-DD');
         item.endDate = moment(item.endDate).format('YYYY-MM-DD');

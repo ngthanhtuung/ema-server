@@ -1,5 +1,10 @@
 import { FirebaseMessageService } from './providers/firebase/message/firebase-message.service';
-import { Controller, InternalServerErrorException, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  InternalServerErrorException,
+  Get,
+  Param,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator';
@@ -9,8 +14,8 @@ import { Public } from './decorators/public.decorator';
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    private readonly firebaseMessageService: FirebaseMessageService
-  ) { }
+    private readonly firebaseMessageService: FirebaseMessageService,
+  ) {}
 
   // @Get('test-notification/')
   // @Public()

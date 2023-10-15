@@ -53,7 +53,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     AssignTaskModule,
     FileModule,
     FirebaseProviderModule,
-    NotificationModule
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

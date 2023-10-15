@@ -19,7 +19,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private sharedService: SharedService,
-  ) { }
+  ) {}
 
   /**
    * login-service
@@ -30,7 +30,7 @@ export class AuthService {
   async login(
     email: string,
     password: string,
-    deviceToken?: string
+    deviceToken?: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.userService.findByEmail(email);
 

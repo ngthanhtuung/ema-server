@@ -17,7 +17,7 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 @ApiBearerAuth()
 @ApiTags('Event')
 export class EventController {
-  constructor(private readonly eventService: EventService) { }
+  constructor(private readonly eventService: EventService) {}
 
   /**
    * getAllEventByDivisionID
