@@ -12,22 +12,22 @@ export class AppController {
     private readonly firebaseMessageService: FirebaseMessageService
   ) { }
 
-  @Get('test-notification/')
-  @Public()
-  async testNotification(
-    // @Param('deviceToken') deviceToken: string
-  ): Promise<any | undefined> {
-    try {
-      let deviceTokenArray = ['123']
-      const result = await this.firebaseMessageService.sendCustomNotification(
-        deviceTokenArray,
-        'hahahaha',
-        'test thử noti',
-        { test: 'test' }
-      )
-      console.log('Result: ', result.responses)
-    } catch (err) {
-      throw new InternalServerErrorException(err.message)
-    }
-  }
+  // @Get('test-notification/')
+  // @Public()
+  // async testNotification(
+  //   // @Param('deviceToken') deviceToken: string
+  // ): Promise<any | undefined> {
+  //   try {
+  //     let deviceTokenArray = ['123']
+  //     const result = await this.firebaseMessageService.sendCustomNotification(
+  //       deviceTokenArray,
+  //       'hahahaha',
+  //       'test thử noti',
+  //       { test: 'test' }
+  //     )
+  //     console.log('Result: ', result.responses)
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err.message)
+  //   }
+  // }
 }
