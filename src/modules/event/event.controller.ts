@@ -52,19 +52,6 @@ export class EventController {
   }
 
   /**
-   * getAllEvent
-   * @param eventPagination
-   * @returns
-   */
-  @Get()
-  @Roles(ERole.MANAGER)
-  async getAllEvent(
-    @Query() eventPagination: EventPagination,
-  ): Promise<IPaginateResponse<EventResponse>> {
-    return await this.eventService.getAllEvent(eventPagination);
-  }
-
-  /**
    * getEventById
    * @param data
    */
