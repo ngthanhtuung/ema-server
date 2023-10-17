@@ -22,8 +22,12 @@ export class DivisionController {
   @Roles(ERole.MANAGER, ERole.STAFF)
   async getAllDivision(
     @Query() divisionPagination: DivisionPagination,
+    @Query('mode') mode: number,
   ): Promise<IPaginateResponse<DivisionResponse>> {
-    return await this.divisionService.getAllDivision(divisionPagination);
+    return await this.divisionService.getAllDivision(
+      divisionPagination,
+      Number(mode),
+    );
   }
 
   /**
