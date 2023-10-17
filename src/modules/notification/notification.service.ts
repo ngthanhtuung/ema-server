@@ -26,7 +26,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
   // generalBuilderNotification(): SelectQueryBuilder<NotificationEntity> {
   //     return this.notificationRepository.createQueryBuilder('notifications');
   // }
-  
+
   // async getMyNotifications(
   //     userId: string,
   //     pagination: QueryNotificationDto
@@ -84,7 +84,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
   //         throw new InternalServerErrorException(err.message);
   //     }
   // }
-  
+
   // async seenAllNotification(
   //     userId: string
   // ): Promise<string> {

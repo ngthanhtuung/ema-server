@@ -4,7 +4,6 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'profiles' })
 export class ProfileEntity {
-
   @PrimaryColumn()
   public profileId: string;
 

@@ -249,8 +249,13 @@ export class UserService extends BaseService<UserEntity> {
         password,
         division,
       });
-      console.log('Create user: ', createUser)
-      console.log('ProfileId: ', createUser.generatedMaps[0]['id'])
+      console.log('Create user: ', createUser);
+      console.log('ProfileId: ', createUser.generatedMaps[0]['id']);
+      if (profile.role === ERole.STAFF) {
+        await queryRunner.manager.insert(DivisionEntity, {
+          staffId: createUser.generatedMaps[0]['id'],
+        });
+      }
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
         profileId: createUser.generatedMaps[0]['id'],
@@ -425,12 +430,23 @@ export class UserService extends BaseService<UserEntity> {
         throw new BadRequestException(USER_ERROR_MESSAGE.CANT_CHANGE);
       }
       const queryRunner = this.dataSource.createQueryRunner();
+      const division = await queryRunner.manager.findOne(DivisionEntity, {
+        where: { id: data.divisionId },
+      });
+
+      if (!division) {
+        throw new BadRequestException(
+          DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
+        );
+      }
+
       await queryRunner.manager.update(
         UserEntity,
         { id: userIdUpdate },
         {
           email: data.email,
           status: data.status,
+          division,
         },
       );
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
@@ -447,6 +463,30 @@ export class UserService extends BaseService<UserEntity> {
             avatar: data.avatar,
           },
         );
+        const divisionFilterStaff = await queryRunner.manager.findOne(
+          DivisionEntity,
+          {
+            where: { staffId: userIdUpdate },
+          },
+        );
+        if (divisionFilterStaff && data.role === ERole.EMPLOYEE) {
+          await queryRunner.manager.update(
+            DivisionEntity,
+            { id: divisionFilterStaff.id },
+            {
+              staffId: null,
+            },
+          );
+        }
+        if (data.role === ERole.STAFF) {
+          await queryRunner.manager.update(
+            DivisionEntity,
+            { id: division.id },
+            {
+              staffId: userIdUpdate,
+            },
+          );
+        }
       };
       await this.transaction(callbacks, queryRunner);
       return 'Update profile successfully';

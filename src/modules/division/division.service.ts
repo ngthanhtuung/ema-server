@@ -122,6 +122,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
    */
   async getAllDivision(
     divisionPagination: DivisionPagination,
+    mode: number,
   ): Promise<IPaginateResponse<DivisionResponse>> {
     try {
       const { currentPage, sizePage } = divisionPagination;
@@ -133,6 +134,9 @@ export class DivisionService extends BaseService<DivisionEntity> {
         'divisions.status as status',
         'divisions.staffId as staffId',
       ]);
+      if (mode === 2) {
+        query.where('divisions.staffId IS NULL');
+      }
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
