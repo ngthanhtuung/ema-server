@@ -63,9 +63,11 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: true,
           subTask: {
             assignTasks: true,
+            taskFiles: true,
           },
           parent: {
             assignTasks: true,
+            taskFiles: true,
           },
         },
       });
