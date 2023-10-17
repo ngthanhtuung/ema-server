@@ -492,6 +492,13 @@ export class UserService extends BaseService<UserEntity> {
               staffId: userIdUpdate,
             },
           );
+          await queryRunner.manager.update(
+            DivisionEntity,
+            { id: divisionFilterStaff.id },
+            {
+              staffId: null,
+            },
+          );
         }
       };
       await this.transaction(callbacks, queryRunner);
