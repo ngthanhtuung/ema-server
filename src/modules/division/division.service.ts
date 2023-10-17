@@ -64,7 +64,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
 
   /**
    * getDivisionById
-   * @param id
+   * @param ids
    * @returns
    */
   async getDivisionById(id: string): Promise<DivisionResponse> {
