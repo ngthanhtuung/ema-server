@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="myButton" onclick="click()">Hahahaha</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js">
+    </script>
+    <script>
+        var socket = io('http://localhost:3006', {
+            auth: {
+                accessToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI4OGVjMzVjLTdkNGEtNDVkZi1iNTAwLTdlY2MxNmVhYTRiYSIsInJvbGUiOiJNQU5BR0VSIiwiZW1haWwiOiJodXlkb2FubWVjQGdtYWlsLmNvbSIsImRpdmlzaW9uSUQiOm51bGwsImlhdCI6MTY5NzM4MzUwOCwiZXhwIjoxNjk3NDY5OTA4fQ.J8XKiYGaHuXegK_o5e92WtR12MzjcnzgpM6AGy0cVEQ'
+            }
+        });
+        var button = document.getElementById("myButton");
+        socket.on('hahaha', (data) => {
+            console.log(data);
+        })
+        // Attach an event listener to the utton
+        button.addEventListener("click", function () {
+            // Actions to perform when the button is clicked
+            // console.log("Button clicked!");
+            alert('Button Click')
+            // socket.emit('hello', {
+            //     message: 'Hello'
+            // })
+            // Perform additional actions or call other functions
+        });
+    </script>
+</body>
+
+</html>
