@@ -144,9 +144,6 @@ export class DivisionService extends BaseService<DivisionEntity> {
           .execute(),
         query.getCount(),
       ]);
-      if (total === 0) {
-        throw new NotFoundException('Division not found');
-      }
       const data = plainToInstance(DivisionResponse, result);
       return paginateResponse<DivisionResponse>(
         [data, total],
