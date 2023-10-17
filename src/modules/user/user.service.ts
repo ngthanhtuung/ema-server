@@ -467,6 +467,7 @@ export class UserService extends BaseService<UserEntity> {
             gender: data.gender,
             address: data.address,
             avatar: data.avatar,
+            role: data.role,
           },
         );
         const divisionFilterStaff = await queryRunner.manager.findOne(

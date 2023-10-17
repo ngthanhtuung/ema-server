@@ -19,6 +19,7 @@ import {
 } from 'src/common/constants/constants';
 import { AssignTaskService } from '../assign-task/assign-task.service';
 import * as asyn from 'async';
+import { UserPagination } from '../user/dto/user.request';
 
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
@@ -42,7 +43,10 @@ export class TaskService extends BaseService<TaskEntity> {
    * @param condition
    * @returns
    */
-  async getTaskInfo(condition: object): Promise<TaskEntity> {
+  async getTaskInfo(
+    condition: object,
+    userPagination: UserPagination,
+  ): Promise<TaskEntity> {
     if (!condition['fieldName']) {
       throw new BadRequestException('Undefined field name!');
     }
@@ -51,16 +55,37 @@ export class TaskService extends BaseService<TaskEntity> {
     }
     const fieldName = condition['fieldName'];
     const conValue = condition['conValue'];
+    const { sizePage, currentPage } = userPagination;
     const whereCondition = {
       [fieldName]: conValue,
     };
     let results;
+    const offset = sizePage * (currentPage - 1);
     try {
       results = await this.taskRepository.find({
         where: whereCondition,
+        skip: offset,
+        take: sizePage,
+        select: {
+          assignTasks: {
+            id: true,
+            user: {
+              id: true,
+              profile: {
+                profileId: true,
+                avatar: true,
+                fullName: true,
+              },
+            },
+          },
+        },
         relations: {
           taskFiles: true,
-          assignTasks: true,
+          assignTasks: {
+            user: {
+              profile: true,
+            },
+          },
           subTask: {
             assignTasks: true,
             taskFiles: true,
