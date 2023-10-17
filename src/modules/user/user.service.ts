@@ -250,7 +250,8 @@ export class UserService extends BaseService<UserEntity> {
         password,
         division,
       });
-
+      console.log('Create user: ', createUser)
+      console.log('ProfileId: ', createUser.generatedMaps[0]['id'])
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
         profileId: createUser.generatedMaps[0]['id'],
@@ -259,7 +260,6 @@ export class UserService extends BaseService<UserEntity> {
     };
 
     await this.transaction(callback, queryRunner);
-
     return 'create user success';
   }
 

@@ -25,6 +25,7 @@ import { AssignTaskModule } from './modules/assign-task/assign-task.module';
 import { FileModule } from './file/file.module';
 import { FirebaseProviderModule } from './providers/firebase/provider.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { GatewayModule } from './sockets/gateway.module';
 
 @Module({
   imports: [
@@ -53,7 +54,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     AssignTaskModule,
     FileModule,
     FirebaseProviderModule,
-    NotificationModule
+    NotificationModule,
+    GatewayModule
   ],
   controllers: [AppController],
   providers: [

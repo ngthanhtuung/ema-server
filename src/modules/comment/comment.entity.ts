@@ -6,14 +6,8 @@ import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'comments' })
 export class CommentEntity extends BaseEntity {
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'longtext', nullable: false })
   text: string;
-
-  @Column({
-    type: 'boolean',
-    default: true,
-  })
-  status: boolean;
 
   @ManyToOne(() => TaskEntity, (task) => task.comments, { onDelete: 'CASCADE' })
   task: TaskEntity;

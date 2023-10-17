@@ -42,6 +42,9 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
 
+  @Column({ nullable: true, type: 'varchar', length: 20 })
+  socketId: string;
+
   @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.user, {
     onDelete: 'CASCADE',
   })
