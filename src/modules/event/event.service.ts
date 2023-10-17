@@ -4,7 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Like, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -18,6 +18,7 @@ import {
   EventAssignRequest,
   EventCreateRequest,
   EventUpdateRequest,
+  FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { EEventStatus } from 'src/common/enum/enum';
@@ -40,16 +41,19 @@ export class EventService extends BaseService<EventEntity> {
   }
 
   /**
-   *getAllEvent
-   * @param eventPagination
+   * filterEventByCondition
+   * @param filter
    * @returns
    */
-  async getAllEvent(
+  async filterEventByCondition(
+    filter: FilterEvent,
     eventPagination: EventPagination,
   ): Promise<IPaginateResponse<EventResponse>> {
     try {
+      const { eventName, monthYear, nameSort, sort, status } = filter;
       const { currentPage, sizePage } = eventPagination;
       const query = this.generalBuilderEvent();
+      query.leftJoin('tasks', 'tasks', 'tasks.eventID = events.id');
       query.select([
         'events.id as id',
         'events.eventName as eventName',
@@ -62,34 +66,51 @@ export class EventService extends BaseService<EventEntity> {
         'events.createdAt as createdAt',
         'events.updatedAt as updatedAt',
         'events.status as status',
+        'COUNT(tasks.id) as taskCount',
       ]);
-      const [result, total] = await Promise.all([
+      query.where('tasks.parentTask IS NULL');
+      if (status) {
+        query.andWhere('events.status = :status', {
+          status: status,
+        });
+      }
+      if (eventName) {
+        query.andWhere(`events.eventName LIKE '%${eventName}%'`);
+      }
+      query.groupBy('events.id');
+      query.orderBy(`events.${nameSort}`, sort);
+      const dataPromise = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
           .limit(sizePage as number)
           .execute(),
         query.getCount(),
       ]);
+      if (monthYear) {
+        dataPromise[0] = dataPromise[0].filter((item) => {
+          const formatTime = moment(item[`${nameSort}`]).format('YYYY-MM');
+          return moment(formatTime).isSame(monthYear);
+        });
+      }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      console.log('listStaffOfDivision:', listStaffOfDivision);
-      const mapData = result?.map((item) => {
+      dataPromise[0] = dataPromise[0]?.map((item) => {
         item.startDate = moment(item.startDate).format('YYYY-MM-DD');
         item.endDate = moment(item.endDate).format('YYYY-MM-DD');
+        item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
         item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
+        item.taskCount = +item.taskCount;
         return item;
       });
-      if (total === 0) {
-        throw new NotFoundException('Event not found');
-      }
-      const data = plainToInstance(EventResponse, mapData);
+      const data = plainToInstance(EventResponse, dataPromise[0]);
       return paginateResponse<EventResponse>(
-        [data, total],
+        [data, dataPromise[1]],
         currentPage,
         sizePage,
       );
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
   }
 

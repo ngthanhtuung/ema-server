@@ -6,15 +6,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class DeviceService extends BaseService<DeviceEntity> {
-
-    constructor(
-        @InjectRepository(DeviceEntity)
-        private readonly deviceRepository: Repository<DeviceEntity>,
-    ) {
-        super(deviceRepository)
-    }
-
-    async updateDeviceToken(deviceToken: string): Promise<any | undefined> {
-        
-    }
+  // constructor(
+  //     @InjectRepository(DeviceEntity)
+  //     private readonly deviceRepository: Repository<DeviceEntity>,
+  // ) {
+  //     super(deviceRepository)
+  // }
+  // async updateDeviceToken(deviceToken: string): Promise<any | undefined> {
+  // }
 }

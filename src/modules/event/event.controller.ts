@@ -8,6 +8,7 @@ import {
   EventAssignRequest,
   EventCreateRequest,
   EventUpdateRequest,
+  FilterEvent,
 } from './dto/event.request';
 import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
@@ -17,7 +18,7 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 @ApiBearerAuth()
 @ApiTags('Event')
 export class EventController {
-  constructor(private readonly eventService: EventService) { }
+  constructor(private readonly eventService: EventService) {}
 
   /**
    * getAllEventByDivisionID
@@ -35,16 +36,19 @@ export class EventController {
   }
 
   /**
-   * getAllEvent
-   * @param eventPagination
+   *
+   * @param filter
    * @returns
    */
-  @Get()
-  @Roles(ERole.MANAGER)
-  async getAllEvent(
+  @Get('/filterEventByCondition')
+  async filterEventByCondition(
+    @Query() filter: FilterEvent,
     @Query() eventPagination: EventPagination,
   ): Promise<IPaginateResponse<EventResponse>> {
-    return await this.eventService.getAllEvent(eventPagination);
+    return await this.eventService.filterEventByCondition(
+      filter,
+      eventPagination,
+    );
   }
 
   /**

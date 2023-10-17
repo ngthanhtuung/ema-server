@@ -10,7 +10,7 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 @ApiBearerAuth()
 @ApiTags('Assign Task')
 export class AssignTaskController {
-  constructor(private readonly assignTaskService: AssignTaskService) { }
+  constructor(private readonly assignTaskService: AssignTaskService) {}
 
   @Post()
   @Roles(ERole.MANAGER, ERole.STAFF)

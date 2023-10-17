@@ -56,6 +56,7 @@ import { GatewayModule } from './sockets/gateway.module';
     FirebaseProviderModule,
     NotificationModule,
     GatewayModule
+
   ],
   controllers: [AppController],
   providers: [

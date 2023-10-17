@@ -61,8 +61,12 @@ export class TaskService extends BaseService<TaskEntity> {
         relations: {
           taskFiles: true,
           assignTasks: true,
-          subTask: true,
-          parent: true,
+          subTask: {
+            assignTasks: true,
+          },
+          parent: {
+            assignTasks: true,
+          },
         },
       });
       if ((!results || results.length == 0) && fieldName !== 'eventID') {

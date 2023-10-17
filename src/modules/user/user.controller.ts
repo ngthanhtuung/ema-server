@@ -16,7 +16,7 @@ import { IPaginateResponse } from '../base/filter.pagination';
 @Controller('user')
 @ApiTags('User')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Get('profile')
   async getProfile(@GetUser() user: string): Promise<UserProfile> {

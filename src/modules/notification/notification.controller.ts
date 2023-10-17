@@ -11,7 +11,7 @@ import { NotificationResponse } from './dto/notification.response';
 @ApiTags('Notification')
 @ApiBearerAuth()
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService) { }
+  constructor(private readonly notificationService: NotificationService) {}
 
   // @Get()
   // async getAllNotifications(
@@ -36,5 +36,4 @@ export class NotificationController {
   // ): Promise<string> {
   //   return await this.notificationService.seenAllNotification(JSON.parse(user).id)
   // }
-
 }

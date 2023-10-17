@@ -131,6 +131,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
         'divisions.divisionName as divisionName',
         'divisions.description as description',
         'divisions.status as status',
+        'divisions.staffId as staffId',
       ]);
       const [result, total] = await Promise.all([
         query
