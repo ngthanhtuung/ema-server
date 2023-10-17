@@ -224,7 +224,6 @@ export class UserService extends BaseService<UserEntity> {
     const queryRunner = this.dataSource.createQueryRunner();
     const { email, ...profile } = userCreateRequest;
     const generatePassword = this.shareService.generatePassword(8);
-    console.log(generatePassword);
     const password = await this.shareService.hashPassword(generatePassword);
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const userExist = await queryRunner.manager.findOne(UserEntity, {

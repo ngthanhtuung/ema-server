@@ -42,9 +42,6 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
 
-  @Column({ nullable: true, type: 'varchar', length: 20 })
-  socketId: string;
-
   @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.user, {
     onDelete: 'CASCADE',
   })
@@ -84,6 +81,6 @@ export class UserEntity extends BaseEntity {
   assignee: AssignTaskEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'profileId' })
   profile: ProfileEntity;
 }
