@@ -252,9 +252,15 @@ export class UserService extends BaseService<UserEntity> {
       console.log('Create user: ', createUser);
       console.log('ProfileId: ', createUser.generatedMaps[0]['id']);
       if (profile.role === ERole.STAFF) {
-        await queryRunner.manager.insert(DivisionEntity, {
-          staffId: createUser.generatedMaps[0]['id'],
-        });
+        await queryRunner.manager.update(
+          DivisionEntity,
+          {
+            id: division.id,
+          },
+          {
+            staffId: createUser.generatedMaps[0]['id'],
+          },
+        );
       }
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
