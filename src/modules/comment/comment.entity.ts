@@ -9,6 +9,9 @@ export class CommentEntity extends BaseEntity {
   @Column({ type: 'longtext', nullable: false })
   text: string;
 
+  @Column({ type: 'boolean', default: true })
+  status: boolean
+
   @ManyToOne(() => TaskEntity, (task) => task.comments, { onDelete: 'CASCADE' })
   task: TaskEntity;
 

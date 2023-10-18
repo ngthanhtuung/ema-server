@@ -14,7 +14,7 @@ export class DivisionEntity extends BaseEntity {
   @Column({ type: 'boolean', default: true })
   status: boolean;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: null })
   staffId: string;
 
   @OneToMany(() => UserEntity, (user) => user.division, { onDelete: 'CASCADE' })

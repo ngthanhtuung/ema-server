@@ -13,6 +13,7 @@ import {
 } from './dto/task.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { TaskEntity } from './task.entity';
+import { UserPagination } from '../user/dto/user.request';
 
 @Controller('task')
 @ApiBearerAuth()
@@ -21,8 +22,11 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Get()
-  async getTaskById(@Query() condition: TaskConditonFind): Promise<TaskEntity> {
-    return await this.taskService.getTaskInfo(condition);
+  async getTaskById(
+    @Query() condition: TaskConditonFind,
+    @Query() userPagination: UserPagination,
+  ): Promise<TaskEntity> {
+    return await this.taskService.getTaskInfo(condition, userPagination);
   }
 
   @Get('/filterByAssignee')

@@ -4,9 +4,7 @@ import { CommentEntity } from '../comment/comment.entity';
 
 @Entity({ name: 'comment_files' })
 export class CommentFileEntity extends BaseEntity {
-  @Column({ type: 'varchar' })
-  fileType: string;
-
+  
   @Column({ type: 'text', nullable: false })
   fileUrl: string;
 

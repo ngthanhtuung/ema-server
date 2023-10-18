@@ -58,9 +58,7 @@ export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
   'divisionId',
 ]) {}
 
-export class UserProfileUpdateRequestV2 extends OmitType(UserCreateRequest, [
-  'divisionId',
-]) {
+export class UserProfileUpdateRequestV2 extends UserCreateRequest {
   @IsNotEmpty()
   @ApiProperty({
     default: EUserStatus.ACTIVE,

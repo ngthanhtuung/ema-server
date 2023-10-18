@@ -64,7 +64,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
 
   /**
    * getDivisionById
-   * @param id
+   * @param ids
    * @returns
    */
   async getDivisionById(id: string): Promise<DivisionResponse> {
@@ -122,6 +122,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
    */
   async getAllDivision(
     divisionPagination: DivisionPagination,
+    mode: number,
   ): Promise<IPaginateResponse<DivisionResponse>> {
     try {
       const { currentPage, sizePage } = divisionPagination;
@@ -131,7 +132,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
         'divisions.divisionName as divisionName',
         'divisions.description as description',
         'divisions.status as status',
+        'divisions.staffId as staffId',
       ]);
+      if (mode === 2) {
+        query.where('divisions.staffId IS NULL');
+      }
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
@@ -139,9 +144,6 @@ export class DivisionService extends BaseService<DivisionEntity> {
           .execute(),
         query.getCount(),
       ]);
-      if (total === 0) {
-        throw new NotFoundException('Division not found');
-      }
       const data = plainToInstance(DivisionResponse, result);
       return paginateResponse<DivisionResponse>(
         [data, total],

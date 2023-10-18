@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsString,
 } from 'class-validator';
+import { EEventStatus, SortEnum } from 'src/common/enum/enum';
 
 export class EventCreateRequest {
   @IsString()
@@ -82,4 +83,33 @@ export class EventUpdateRequest extends EventCreateRequest {
     description: '1: assign , 2: delete',
   })
   mode: number;
+}
+
+export class FilterEvent {
+  @ApiProperty({ required: false, default: 'test' })
+  eventName: string;
+
+  @ApiProperty({ required: false, default: '2023-10' })
+  monthYear: string;
+
+  @ApiProperty({
+    type: 'string',
+    required: false,
+    default: 'startDate',
+  })
+  nameSort: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+  })
+  sort: SortEnum;
+
+  @ApiProperty({
+    required: false,
+    type: 'enum',
+    enum: EEventStatus,
+  })
+  status: EEventStatus;
 }

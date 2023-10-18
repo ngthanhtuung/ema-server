@@ -16,14 +16,18 @@ import { Public } from 'src/decorators/public.decorator';
 @ApiBearerAuth()
 @ApiTags('Division')
 export class DivisionController {
-  constructor(private readonly divisionService: DivisionService) { }
+  constructor(private readonly divisionService: DivisionService) {}
 
   @Get()
   @Roles(ERole.MANAGER, ERole.STAFF)
   async getAllDivision(
     @Query() divisionPagination: DivisionPagination,
+    @Query('mode') mode: number,
   ): Promise<IPaginateResponse<DivisionResponse>> {
-    return await this.divisionService.getAllDivision(divisionPagination);
+    return await this.divisionService.getAllDivision(
+      divisionPagination,
+      Number(mode),
+    );
   }
 
   /**

@@ -29,7 +29,7 @@ import ForgetPasswordRequest from './dto/fortgetPassword.dto';
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthenticationController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   /**
    * http://localhost:6969/api/v1/auth/login(Post)
