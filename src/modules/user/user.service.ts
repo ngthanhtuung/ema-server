@@ -476,7 +476,7 @@ export class UserService extends BaseService<UserEntity> {
             where: { staffId: userIdUpdate },
           },
         );
-        if (divisionFilterStaff && data.role === ERole.EMPLOYEE) {
+        if (divisionFilterStaff) {
           await queryRunner.manager.update(
             DivisionEntity,
             { id: divisionFilterStaff.id },
@@ -491,13 +491,6 @@ export class UserService extends BaseService<UserEntity> {
             { id: division.id },
             {
               staffId: userIdUpdate,
-            },
-          );
-          await queryRunner.manager.update(
-            DivisionEntity,
-            { id: divisionFilterStaff.id },
-            {
-              staffId: null,
             },
           );
         }
