@@ -26,6 +26,7 @@ import { FileModule } from './file/file.module';
 import { FirebaseProviderModule } from './providers/firebase/provider.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { GatewayModule } from './sockets/gateway.module';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { GatewayModule } from './sockets/gateway.module';
     FileModule,
     FirebaseProviderModule,
     NotificationModule,
+    CommentModule,
     GatewayModule,
   ],
   controllers: [AppController],
