@@ -201,4 +201,19 @@ export class TaskService extends BaseService<TaskEntity> {
     }
     return result;
   }
+
+  async findUserInTask(userId: string): Promise<boolean | undefined> {
+    try {
+      const result = await this.taskRepository.find({
+        where: {
+          assignTasks: {
+            assignee: userId,
+          },
+        }
+      })
+      return result.length > 0 ? true : false
+    } catch (err) {
+      return false;
+    }
+  }
 }
