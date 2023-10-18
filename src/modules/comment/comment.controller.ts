@@ -9,8 +9,7 @@ import { CommentEntity } from './comment.entity';
 @ApiTags('Comment')
 @ApiBearerAuth()
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {
-  }
+  constructor(private readonly commentService: CommentService) {}
 
   @Get('/:taskId')
   async getComment(@Param('taskId') taskId: string): Promise<CommentEntity[]> {
@@ -20,16 +19,16 @@ export class CommentController {
   @Post()
   async createComment(
     @Body() comment: CommentCreateRequest,
-    @GetUser() user: string
+    @GetUser() user: string,
   ): Promise<string | undefined> {
-    return await this.commentService.createComment(comment, user)
+    return await this.commentService.createComment(comment, user);
   }
 
   @Delete('/:commentId')
   async deleteComment(
     @Param('commentId') commentId: string,
-    @GetUser() user: string
+    @GetUser() user: string,
   ): Promise<string | undefined> {
-    return await this.commentService.deleteComment(commentId, user)
+    return await this.commentService.deleteComment(commentId, user);
   }
 }

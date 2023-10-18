@@ -240,9 +240,9 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: {
             assignee: userId,
           },
-        }
-      })
-      return result.length > 0 ? true : false
+        },
+      });
+      return result.length > 0 ? true : false;
     } catch (err) {
       return false;
     }

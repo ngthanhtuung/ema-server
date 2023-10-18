@@ -6,10 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TaskModule } from '../task/task.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([CommentEntity]),
-    TaskModule
-  ],
+  imports: [TypeOrmModule.forFeature([CommentEntity]), TaskModule],
   controllers: [CommentController],
   providers: [CommentService],
 })
