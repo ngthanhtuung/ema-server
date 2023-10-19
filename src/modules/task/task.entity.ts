@@ -27,7 +27,7 @@ export class TaskEntity extends BaseEntity {
   priority: EPriority;
 
   // @Column({ type: 'varchar', nullable: true })
-  // parentTask: string;
+  // parentTask: string
 
   @Column({
     type: 'enum',
