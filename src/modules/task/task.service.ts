@@ -78,6 +78,34 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
           },
+          subTask: {
+            id: true,
+            assignTasks: {
+              id: true,
+              user: {
+                id: true,
+                profile: {
+                  profileId: true,
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
+          parent: {
+            id: true,
+            assignTasks: {
+              id: true,
+              user: {
+                id: true,
+                profile: {
+                  profileId: true,
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
         },
         relations: {
           taskFiles: true,
@@ -87,11 +115,19 @@ export class TaskService extends BaseService<TaskEntity> {
             },
           },
           subTask: {
-            assignTasks: true,
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
             taskFiles: true,
           },
           parent: {
-            assignTasks: true,
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
             taskFiles: true,
           },
         },
