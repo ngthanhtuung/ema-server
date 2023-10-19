@@ -66,9 +66,13 @@ export class TaskService extends BaseService<TaskEntity> {
         where: whereCondition,
         skip: offset,
         take: sizePage,
+        order: {
+          assignTasks: { isLeader: 'DESC' },
+        },
         select: {
           assignTasks: {
             id: true,
+            isLeader: true,
             user: {
               id: true,
               profile: {
@@ -80,8 +84,22 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           subTask: {
             id: true,
+            createdAt: true,
+            createdBy: true,
+            updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
             assignTasks: {
               id: true,
+              isLeader: true,
               user: {
                 id: true,
                 profile: {
@@ -94,8 +112,22 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           parent: {
             id: true,
+            createdAt: true,
+            createdBy: true,
+            updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
             assignTasks: {
               id: true,
+              isLeader: true,
               user: {
                 id: true,
                 profile: {
@@ -245,6 +277,19 @@ export class TaskService extends BaseService<TaskEntity> {
     let result;
     try {
       result = await this.taskRepository.find({
+        select: {
+          assignTasks: {
+            id: true,
+            isLeader: true,
+            user: {
+              id: true,
+              profile: {
+                avatar: true,
+                fullName: true,
+              },
+            },
+          },
+        },
         where: {
           priority,
           status,
@@ -256,7 +301,13 @@ export class TaskService extends BaseService<TaskEntity> {
           },
         },
         relations: {
-          event: true,
+          subTask: true,
+          parent: true,
+          assignTasks: {
+            user: {
+              profile: true,
+            },
+          },
           taskFiles: true,
         },
         order: {
