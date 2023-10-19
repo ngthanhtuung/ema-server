@@ -9,5 +9,6 @@ import { TaskModule } from '../task/task.module';
   imports: [TypeOrmModule.forFeature([CommentEntity]), TaskModule],
   controllers: [CommentController],
   providers: [CommentService],
+  exports: [CommentService],
 })
 export class CommentModule {}

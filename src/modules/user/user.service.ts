@@ -109,7 +109,6 @@ export class UserService extends BaseService<UserEntity> {
       ]);
 
     const data = await query.execute();
-
     return plainToClass(PayloadUser, data[0]);
   }
 
@@ -138,6 +137,7 @@ export class UserService extends BaseService<UserEntity> {
           'profiles.gender as gender',
           'profiles.address as address',
           'profiles.avatar as avatar',
+          'divisions.id as divisionId',
           'divisions.divisionName as divisionName',
         ]);
       const data = await query.execute();

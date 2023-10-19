@@ -26,11 +26,11 @@ export class AppGateway
 {
   @WebSocketServer() server: Server;
 
-  private logger: Logger = new Logger('MesageGateway');
+  protected logger: Logger = new Logger('MesageGateway');
 
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly userService: UserService,
+    protected readonly jwtService: JwtService,
+    protected readonly userService: UserService,
   ) {}
 
   afterInit(server: Server): void {
@@ -65,11 +65,6 @@ export class AppGateway
 
   @SubscribeMessage('hello')
   async hello(@ConnectedSocket() client: Socket): Promise<void> {
-    client.emit('hahaha', 'hello');
+    client.emit('hahaha', 'Test thử nè má ơi');
   }
-
-  //bắn vào một event comment
-  //comment bao gồm: text, taskId
-  //lưu vào db cái comment
-  //emit lại danh sách comment của task đó sort theo desc createdAt
 }

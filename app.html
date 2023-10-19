@@ -8,27 +8,26 @@
 </head>
 
 <body>
-    <button id="myButton" onclick="click()">Hahahaha</button>
+    <button id="myButton">Emit event</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js">
     </script>
     <script>
         var socket = io('http://localhost:3006', {
             auth: {
-                accessToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImI4OGVjMzVjLTdkNGEtNDVkZi1iNTAwLTdlY2MxNmVhYTRiYSIsInJvbGUiOiJNQU5BR0VSIiwiZW1haWwiOiJodXlkb2FubWVjQGdtYWlsLmNvbSIsImRpdmlzaW9uSUQiOm51bGwsImlhdCI6MTY5NzM4MzUwOCwiZXhwIjoxNjk3NDY5OTA4fQ.J8XKiYGaHuXegK_o5e92WtR12MzjcnzgpM6AGy0cVEQ'
+                accessToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFkNmJhNDcxLTJiYzMtNDIwNS04ZDc5LTA0ZjgxMjBjMzZiNSIsInJvbGUiOiJNQU5BR0VSIiwiZW1haWwiOiJodXlkb2FubWVjQGdtYWlsLmNvbSIsImRpdmlzaW9uSUQiOm51bGwsImlhdCI6MTY5NzY4NDgzMiwiZXhwIjoxNjk3NzcxMjMyfQ.hpcpF_Wkec61stzGm-KnNU6HXihrGpJfswCPVdfcDvE'
             }
         });
         var button = document.getElementById("myButton");
-        socket.on('hahaha', (data) => {
+        socket.on('recComment', (data) => {
             console.log(data);
         })
-        // Attach an event listener to the utton
+        // Attach an event listener to the button
         button.addEventListener("click", function () {
-            // Actions to perform when the button is clicked
-            // console.log("Button clicked!");
-            alert('Button Click')
-            // socket.emit('hello', {
-            //     message: 'Hello'
-            // })
+            socket.emit('comment', {
+                taskID: '123',
+                content: 'Hello world',
+                fileUrl: 'http://localhost'
+            })
             // Perform additional actions or call other functions
         });
     </script>

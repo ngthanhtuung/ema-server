@@ -10,4 +10,5 @@ export enum SocketEnum {
   JOIN_GROUP = 'join-group',
   SORT_GROUP = 'sort-group',
   LEAVE_GROUP = 'leave-group',
+  COMMENT = 'comment',
 }
