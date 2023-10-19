@@ -56,8 +56,8 @@ import { CommentModule } from './modules/comment/comment.module';
     FileModule,
     FirebaseProviderModule,
     NotificationModule,
-    CommentModule,
     GatewayModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [

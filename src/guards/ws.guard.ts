@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
 import { Observable } from 'rxjs';
@@ -21,6 +26,8 @@ export class WsGuard implements CanActivate {
     const client: Socket = context.switchToWs().getClient<Socket>();
     const accessToken: string =
       client.handshake.auth['accessToken'].split(' ')[1];
+    // const { authorization } = client.handshake.headers;
+    // const accessToken = authorization.split(' ')[1];
     try {
       const decoded: PayloadUser = await this.jwtService.verify(accessToken, {
         secret: jwtConstants.accessTokenSecret,
