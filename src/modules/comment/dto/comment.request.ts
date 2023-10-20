@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { CommentFileRequest } from 'src/modules/commentfile/dto/commentFile.request';
 
 export class CommentCreateRequest {

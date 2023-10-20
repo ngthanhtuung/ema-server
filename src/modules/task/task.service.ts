@@ -18,7 +18,6 @@ import {
   TASK_ERROR_MESSAGE,
 } from 'src/common/constants/constants';
 import { AssignTaskService } from '../assign-task/assign-task.service';
-import * as asyn from 'async';
 import { UserPagination } from '../user/dto/user.request';
 
 @Injectable()

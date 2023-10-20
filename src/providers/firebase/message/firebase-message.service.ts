@@ -3,8 +3,6 @@ import { messaging } from 'firebase-admin';
 import { Messaging } from 'firebase-admin/lib/messaging/messaging';
 import {
   BatchResponse,
-  MessagingDevicesResponse,
-  MessagingPayload,
   MulticastMessage,
 } from 'firebase-admin/lib/messaging/messaging-api';
 

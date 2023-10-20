@@ -1,9 +1,8 @@
-import { PagerMiddleware } from './../middleware/pagerMiddleware';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { JwtService } from '@nestjs/jwt';
 import { Logger, UseGuards } from '@nestjs/common';
 import {
   ConnectedSocket,
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -16,7 +15,6 @@ import { Server, Socket } from 'socket.io';
 import { SocketEnum } from 'src/common/enum/socket.enum';
 import { jwtConstants } from 'src/config/jwt.config';
 import { UserService } from 'src/modules/user/user.service';
-import { PayloadUser } from 'src/modules/user/dto/user.response';
 import { WsGuard } from 'src/guards/ws.guard';
 
 @UseGuards(WsGuard)

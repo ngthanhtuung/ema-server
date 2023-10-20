@@ -1,4 +1,4 @@
-import { Injectable, Logger, UseFilters, UseGuards } from '@nestjs/common';
+import { Injectable, UseFilters, UseGuards } from '@nestjs/common';
 import { AppGateway } from './app.gateway';
 import { CommentService } from 'src/modules/comment/comment.service';
 import {
@@ -11,10 +11,8 @@ import { CommentCreateRequest } from 'src/modules/comment/dto/comment.request';
 import { UserService } from 'src/modules/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { WsGuard } from 'src/guards/ws.guard';
-import { SocketEnum } from 'src/common/enum/socket.enum';
 import { WebsocketExceptionsFilter } from 'src/exception/ws-exception.filter';
 import { PayloadUser } from 'src/modules/user/dto/user.response';
-import { jwtConstants } from 'src/config/jwt.config';
 import { CommentFileRequest } from 'src/modules/commentfile/dto/commentFile.request';
 
 @Injectable()

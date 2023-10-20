@@ -4,7 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, Like, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
