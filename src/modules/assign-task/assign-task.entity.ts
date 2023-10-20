@@ -3,7 +3,7 @@ import { BaseEntity } from '../base/base.entity';
 import { TaskEntity } from '../task/task.entity';
 import { UserEntity } from '../user/user.entity';
 
-@Entity({ name: 'assign-tasks' })
+@Entity({ name: 'assign_tasks' })
 export class AssignTaskEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   assignee: string;
