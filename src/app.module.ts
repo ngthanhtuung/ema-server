@@ -27,6 +27,7 @@ import { FirebaseProviderModule } from './providers/firebase/provider.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
+import { DeviceModule } from './modules/device/device.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { CommentModule } from './modules/comment/comment.module';
     TaskModule,
     AssignTaskModule,
     FileModule,
+    DeviceModule,
     FirebaseProviderModule,
     NotificationModule,
     GatewayModule,

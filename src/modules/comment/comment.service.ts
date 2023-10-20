@@ -2,9 +2,7 @@ import {
   COMMENT_ERROR_MESSAGE,
   TASK_ERROR_MESSAGE,
 } from './../../common/constants/constants';
-import { messaging } from 'firebase-admin';
 import {
-  BadGatewayException,
   BadRequestException,
   Injectable,
   InternalServerErrorException,
@@ -13,14 +11,13 @@ import {
 import { CommentEntity } from './comment.entity';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, FindOneOptions, QueryRunner } from 'typeorm';
+import { Repository, DataSource, QueryRunner } from 'typeorm';
 import { CommentCreateRequest } from './dto/comment.request';
 import { TaskService } from '../task/task.service';
 import { TaskEntity } from '../task/task.entity';
 import { UserEntity } from '../user/user.entity';
 import { CommentFileEntity } from '../commentfile/commentfile.entity';
 import { ERole } from 'src/common/enum/enum';
-import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CommentService extends BaseService<CommentEntity> {
@@ -105,14 +102,11 @@ export class CommentService extends BaseService<CommentEntity> {
           );
           if (data.file !== undefined) {
             for (let i = 0; i < data.file.length; i++) {
-              const commentFile = await queryRunner.manager.insert(
-                CommentFileEntity,
-                {
-                  comment: createdComment.identifiers[0],
-                  fileName: data.file[i].fileName,
-                  fileUrl: data.file[i].fileUrl,
-                },
-              );
+              await queryRunner.manager.insert(CommentFileEntity, {
+                comment: createdComment.identifiers[0],
+                fileName: data.file[i].fileName,
+                fileUrl: data.file[i].fileUrl,
+              });
             }
           }
         };

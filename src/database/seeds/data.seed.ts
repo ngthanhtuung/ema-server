@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { faker } from '@faker-js/faker';
 import { ProfileEntity } from 'src/modules/profile/profile.entity';
 import { UserEntity } from 'src/modules/user/user.entity';
@@ -73,7 +74,7 @@ export class DataSeed implements Seeder {
         email: 'quanghuy0610.dev@gmail.com',
         password: hashPassword,
         division: {
-          id: divison1['identifiers'][0]['id'],
+          id: divison2['identifiers'][0]['id'],
         },
       })
       .execute();
@@ -101,7 +102,7 @@ export class DataSeed implements Seeder {
         email: 'huydvqse151224@fpt.edu.vn',
         password: hashPassword,
         division: {
-          id: divison1['identifiers'][0]['id'],
+          id: divison3['identifiers'][0]['id'],
         },
       })
       .execute();

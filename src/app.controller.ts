@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FirebaseMessageService } from './providers/firebase/message/firebase-message.service';
-import {
-  Controller,
-  InternalServerErrorException,
-  Get,
-  Param,
-} from '@nestjs/common';
+import { Controller, InternalServerErrorException, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator';
