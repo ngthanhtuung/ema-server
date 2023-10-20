@@ -63,6 +63,7 @@ export class CommentService extends BaseService<CommentEntity> {
           'profile.fullName',
           'profile.avatar',
           'commentFiles.id',
+          'commentFiles.fileName',
           'commentFiles.fileUrl',
         ])
         .andWhere('comment.status = :status', { status: true })
@@ -102,13 +103,14 @@ export class CommentService extends BaseService<CommentEntity> {
               user: user,
             },
           );
-          if (data.fileUrl !== undefined) {
-            for (let i = 0; i < data.fileUrl.length; i++) {
+          if (data.file !== undefined) {
+            for (let i = 0; i < data.file.length; i++) {
               const commentFile = await queryRunner.manager.insert(
                 CommentFileEntity,
                 {
                   comment: createdComment.identifiers[0],
-                  fileUrl: data.fileUrl[i],
+                  fileName: data.file[i].fileName,
+                  fileUrl: data.file[i].fileUrl,
                 },
               );
             }

@@ -15,6 +15,7 @@ import { SocketEnum } from 'src/common/enum/socket.enum';
 import { WebsocketExceptionsFilter } from 'src/exception/ws-exception.filter';
 import { PayloadUser } from 'src/modules/user/dto/user.response';
 import { jwtConstants } from 'src/config/jwt.config';
+import { CommentFileRequest } from 'src/modules/commentfile/dto/commentFile.request';
 
 @Injectable()
 @UseFilters(WebsocketExceptionsFilter)
@@ -33,11 +34,11 @@ export class CommentGateway extends AppGateway {
     @MessageBody() comment: IComment,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
-    const { taskID, content, fileUrl, user } = comment;
+    const { taskID, content, file, user } = comment;
     const newComment: CommentCreateRequest = {
       taskID,
       content,
-      fileUrl,
+      file,
     };
     await this.commentService.createComment(newComment, JSON.stringify(user));
     const commentInTask = await this.commentService.getCommentByTaskId(taskID);
@@ -53,6 +54,6 @@ export class CommentGateway extends AppGateway {
 export interface IComment {
   taskID: string;
   content: string;
-  fileUrl?: string[];
+  file?: CommentFileRequest[];
   user: PayloadUser;
 }

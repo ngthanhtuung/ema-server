@@ -37,7 +37,7 @@ export class TaskfileService extends BaseService<TaskFileEntity> {
   }
 
   async insertTaskFile(data: TaskFileCreateReq): Promise<string> {
-    const { taskID, fileUrl } = data;
+    const { taskID, fileName, fileUrl } = data;
     const queryRunner = this.dataSource.createQueryRunner();
     for (const key in data) {
       if (data[key].trim().length == 0) {
@@ -51,7 +51,11 @@ export class TaskfileService extends BaseService<TaskFileEntity> {
       if (!taskExist) {
         throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
       }
-      await queryRunner.manager.insert(TaskFileEntity, { taskID, fileUrl });
+      await queryRunner.manager.insert(TaskFileEntity, {
+        taskID,
+        fileName,
+        fileUrl,
+      });
     };
     await this.transaction(callback, queryRunner);
     return 'Insert fileUrl successfully';

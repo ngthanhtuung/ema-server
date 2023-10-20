@@ -4,6 +4,9 @@ import { TaskEntity } from '../task/task.entity';
 
 @Entity({ name: 'task_files' })
 export class TaskFileEntity extends BaseEntity {
+  @Column({ type: 'varchar', nullable: false })
+  fileName: string;
+
   @Column({ type: 'text', nullable: false })
   fileUrl: string;
 

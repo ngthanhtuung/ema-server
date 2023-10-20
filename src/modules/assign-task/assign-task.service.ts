@@ -31,45 +31,49 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
   }
 
   async assignMemberToTask(data: AssignTaskReq, user: string): Promise<string> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    // eslint-disable-next-line prefer-const
-    let { assignee, taskID, leader } = data;
-    const oUser = JSON.parse(user);
-    if (assignee.length < 0) {
-      throw new BadRequestException(ASSIGN_ERROR_MESSAGE.NO_ASSIGNEE);
-    }
-
-    if (assignee.length > 0 && leader.length == 0) {
-      leader = assignee[0];
-    }
-
-    const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
-        where: { id: taskID },
-      });
-
-      if (!taskExisted) {
-        throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      // eslint-disable-next-line prefer-const
+      let { assignee, taskID, leader } = data;
+      const oUser = JSON.parse(user);
+      if (assignee.length < 0) {
+        throw new BadRequestException(ASSIGN_ERROR_MESSAGE.NO_ASSIGNEE);
       }
-      const aAssignTask = [];
-      assignee.map((item) => {
-        let isLeader = false;
-        if (item === leader) {
-          isLeader = true;
-        }
-        const oAssignTask = {
-          taskID,
-          assignee: item,
-          isLeader,
-          taskMaster: oUser.id,
-        };
-        aAssignTask.push(() => {
-          queryRunner.manager.insert(AssignTaskEntity, oAssignTask);
+
+      if (assignee.length > 0 && leader.length == 0) {
+        leader = assignee[0];
+      }
+
+      const callback = async (queryRunner: QueryRunner): Promise<void> => {
+        const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
+          where: { id: taskID },
         });
-      });
-      asyn.parallelLimit(aAssignTask, 3);
-    };
-    await this.transaction(callback, queryRunner);
-    return 'Assign member successfully';
+
+        if (!taskExisted) {
+          throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
+        }
+        const aAssignTask = [];
+        assignee.map((item) => {
+          let isLeader = false;
+          if (item === leader) {
+            isLeader = true;
+          }
+          const oAssignTask = {
+            taskID,
+            assignee: item,
+            isLeader,
+            taskMaster: oUser.id,
+          };
+          aAssignTask.push(() => {
+            queryRunner.manager.insert(AssignTaskEntity, oAssignTask);
+          });
+        });
+        asyn.parallelLimit(aAssignTask, 3);
+      };
+      await this.transaction(callback, queryRunner);
+      return 'Assign member successfully';
+    } catch (err) {
+      return err.message;
+    }
   }
 }

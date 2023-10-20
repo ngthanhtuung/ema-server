@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EPriority, ETaskStatus, SortEnum } from 'src/common/enum/enum';
+import { TaskFileRequest } from 'src/modules/taskfile/dto/taskFile.request';
 
 export class TaskCreateReq {
   @ApiProperty()
@@ -35,8 +36,11 @@ export class TaskCreateReq {
   @ApiProperty({ required: false })
   leader: string;
 
-  @ApiProperty({ required: false })
-  fileUrl: string;
+  @ApiProperty({
+    type: [TaskFileRequest],
+    required: false,
+  })
+  file?: TaskFileRequest[];
 }
 
 export class TaskUpdateReq {
