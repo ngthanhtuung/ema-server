@@ -30,6 +30,7 @@ export enum EPriority {
 export enum ETaskStatus {
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
+  CONFIRM = 'CONFIRM',
   DONE = 'DONE',
   CANCEL = 'CANCEL',
   OVERDUE = 'OVERDUE',
