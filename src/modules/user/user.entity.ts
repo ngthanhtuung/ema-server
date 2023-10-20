@@ -81,6 +81,6 @@ export class UserEntity extends BaseEntity {
   assignee: AssignTaskEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user)
-  @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'profileId' })
   profile: ProfileEntity;
 }

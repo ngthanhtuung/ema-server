@@ -11,18 +11,19 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   title: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   startDate: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   endDate: Date;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   description: string;
 
   @Column({
     type: 'enum',
     enum: EPriority,
+    nullable: true,
   })
   priority: EPriority;
 
@@ -36,7 +37,7 @@ export class TaskEntity extends BaseEntity {
   })
   status: ETaskStatus;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: true })
   estimationTime: number;
 
   @Column({ type: 'int', nullable: true })

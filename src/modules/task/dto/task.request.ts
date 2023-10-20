@@ -9,25 +9,26 @@ export class TaskCreateReq {
   @ApiProperty()
   eventID: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   startDate: Date;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   endDate: Date;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   desc: string;
 
   @ApiProperty({
     type: 'enum',
     enum: EPriority,
+    required: false,
   })
   priority: EPriority;
 
   @ApiProperty({ required: false })
   parentTask: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   estimationTime: number;
 
   @ApiProperty({ required: false })

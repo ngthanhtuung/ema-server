@@ -249,8 +249,6 @@ export class UserService extends BaseService<UserEntity> {
         password,
         division,
       });
-      console.log('Create user: ', createUser);
-      console.log('ProfileId: ', createUser.generatedMaps[0]['id']);
       if (profile.role === ERole.STAFF) {
         await queryRunner.manager.update(
           DivisionEntity,
@@ -270,7 +268,7 @@ export class UserService extends BaseService<UserEntity> {
     };
 
     await this.transaction(callback, queryRunner);
-    return 'create user success';
+    return 'Create user success';
   }
 
   /**

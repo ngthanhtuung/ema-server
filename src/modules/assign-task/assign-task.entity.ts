@@ -24,6 +24,6 @@ export class AssignTaskEntity extends BaseEntity {
   task: TaskEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.assignee, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'assignee', referencedColumnName: 'id' })
+  @JoinColumn({ name: 'assignee', referencedColumnName: 'id' })
   user: UserEntity;
 }
