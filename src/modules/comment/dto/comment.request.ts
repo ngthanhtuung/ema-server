@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmpty, IsString } from 'class-validator';
+import { CommentFileRequest } from 'src/modules/commentfile/dto/commentFile.request';
 
 export class CommentCreateRequest {
   @IsString()
@@ -11,7 +12,8 @@ export class CommentCreateRequest {
   content: string;
 
   @ApiProperty({
+    type: [CommentFileRequest],
     required: false,
   })
-  fileUrl?: string[];
+  file?: CommentFileRequest[];
 }

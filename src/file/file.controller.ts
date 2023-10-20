@@ -39,14 +39,13 @@ export class FileController {
   async uploadFile(
     @UploadedFile('file') file: Express.Multer.File,
     @Body('folderName') folderName: string,
-  ): Promise<string | undefined> {
+  ): Promise<object | undefined> {
     const fileDto = plainToInstance(FileRequest, {
       fileName: file.originalname,
       fileType: file.mimetype,
       fileSize: file.size,
       fileBuffer: file.buffer,
     });
-    const downloadUrl = await this.fileService.uploadFile(fileDto, folderName);
-    return downloadUrl;
+    return await this.fileService.uploadFile(fileDto, folderName);
   }
 }

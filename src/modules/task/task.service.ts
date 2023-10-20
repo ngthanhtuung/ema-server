@@ -191,7 +191,7 @@ export class TaskService extends BaseService<TaskEntity> {
       parentTask,
       estimationTime,
       assignee,
-      fileUrl,
+      file,
       leader,
     } = task;
     const oUser = JSON.parse(user);
@@ -227,11 +227,14 @@ export class TaskService extends BaseService<TaskEntity> {
         };
         this.assignTaskService.assignMemberToTask(oAssignTask, user);
       }
-      if (fileUrl) {
-        this.taskFileService.insertTaskFile({
-          taskID: createTask.generatedMaps[0]['id'],
-          fileUrl,
-        });
+      if (file) {
+        for (let i = 0; i < file.length; i++) {
+          this.taskFileService.insertTaskFile({
+            taskID: createTask.generatedMaps[0]['id'],
+            fileName: file[0].fileName,
+            fileUrl: file[0].fileUrl,
+          });
+        }
       }
     };
     await this.transaction(callback, queryRunner);
