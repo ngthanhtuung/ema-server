@@ -16,7 +16,7 @@ export class ProfileEntity {
   @Column({ type: 'datetime' })
   dob: Date;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, unique: true })
   nationalId: string;
 
   @Column({ enum: EGender, type: 'enum', default: EGender.MALE })
@@ -25,7 +25,7 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 255 })
   address: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, unique: true })
   phoneNumber: string;
 
   @Column({ type: 'text' })
