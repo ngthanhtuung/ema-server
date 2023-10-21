@@ -36,7 +36,7 @@ export class DivisionController {
    */
 
   @Get('/:divisionId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.STAFF)
   async getDivisionById(
     @Param('divisionId') id: string,
   ): Promise<DivisionResponse> {
