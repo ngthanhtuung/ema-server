@@ -328,6 +328,7 @@ export class TaskService extends BaseService<TaskEntity> {
         where: {
           assignTasks: {
             assignee: userId,
+            taskMaster: userId,
           },
         },
       });
