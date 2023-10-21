@@ -225,6 +225,7 @@ export class UserService extends BaseService<UserEntity> {
     const { email, ...profile } = userCreateRequest;
     const generatePassword = this.shareService.generatePassword(8);
     const password = await this.shareService.hashPassword(generatePassword);
+    let createUser = undefined;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const userExist = await queryRunner.manager.findOne(UserEntity, {
         where: { email: userCreateRequest.email },
@@ -244,7 +245,7 @@ export class UserService extends BaseService<UserEntity> {
         );
       }
 
-      const createUser = await queryRunner.manager.insert(UserEntity, {
+      createUser = await queryRunner.manager.insert(UserEntity, {
         email,
         password,
         division,
@@ -266,8 +267,15 @@ export class UserService extends BaseService<UserEntity> {
       });
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
-
     await this.transaction(callback, queryRunner);
+    await this.userRepository.update(
+      {
+        id: createUser.generatedMaps[0]['id'],
+      },
+      {
+        profile: createUser.generatedMaps[0]['id'],
+      },
+    );
     return 'Create user success';
   }
 
