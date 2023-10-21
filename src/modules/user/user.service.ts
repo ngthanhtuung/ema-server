@@ -461,6 +461,9 @@ export class UserService extends BaseService<UserEntity> {
         {
           email: data.email,
           status: data.status,
+          typeEmployee: data.isFullTime
+            ? ETypeEmployee.FULL_TIME
+            : ETypeEmployee.PART_TIME,
           division,
         },
       );
