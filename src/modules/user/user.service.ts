@@ -1,4 +1,4 @@
-import { EUserStatus } from './../../common/enum/enum';
+import { ETypeEmployee, EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
   Injectable,
@@ -222,7 +222,7 @@ export class UserService extends BaseService<UserEntity> {
    */
   async insertUser(userCreateRequest: UserCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    const { email, ...profile } = userCreateRequest;
+    const { email, isFullTime, ...profile } = userCreateRequest;
     const generatePassword = this.shareService.generatePassword(8);
     const password = await this.shareService.hashPassword(generatePassword);
     let createUser = undefined;
@@ -249,6 +249,9 @@ export class UserService extends BaseService<UserEntity> {
         email,
         password,
         division,
+        typeEmployee: isFullTime
+          ? ETypeEmployee.FULL_TIME
+          : ETypeEmployee.PART_TIME,
       });
       if (profile.role === ERole.STAFF) {
         await queryRunner.manager.update(

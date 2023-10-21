@@ -46,3 +46,8 @@ export enum SortEnum {
   ASC = 'ASC',
   DESC = 'DESC',
 }
+
+export enum ETypeEmployee {
+  FULL_TIME = 'FULL TIME',
+  PART_TIME = 'PART_TIME',
+}

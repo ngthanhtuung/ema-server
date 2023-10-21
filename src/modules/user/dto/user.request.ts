@@ -1,8 +1,13 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 import * as moment from 'moment';
-import { EGender, ERole, EUserStatus } from 'src/common/enum/enum';
+import {
+  EGender,
+  ERole,
+  ETypeEmployee,
+  EUserStatus,
+} from 'src/common/enum/enum';
 import { FilterPaginationBase } from 'src/modules/base/filter.pagination';
 
 export class UserCreateRequest {
@@ -47,6 +52,13 @@ export class UserCreateRequest {
   @ApiProperty({ default: ERole.EMPLOYEE, enum: ERole })
   @IsEnum(ERole)
   role: ERole;
+
+  @ApiProperty({
+    default: true,
+    description: 'true: full time, false: parttime',
+  })
+  @IsBoolean()
+  isFullTime: boolean;
 }
 
 export class UserPagination extends FilterPaginationBase {}

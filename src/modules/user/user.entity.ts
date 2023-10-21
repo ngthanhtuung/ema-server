@@ -14,7 +14,7 @@ import { DeviceEntity } from '../device/device.entity';
 import { DivisionEntity } from '../division/division.entity';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import { CommentEntity } from '../comment/comment.entity';
-import { EUserStatus } from 'src/common/enum/enum';
+import { ETypeEmployee, EUserStatus } from 'src/common/enum/enum';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { ProfileEntity } from '../profile/profile.entity';
 
@@ -38,6 +38,13 @@ export class UserEntity extends BaseEntity {
     default: EUserStatus.ACTIVE,
   })
   status: EUserStatus;
+
+  @Column({
+    enum: ETypeEmployee,
+    type: 'enum',
+    default: ETypeEmployee.FULL_TIME,
+  })
+  typeEmployee: ETypeEmployee;
 
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
