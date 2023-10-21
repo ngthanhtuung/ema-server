@@ -68,6 +68,8 @@ export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
   'nationalId',
   'gender',
   'divisionId',
+  'role',
+  'isFullTime',
 ]) {}
 
 export class UserProfileUpdateRequestV2 extends UserCreateRequest {
