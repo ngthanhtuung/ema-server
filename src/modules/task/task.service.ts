@@ -69,6 +69,10 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: { isLeader: 'DESC' },
         },
         select: {
+          event: {
+            id: true,
+            eventName: true,
+          },
           assignTasks: {
             id: true,
             isLeader: true,
@@ -139,6 +143,7 @@ export class TaskService extends BaseService<TaskEntity> {
           },
         },
         relations: {
+          event: true,
           taskFiles: true,
           assignTasks: {
             user: {
