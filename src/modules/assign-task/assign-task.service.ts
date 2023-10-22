@@ -52,6 +52,18 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         if (!taskExisted) {
           throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
         }
+        const assignedExisted = await queryRunner.manager.find(
+          AssignTaskEntity,
+          {
+            where: { taskID },
+          },
+        );
+        const deleteAssignTask = assignedExisted?.map((item) => {
+          queryRunner.manager.delete(AssignTaskEntity, { id: item.id });
+        });
+        if (deleteAssignTask.length !== 0) {
+          await Promise.all(deleteAssignTask);
+        }
         const aAssignTask = [];
         assignee.map((item) => {
           let isLeader = false;
