@@ -201,9 +201,6 @@ export class UserService extends BaseService<UserEntity> {
           .execute(),
         query.getCount(),
       ]);
-      if (total === 0) {
-        throw new NotFoundException('User not found');
-      }
       const listUser = plainToInstance(UserProfile, result);
       return paginateResponse<UserProfile>(
         [listUser, total],
