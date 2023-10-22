@@ -54,6 +54,7 @@ export class AuthService {
       email: email,
       divisionID: user.divisionId,
       avatar: user.avatar,
+      fullName: user.fullName,
     };
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {

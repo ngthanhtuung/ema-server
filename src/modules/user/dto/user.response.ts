@@ -20,6 +20,9 @@ export class UserResponse {
 
   @Expose()
   avatar: string;
+
+  @Expose()
+  fullName: string;
 }
 
 export class PayloadUser extends OmitType(UserResponse, ['password']) {
