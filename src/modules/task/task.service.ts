@@ -318,7 +318,7 @@ export class TaskService extends BaseService<TaskEntity> {
           taskFiles: true,
         },
         order: {
-          endDate: { direction: sort },
+          createdAt: { direction: sort },
         },
       });
     } catch (error) {
