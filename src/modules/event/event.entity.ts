@@ -19,7 +19,7 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   location: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', length: 15000 })
   description: string;
 
   @Column({ type: 'text' })

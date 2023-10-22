@@ -17,7 +17,7 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'datetime', nullable: true })
   endDate: Date;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 15000 })
   description: string;
 
   @Column({

@@ -53,6 +53,7 @@ export class AuthService {
       role: user.role,
       email: email,
       divisionID: user.divisionId,
+      avatar: user.avatar,
     };
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {
