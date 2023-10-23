@@ -14,7 +14,6 @@ import {
   TASK_ERROR_MESSAGE,
 } from 'src/common/constants/constants';
 import { TaskEntity } from '../task/task.entity';
-import * as asyn from 'async';
 @Injectable()
 export class AssignTaskService extends BaseService<AssignTaskEntity> {
   constructor(
@@ -76,11 +75,13 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
             isLeader,
             taskMaster: oUser.id,
           };
-          aAssignTask.push(() => {
-            queryRunner.manager.insert(AssignTaskEntity, oAssignTask);
-          });
+          aAssignTask.push(
+            queryRunner.manager.insert(AssignTaskEntity, oAssignTask),
+          );
         });
-        asyn.parallelLimit(aAssignTask, 3);
+        if (aAssignTask.length !== 0) {
+          await Promise.all(aAssignTask);
+        }
       };
       await this.transaction(callback, queryRunner);
       return 'Assign member successfully';
