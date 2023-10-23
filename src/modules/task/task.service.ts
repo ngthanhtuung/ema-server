@@ -213,12 +213,8 @@ export class TaskService extends BaseService<TaskEntity> {
         title: title,
         createdBy: createBy,
         eventID: eventID,
-        startDate: moment(startDate)
-          .tz('Asia/Ho_Chi_Minh')
-          .format('YYYY-MM-DD HH:mm:ss'),
-        endDate: moment(endDate)
-          .tz('Asia/Ho_Chi_Minh')
-          .format('YYYY-MM-DD HH:mm:ss'),
+        startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
+        endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
         description: desc,
         estimationTime: estimationTime,
         priority: priority,
