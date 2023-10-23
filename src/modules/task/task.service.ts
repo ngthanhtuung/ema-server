@@ -19,7 +19,7 @@ import {
 } from 'src/common/constants/constants';
 import { AssignTaskService } from '../assign-task/assign-task.service';
 import { UserPagination } from '../user/dto/user.request';
-
+import * as moment from 'moment-timezone';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -213,8 +213,12 @@ export class TaskService extends BaseService<TaskEntity> {
         title: title,
         createdBy: createBy,
         eventID: eventID,
-        startDate: startDate,
-        endDate: endDate,
+        startDate: moment(startDate)
+          .tz('Asia/Ho_Chi_Minh')
+          .format('YYYY-MM-DD HH:mm:ss'),
+        endDate: moment(endDate)
+          .tz('Asia/Ho_Chi_Minh')
+          .format('YYYY-MM-DD HH:mm:ss'),
         description: desc,
         estimationTime: estimationTime,
         priority: priority,

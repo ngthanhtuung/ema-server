@@ -12,19 +12,9 @@ export class TaskCreateReq {
   eventID: string;
 
   @ApiProperty({ required: false })
-  @Transform(({ value }) => {
-    return moment(value)
-      .tz('Asia/Ho_Chi_Minh')
-      .format('YYYY-MM-DD HH:mm:ss.SSS');
-  })
   startDate: Date;
 
   @ApiProperty({ required: false })
-  @Transform(({ value }) => {
-    return moment(value)
-      .tz('Asia/Ho_Chi_Minh')
-      .format('YYYY-MM-DD HH:mm:ss.SSS');
-  })
   endDate: Date;
 
   @ApiProperty({ required: false })
