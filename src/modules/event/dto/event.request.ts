@@ -53,14 +53,6 @@ export class EventCreateRequest {
 }
 
 export class EventAssignRequest {
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '1',
-    description: '1: assign , 2: delete',
-  })
-  mode: number;
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -69,21 +61,11 @@ export class EventAssignRequest {
   eventId: string;
 
   @IsArray()
-  @ArrayMinSize(1)
-  @IsNotEmpty()
   @ApiProperty({ default: ['1a73eb86-99ee-46c4-92c3-a9ae091c0caf'] })
   divisionId: Array<string>;
 }
 
-export class EventUpdateRequest extends EventCreateRequest {
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '1',
-    description: '1: assign , 2: delete',
-  })
-  mode: number;
-}
+export class EventUpdateRequest extends EventCreateRequest {}
 
 export class FilterEvent {
   @ApiProperty({ required: false, default: 'test' })

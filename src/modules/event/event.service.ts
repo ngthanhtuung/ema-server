@@ -215,7 +215,6 @@ export class EventService extends BaseService<EventEntity> {
           },
         );
         const dataEditDivision: EventAssignRequest = {
-          mode: event.mode,
           eventId: eventId,
           divisionId: event.divisionId,
         };
@@ -240,50 +239,29 @@ export class EventService extends BaseService<EventEntity> {
     if (!queryRunner) {
       queryRunner = this.dataSource.createQueryRunner();
     }
-    // check division exist in event
-    const listFindDivision = data.divisionId.map((division) =>
-      queryRunner.manager.findOne(AssignEventEntity, {
-        where: {
-          event: { id: data.eventId },
-          division: { id: division },
-        },
-      }),
-    );
-    const checkExistDivision = (await Promise.all(listFindDivision)).filter(
-      (item) => item !== null,
-    );
-    if (data.mode === 1 && checkExistDivision.length > 0) {
-      throw new BadRequestException('Division already exists in event');
-    } else if (data.mode === 2 && checkExistDivision.length === 0) {
-      throw new BadRequestException("Division don't exists in event");
-    }
-    // Mode 1: assign division
     const dataInsert = data.divisionId.map((item) => {
       return {
         event: { id: data.eventId },
         division: { id: item },
       };
     });
-    if (data.mode === 1) {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .insert()
-        .into(AssignEventEntity)
-        .values(dataInsert)
-        .execute();
-    } else {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .delete()
-        .from(AssignEventEntity)
-        .where('id In(:id)', {
-          id: checkExistDivision.map((item) => item.id).join(','),
-        })
-        .execute();
+    const assignedExisted = await queryRunner.manager.find(AssignEventEntity, {
+      where: { event: { id: data.eventId } },
+    });
+    const deleteAssignDivision = assignedExisted?.map((item) => {
+      queryRunner.manager.delete(AssignEventEntity, { id: item.id });
+    });
+    if (deleteAssignDivision.length !== 0) {
+      await Promise.all(deleteAssignDivision);
     }
-    return data.mode === 1
-      ? `Add division into event successfully!!!`
-      : 'Remove division into event successfully!!!';
+    await queryRunner.manager
+      .createQueryBuilder()
+      .insert()
+      .into(AssignEventEntity)
+      .values(dataInsert)
+      .execute();
+
+    return `Update division into event successfully!!!`;
   }
 
   /**
