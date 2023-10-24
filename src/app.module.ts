@@ -28,6 +28,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
+import { BudgetModule } from './modules/budget/budget.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { DeviceModule } from './modules/device/device.module';
     NotificationModule,
     GatewayModule,
     CommentModule,
+    BudgetModule,
   ],
   controllers: [AppController],
   providers: [
