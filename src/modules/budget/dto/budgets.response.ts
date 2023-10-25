@@ -38,6 +38,9 @@ export class BudgetsResponse {
 
   @Expose()
   supplier: string;
+
+  @Expose()
+  userName: string;
 }
 
 export class FilterBudgets {

@@ -25,7 +25,7 @@ export class BudgetController {
   @Get('')
   async getAllBudgets(
     @Query() budgetPagination: BudgetsPagination,
-  ): Promise<IPaginateResponse<BudgetsResponse>> {
+  ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     return await this.budgetService.getAllBudgets(budgetPagination);
   }
 
