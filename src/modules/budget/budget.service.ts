@@ -14,6 +14,7 @@ import { BudgetsResponse } from './dto/budgets.response';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import { EStatusBudgets } from 'src/common/enum/enum';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class BudgetService extends BaseService<BudgetEntity> {
@@ -22,6 +23,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
     private readonly budgetsRepository: BudgetRepository,
     @InjectDataSource()
     private dataSource: DataSource,
+    private readonly userService: UserService,
   ) {
     super(budgetsRepository);
   }
@@ -37,7 +39,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
    */
   async getAllBudgets(
     budgetsPagination: BudgetsPagination,
-  ): Promise<IPaginateResponse<BudgetsResponse>> {
+  ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     try {
       const { currentPage, sizePage } = budgetsPagination;
       const query = this.generalBuilderBudgets();
@@ -56,6 +58,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
         'budgets.approveDate as approveDate',
         'budgets.urlImage as urlImage',
         'budgets.supplier as supplier',
+        'budgets.description as description',
       ]);
       const [result, total] = await Promise.all([
         query
@@ -64,9 +67,19 @@ export class BudgetService extends BaseService<BudgetEntity> {
           .execute(),
         query.getCount(),
       ]);
-      const data = plainToInstance(BudgetsResponse, result);
-      return paginateResponse<BudgetsResponse>(
-        [data, total],
+      const finalRes: BudgetsResponse[] = [];
+      for (let index = 0; index < result.length; index++) {
+        const item = result[index];
+        const userName = (await this.userService.findById(item?.createBy))
+          ?.fullName;
+        const data = {
+          ...item,
+          userName,
+        };
+        finalRes.push(data);
+      }
+      return paginateResponse<BudgetsResponse[]>(
+        [finalRes, total],
         currentPage as number,
         sizePage as number,
       );

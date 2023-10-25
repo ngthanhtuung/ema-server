@@ -17,17 +17,14 @@ export class BudgetsCreateRequest {
   @ApiProperty({ default: 200000 })
   estExpense: number;
 
-  @IsNotEmpty()
   @ApiProperty({ default: 400000 })
   realExpense: number;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({ default: 'Thuê sảnh từ 8h00 - 12h00 ' })
   description: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({
     default: 'string',
   })
@@ -37,7 +34,6 @@ export class BudgetsCreateRequest {
   urlImage: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({ default: 'Saigon LED' })
   supplier: string;
 }
