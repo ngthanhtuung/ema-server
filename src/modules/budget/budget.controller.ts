@@ -18,15 +18,21 @@ export class BudgetController {
   constructor(private readonly budgetService: BudgetService) {}
 
   /**
-   * getAllEventByDivisionID
-   * @param data
+   * getAllBudgetsByEvent
+   * @param eventID
+   * @param budgetPagination
+   * @returns
    */
 
-  @Get('')
-  async getAllBudgets(
+  @Get('/:eventID')
+  async getAllBudgetsByEvent(
+    @Param('eventID') eventID: string,
     @Query() budgetPagination: BudgetsPagination,
   ): Promise<IPaginateResponse<BudgetsResponse[]>> {
-    return await this.budgetService.getAllBudgets(budgetPagination);
+    return await this.budgetService.getAllBudgetsByEventID(
+      budgetPagination,
+      eventID,
+    );
   }
 
   /**

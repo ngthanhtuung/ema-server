@@ -33,12 +33,14 @@ export class BudgetService extends BaseService<BudgetEntity> {
   }
 
   /**
-   * getAllBudgets
+   * getAllBudgetsByEventID
    * @param budgetsPagination
+   * @param eventID
    * @returns
    */
-  async getAllBudgets(
+  async getAllBudgetsByEventID(
     budgetsPagination: BudgetsPagination,
+    eventID: string,
   ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     try {
       const { currentPage, sizePage } = budgetsPagination;
@@ -60,6 +62,9 @@ export class BudgetService extends BaseService<BudgetEntity> {
         'budgets.supplier as supplier',
         'budgets.description as description',
       ]);
+      query.where('budgets.eventID = :eventID', {
+        eventID: eventID,
+      });
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
