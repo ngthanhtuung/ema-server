@@ -34,6 +34,6 @@ export class ProfileEntity {
   @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'profileId' })
+  @JoinColumn({ name: 'id' })
   user: UserEntity;
 }
