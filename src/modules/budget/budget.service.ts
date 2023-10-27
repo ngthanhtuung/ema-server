@@ -67,7 +67,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
       query.where('budgets.eventID = :eventID', {
         eventID: eventID,
       });
-      if (mode === 1) {
+      if (Number(mode) === 1) {
         query.andWhere('budgets.status = :status', {
           status: EStatusBudgets.PROCESSING,
         });
@@ -83,6 +83,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
           .execute(),
         query.getCount(),
       ]);
+
       const finalRes: BudgetsResponse[] = [];
       for (let index = 0; index < result.length; index++) {
         const item = result[index];
@@ -94,6 +95,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
         };
         finalRes.push(data);
       }
+
       return paginateResponse<BudgetsResponse[]>(
         [finalRes, total],
         currentPage as number,
