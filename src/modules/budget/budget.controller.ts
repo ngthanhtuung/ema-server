@@ -28,7 +28,7 @@ export class BudgetController {
   async getAllBudgetsByEvent(
     @Param('eventID') eventID: string,
     @Query() budgetPagination: BudgetsPagination,
-    @Query() mode: number,
+    @Query('mode') mode: number,
   ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     return await this.budgetService.getAllBudgetsByEventID(
       budgetPagination,

@@ -57,4 +57,5 @@ export enum EStatusBudgets {
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
   USED = 'USED',
+  CANCEL = 'CANCEL',
 }

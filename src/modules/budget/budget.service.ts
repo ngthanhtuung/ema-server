@@ -181,7 +181,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
           urlImage: data.urlImage,
         },
       );
-      return 'Update status successfully!!!';
+      return 'Update budgets successfully!!!';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
