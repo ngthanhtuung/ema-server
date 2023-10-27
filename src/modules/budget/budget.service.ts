@@ -36,11 +36,13 @@ export class BudgetService extends BaseService<BudgetEntity> {
    * getAllBudgetsByEventID
    * @param budgetsPagination
    * @param eventID
+   * @param mode
    * @returns
    */
   async getAllBudgetsByEventID(
     budgetsPagination: BudgetsPagination,
     eventID: string,
+    mode: number,
   ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     try {
       const { currentPage, sizePage } = budgetsPagination;
@@ -65,6 +67,15 @@ export class BudgetService extends BaseService<BudgetEntity> {
       query.where('budgets.eventID = :eventID', {
         eventID: eventID,
       });
+      if (mode === 1) {
+        query.andWhere('budgets.status = :status', {
+          status: EStatusBudgets.PROCESSING,
+        });
+      } else {
+        query.andWhere('budgets.status != :status', {
+          status: EStatusBudgets.PROCESSING,
+        });
+      }
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))

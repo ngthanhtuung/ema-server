@@ -28,10 +28,12 @@ export class BudgetController {
   async getAllBudgetsByEvent(
     @Param('eventID') eventID: string,
     @Query() budgetPagination: BudgetsPagination,
+    @Query() mode: number,
   ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     return await this.budgetService.getAllBudgetsByEventID(
       budgetPagination,
       eventID,
+      mode,
     );
   }
 
@@ -51,7 +53,7 @@ export class BudgetController {
    * @param data
    */
   @Put('/:budgetsId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.STAFF)
   async updateBudget(
     @Param('budgetsId') budgetId: string,
     @Body() data: BudgetsUpdateRequest,
