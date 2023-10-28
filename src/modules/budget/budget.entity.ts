@@ -38,7 +38,7 @@ export class BudgetEntity extends BaseEntity {
   @Column({ nullable: true })
   approveDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   urlImage: string;
 
   @Column({ nullable: true })
