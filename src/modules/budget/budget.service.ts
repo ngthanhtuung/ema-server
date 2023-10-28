@@ -88,6 +88,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
           userID: userID,
         });
       }
+      query.orderBy(`budgets.createdAt`, 'DESC');
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
