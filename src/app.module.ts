@@ -28,6 +28,8 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
+import { AnnualLeaveModule } from './modules/annual-leave/annual-leave.module';
+import { RequestModule } from './modules/request/request.module';
 
 @Module({
   imports: [
@@ -60,6 +62,8 @@ import { DeviceModule } from './modules/device/device.module';
     NotificationModule,
     GatewayModule,
     CommentModule,
+    AnnualLeaveModule,
+    RequestModule,
   ],
   controllers: [AppController],
   providers: [

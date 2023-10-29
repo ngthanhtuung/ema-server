@@ -37,9 +37,9 @@ export enum ETaskStatus {
 }
 
 export enum EReplyRequest {
-  PENDING = 'PENDING',
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
+  CANCEL = 'CANCEL',
 }
 
 export enum SortEnum {
@@ -50,4 +50,17 @@ export enum SortEnum {
 export enum ETypeEmployee {
   FULL_TIME = 'FULL TIME',
   PART_TIME = 'PART_TIME',
+}
+
+export enum ERequestType {
+  A = 'A',
+  L = 'L',
+  M = 'M',
+}
+
+export enum ERequestStatus {
+  PENDING = 'PENDING',
+  ACCEPT = 'ACCEPT',
+  REJECT = 'REJECT',
+  CANCEL = 'CANCEL',
 }

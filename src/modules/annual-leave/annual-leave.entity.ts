@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 
@@ -10,8 +10,12 @@ export class AnnualLeaveEntity extends BaseEntity {
   @Column({ type: 'float' })
   amount: number;
 
+  @Column()
+  userID: string;
+
   @ManyToOne(() => UserEntity, (user) => user.annualLeaves, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'userID', referencedColumnName: 'id' })
   user: UserEntity;
 }
