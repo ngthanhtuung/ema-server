@@ -22,6 +22,14 @@ import { AssignEventModule } from './modules/assign-event/assign-event.module';
 import { TaskModule } from './modules/task/task.module';
 import { AssignTaskModule } from './modules/assign-task/assign-task.module';
 // import { TaskfileModule } from './modules/taskfile/taskFile.module';
+import { FileModule } from './file/file.module';
+import { FirebaseProviderModule } from './providers/firebase/provider.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { GatewayModule } from './sockets/gateway.module';
+import { CommentModule } from './modules/comment/comment.module';
+import { DeviceModule } from './modules/device/device.module';
+import { BudgetModule } from './modules/budget/budget.module';
+import { CommentfileModule } from './modules/commentfile/commentfile.module';
 
 @Module({
   imports: [
@@ -48,6 +56,14 @@ import { AssignTaskModule } from './modules/assign-task/assign-task.module';
     AssignEventModule,
     TaskModule,
     AssignTaskModule,
+    FileModule,
+    DeviceModule,
+    FirebaseProviderModule,
+    NotificationModule,
+    GatewayModule,
+    CommentModule,
+    CommentfileModule,
+    BudgetModule,
   ],
   controllers: [AppController],
   providers: [

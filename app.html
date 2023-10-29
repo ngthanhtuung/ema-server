@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="myButton">Emit event</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js">
+    </script>
+    <script>
+        var socket = io('http://localhost:3006', {
+            auth: {
+                accessToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFkNmJhNDcxLTJiYzMtNDIwNS04ZDc5LTA0ZjgxMjBjMzZiNSIsInJvbGUiOiJNQU5BR0VSIiwiZW1haWwiOiJodXlkb2FubWVjQGdtYWlsLmNvbSIsImRpdmlzaW9uSUQiOm51bGwsImlhdCI6MTY5NzY4NDgzMiwiZXhwIjoxNjk3NzcxMjMyfQ.hpcpF_Wkec61stzGm-KnNU6HXihrGpJfswCPVdfcDvE'
+            }
+        });
+        var button = document.getElementById("myButton");
+        socket.on('recComment', (data) => {
+            console.log(data);
+        })
+        // Attach an event listener to the button
+        button.addEventListener("click", function () {
+            socket.emit('comment', {
+                taskID: '123',
+                content: 'Hello world',
+                fileUrl: 'http://localhost'
+            })
+            // Perform additional actions or call other functions
+        });
+    </script>
+</body>
+
+</html>

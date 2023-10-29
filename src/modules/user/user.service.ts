@@ -1,4 +1,4 @@
-import { EUserStatus } from './../../common/enum/enum';
+import { ETypeEmployee, EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
   Injectable,
@@ -79,6 +79,9 @@ export class UserService extends BaseService<UserEntity> {
         'users.password as password',
         'users.status as status',
         'users.divisionId as divisionId',
+        'users.typeEmployee as typeEmployee',
+        'profiles.avatar as avatar',
+        'profiles.fullName as fullName',
       ]);
 
     const data = await query.execute();
@@ -109,7 +112,6 @@ export class UserService extends BaseService<UserEntity> {
       ]);
 
     const data = await query.execute();
-
     return plainToClass(PayloadUser, data[0]);
   }
 
@@ -138,6 +140,7 @@ export class UserService extends BaseService<UserEntity> {
           'profiles.gender as gender',
           'profiles.address as address',
           'profiles.avatar as avatar',
+          'divisions.id as divisionId',
           'divisions.divisionName as divisionName',
         ]);
       const data = await query.execute();
@@ -150,16 +153,10 @@ export class UserService extends BaseService<UserEntity> {
     }
   }
 
-  /**
-   *
-   * @param divisionId
-   * @param userPagination
-   * @param role
-   * @returns
-   */
   async findByDivision(
     divisionId: string,
     userPagination: UserPagination,
+    roleFilter: string,
     role: string,
   ): Promise<IPaginateResponse<UserProfile>> {
     try {
@@ -167,9 +164,17 @@ export class UserService extends BaseService<UserEntity> {
       const query = this.generalBuilderUser();
       query
         .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
-        .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId');
-      if (divisionId) {
-        query.where('divisions.id = :divisionId', { divisionId });
+        .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
+        .where('profiles.role != :excludedRole', {
+          excludedRole: ERole.MANAGER,
+        });
+      if (divisionId !== undefined) {
+        query.where('users.divisionId = :divisionId', { divisionId });
+      }
+      if (roleFilter !== undefined) {
+        query.andWhere('profiles.role = :role', {
+          role: roleFilter,
+        });
       }
       if (role === ERole.STAFF) {
         query.andWhere('users.status = :status', {
@@ -182,12 +187,14 @@ export class UserService extends BaseService<UserEntity> {
           'users.id as id',
           'profiles.fullName as fullName',
           'users.email as email',
+          'users.typeEmployee as typeEmployee',
           'profiles.phoneNumber as phoneNumber',
           'profiles.dob as dob',
           'profiles.nationalId as nationalId',
           'profiles.gender as gender',
           'profiles.address as address',
           'profiles.avatar as avatar',
+          'divisions.id as divisionId',
           'divisions.divisionName as divisionName',
           'users.status as status',
         ]);
@@ -198,10 +205,6 @@ export class UserService extends BaseService<UserEntity> {
           .execute(),
         query.getCount(),
       ]);
-      console.info(query.getSql());
-      if (total === 0) {
-        throw new NotFoundException('User not found');
-      }
       const listUser = plainToInstance(UserProfile, result);
       return paginateResponse<UserProfile>(
         [listUser, total],
@@ -220,9 +223,10 @@ export class UserService extends BaseService<UserEntity> {
    */
   async insertUser(userCreateRequest: UserCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    const { email, ...profile } = userCreateRequest;
+    const { email, isFullTime, ...profile } = userCreateRequest;
     const generatePassword = this.shareService.generatePassword(8);
     const password = await this.shareService.hashPassword(generatePassword);
+    let createUser = undefined;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const userExist = await queryRunner.manager.findOne(UserEntity, {
         where: { email: userCreateRequest.email },
@@ -242,22 +246,41 @@ export class UserService extends BaseService<UserEntity> {
         );
       }
 
-      const createUser = await queryRunner.manager.insert(UserEntity, {
+      createUser = await queryRunner.manager.insert(UserEntity, {
         email,
         password,
         division,
+        typeEmployee: isFullTime
+          ? ETypeEmployee.FULL_TIME
+          : ETypeEmployee.PART_TIME,
       });
-
+      if (profile.role === ERole.STAFF) {
+        await queryRunner.manager.update(
+          DivisionEntity,
+          {
+            id: division.id,
+          },
+          {
+            staffId: createUser.generatedMaps[0]['id'],
+          },
+        );
+      }
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
         profileId: createUser.generatedMaps[0]['id'],
       });
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
-
     await this.transaction(callback, queryRunner);
-
-    return 'Create user successfully';
+    await this.userRepository.update(
+      {
+        id: createUser.generatedMaps[0]['id'],
+      },
+      {
+        profile: createUser.generatedMaps[0]['id'],
+      },
+    );
+    return 'Create user success';
   }
 
   /**
@@ -423,11 +446,26 @@ export class UserService extends BaseService<UserEntity> {
         throw new BadRequestException(USER_ERROR_MESSAGE.CANT_CHANGE);
       }
       const queryRunner = this.dataSource.createQueryRunner();
+      const division = await queryRunner.manager.findOne(DivisionEntity, {
+        where: { id: data.divisionId },
+      });
+
+      if (!division) {
+        throw new BadRequestException(
+          DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
+        );
+      }
+
       await queryRunner.manager.update(
         UserEntity,
         { id: userIdUpdate },
         {
           email: data.email,
+          status: data.status,
+          typeEmployee: data.isFullTime
+            ? ETypeEmployee.FULL_TIME
+            : ETypeEmployee.PART_TIME,
+          division,
         },
       );
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
@@ -442,8 +480,33 @@ export class UserService extends BaseService<UserEntity> {
             gender: data.gender,
             address: data.address,
             avatar: data.avatar,
+            role: data.role,
           },
         );
+        const divisionFilterStaff = await queryRunner.manager.findOne(
+          DivisionEntity,
+          {
+            where: { staffId: userIdUpdate },
+          },
+        );
+        if (divisionFilterStaff) {
+          await queryRunner.manager.update(
+            DivisionEntity,
+            { id: divisionFilterStaff.id },
+            {
+              staffId: null,
+            },
+          );
+        }
+        if (data.role === ERole.STAFF) {
+          await queryRunner.manager.update(
+            DivisionEntity,
+            { id: division.id },
+            {
+              staffId: userIdUpdate,
+            },
+          );
+        }
       };
       await this.transaction(callbacks, queryRunner);
       return 'Update profile successfully';

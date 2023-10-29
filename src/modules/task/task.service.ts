@@ -8,8 +8,8 @@ import { TaskEntity } from './task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
 import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
-import { TaskCreateReq } from './dto/task.request';
-import { TaskfileService } from 'src/modules/taskfile/taskFile.service';
+import { FilterTask, TaskCreateReq } from './dto/task.request';
+import { TaskfileService } from '../taskfile/taskfile.service';
 import { Inject } from '@nestjs/common/decorators';
 import { forwardRef } from '@nestjs/common/utils';
 import { EventEntity } from '../event/event.entity';
@@ -18,7 +18,8 @@ import {
   TASK_ERROR_MESSAGE,
 } from 'src/common/constants/constants';
 import { AssignTaskService } from '../assign-task/assign-task.service';
-
+import { UserPagination } from '../user/dto/user.request';
+import * as moment from 'moment-timezone';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -36,7 +37,15 @@ export class TaskService extends BaseService<TaskEntity> {
     return this.taskRepository.createQueryBuilder('tasks');
   }
 
-  async getTaskInfo(condition: object): Promise<TaskEntity> {
+  /**
+   * getTaskInfo
+   * @param condition
+   * @returns
+   */
+  async getTaskInfo(
+    condition: object,
+    userPagination: UserPagination,
+  ): Promise<TaskEntity> {
     if (!condition['fieldName']) {
       throw new BadRequestException('Undefined field name!');
     }
@@ -45,16 +54,121 @@ export class TaskService extends BaseService<TaskEntity> {
     }
     const fieldName = condition['fieldName'];
     const conValue = condition['conValue'];
+    const { sizePage, currentPage } = userPagination;
     const whereCondition = {
       [fieldName]: conValue,
     };
     let results;
+    const offset = sizePage * (currentPage - 1);
     try {
       results = await this.taskRepository.find({
         where: whereCondition,
-        relations: { taskFiles: true, event: true },
+        skip: offset,
+        take: sizePage,
+        order: {
+          assignTasks: { isLeader: 'DESC' },
+        },
+        select: {
+          event: {
+            id: true,
+            eventName: true,
+          },
+          assignTasks: {
+            id: true,
+            isLeader: true,
+            user: {
+              id: true,
+              profile: {
+                profileId: true,
+                avatar: true,
+                fullName: true,
+              },
+            },
+          },
+          subTask: {
+            id: true,
+            createdAt: true,
+            createdBy: true,
+            updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
+            assignTasks: {
+              id: true,
+              isLeader: true,
+              user: {
+                id: true,
+                profile: {
+                  profileId: true,
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
+          parent: {
+            id: true,
+            createdAt: true,
+            createdBy: true,
+            updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
+            assignTasks: {
+              id: true,
+              isLeader: true,
+              user: {
+                id: true,
+                profile: {
+                  profileId: true,
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
+        },
+        relations: {
+          event: true,
+          taskFiles: true,
+          assignTasks: {
+            user: {
+              profile: true,
+            },
+          },
+          subTask: {
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+          },
+          parent: {
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+          },
+        },
       });
-      if (!results || results.length == 0) {
+      if ((!results || results.length == 0) && fieldName !== 'eventID') {
         throw new BadRequestException('No tasks found');
       }
     } catch (error) {
@@ -63,6 +177,12 @@ export class TaskService extends BaseService<TaskEntity> {
     return results;
   }
 
+  /**
+   * createTask
+   * @param task
+   * @param user
+   * @returns
+   */
   async createTask(task: TaskCreateReq, user: string): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     const {
@@ -74,9 +194,8 @@ export class TaskService extends BaseService<TaskEntity> {
       priority,
       parentTask,
       estimationTime,
-      effort,
       assignee,
-      fileUrl,
+      file,
       leader,
     } = task;
     const oUser = JSON.parse(user);
@@ -90,19 +209,19 @@ export class TaskService extends BaseService<TaskEntity> {
         throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
       }
 
-      const oNewTask = {
+      const createTask = await queryRunner.manager.insert(TaskEntity, {
+        title: title,
         createdBy: createBy,
-        title,
-        startDate,
-        endDate,
+        eventID: eventID,
+        startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
+        endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
         description: desc,
-        parentTask,
-        estimationTime,
-        effort,
-        priority,
-        eventID,
-      };
-      const createTask = await queryRunner.manager.insert(TaskEntity, oNewTask);
+        estimationTime: estimationTime,
+        priority: priority,
+        parent: {
+          id: parentTask,
+        },
+      });
 
       if (assignee.length > 0) {
         const oAssignTask = {
@@ -112,25 +231,28 @@ export class TaskService extends BaseService<TaskEntity> {
         };
         this.assignTaskService.assignMemberToTask(oAssignTask, user);
       }
-      if (fileUrl) {
-        this.taskFileService.insertTaskFile({
-          taskID: createTask.generatedMaps[0]['id'],
-          fileUrl,
-        });
+      if (file) {
+        for (let i = 0; i < file.length; i++) {
+          this.taskFileService.insertTaskFile({
+            taskID: createTask.generatedMaps[0]['id'],
+            fileName: file[0].fileName,
+            fileUrl: file[0].fileUrl,
+          });
+        }
       }
     };
     await this.transaction(callback, queryRunner);
-
     return 'create task success';
   }
 
+  /**
+   * updateTask
+   * @param taskID
+   * @param data
+   * @returns
+   */
   async updateTask(taskID: string, data: object): Promise<boolean> {
     const queryRunner = this.dataSource.createQueryRunner();
-    for (const key in data) {
-      if (data[key]?.trim().length == 0) {
-        throw new InternalServerErrorException(`${key} is empty`);
-      }
-    }
     if (!taskID) {
       throw new InternalServerErrorException(`TaskID is empty`);
     }
@@ -150,5 +272,90 @@ export class TaskService extends BaseService<TaskEntity> {
     }
 
     return true;
+  }
+
+  /**
+   * filterTaskByAssignee
+   * @param filter
+   * @returns
+   */
+  async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
+    const { assignee, priority, sort, status, eventID } = filter;
+    let result;
+    try {
+      result = await this.taskRepository.find({
+        select: {
+          assignTasks: {
+            id: true,
+            isLeader: true,
+            user: {
+              id: true,
+              profile: {
+                avatar: true,
+                fullName: true,
+              },
+            },
+          },
+        },
+        where: {
+          priority,
+          status,
+          assignTasks: {
+            assignee,
+          },
+          event: {
+            id: eventID,
+          },
+        },
+        relations: {
+          subTask: true,
+          parent: true,
+          assignTasks: {
+            user: {
+              profile: true,
+            },
+          },
+          taskFiles: true,
+        },
+        order: {
+          createdAt: { direction: sort },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+    return result;
+  }
+
+  async findUserInTask(
+    taskId: string,
+    userId: string,
+  ): Promise<boolean | undefined> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const query = await queryRunner.manager.query(`
+      SELECT COUNT(*) as count
+      FROM tasks
+      INNER JOIN assign_tasks ON tasks.id = assign_tasks.taskId
+      WHERE tasks.id = '${taskId}'
+        AND (assign_tasks.assignee = '${userId}' OR assign_tasks.taskMaster = '${userId}')
+      `);
+      console.log(query[0].count);
+      const result = query[0].count;
+      // const result = await this.taskRepository.find({
+      //   // where: [
+      //   //   { assignTasks: { assignee: userId } },
+      //   //   { assignTasks: { taskMaster: userId } },
+      //   // ],a
+      //   where: [
+      //     { id: taskId, assignTasks: { assignee: userId } },
+      //     { id: taskId, assignTasks: { taskMaster: userId } },
+      //   ],
+      // });
+
+      return result.length > 0 ? true : false;
+    } catch (err) {
+      return false;
+    }
   }
 }

@@ -8,6 +8,7 @@ import {
   EventAssignRequest,
   EventCreateRequest,
   EventUpdateRequest,
+  FilterEvent,
 } from './dto/event.request';
 import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
@@ -15,7 +16,7 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 
 @Controller('event')
 @ApiBearerAuth()
-@ApiTags('event-controller')
+@ApiTags('Event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
@@ -35,16 +36,19 @@ export class EventController {
   }
 
   /**
-   * getAllEvent
-   * @param eventPagination
+   *
+   * @param filter
    * @returns
    */
-  @Get()
-  @Roles(ERole.MANAGER)
-  async getAllEvent(
+  @Get('/filterEventByCondition')
+  async filterEventByCondition(
+    @Query() filter: FilterEvent,
     @Query() eventPagination: EventPagination,
   ): Promise<IPaginateResponse<EventResponse>> {
-    return await this.eventService.getAllEvent(eventPagination);
+    return await this.eventService.filterEventByCondition(
+      filter,
+      eventPagination,
+    );
   }
 
   /**
@@ -71,7 +75,18 @@ export class EventController {
   }
 
   /**
-   * createEvent
+   * editDivisionIntoEvent
+   * @param data
+   */
+  @Put('/edit-division')
+  @Roles(ERole.MANAGER)
+  async editDivisionIntoEvent(
+    @Body() data: EventAssignRequest,
+  ): Promise<string | undefined> {
+    return await this.eventService.editDivisionIntoEvent(data);
+  }
+  /**
+   * updateEvent
    * @param data
    */
   @Put('/:eventId')
@@ -81,18 +96,6 @@ export class EventController {
     @Body() data: EventUpdateRequest,
   ): Promise<string | undefined> {
     return await this.eventService.updateEvent(eventId, data);
-  }
-
-  /**
-   *  assignDivisionIntoEvent
-   * @param data
-   */
-  @Put('/edit-division')
-  @Roles(ERole.MANAGER)
-  async editDivisionIntoEvent(
-    @Body() data: EventAssignRequest,
-  ): Promise<string | undefined> {
-    return await this.eventService.editDivisionIntoEvent(data);
   }
 
   @Put('/:eventId/:status')

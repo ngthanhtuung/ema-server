@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsString,
 } from 'class-validator';
+import { EEventStatus, SortEnum } from 'src/common/enum/enum';
 
 export class EventCreateRequest {
   @IsString()
@@ -52,14 +53,6 @@ export class EventCreateRequest {
 }
 
 export class EventAssignRequest {
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({
-    default: '1',
-    description: '1: assign , 2: delete',
-  })
-  mode: number;
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -68,18 +61,37 @@ export class EventAssignRequest {
   eventId: string;
 
   @IsArray()
-  @ArrayMinSize(1)
-  @IsNotEmpty()
   @ApiProperty({ default: ['1a73eb86-99ee-46c4-92c3-a9ae091c0caf'] })
   divisionId: Array<string>;
 }
 
-export class EventUpdateRequest extends EventCreateRequest {
-  @IsNumber()
-  @IsNotEmpty()
+export class EventUpdateRequest extends EventCreateRequest {}
+
+export class FilterEvent {
+  @ApiProperty({ required: false, default: 'test' })
+  eventName: string;
+
+  @ApiProperty({ required: false, default: '2023-10' })
+  monthYear: string;
+
   @ApiProperty({
-    default: '1',
-    description: '1: assign , 2: delete',
+    type: 'string',
+    required: false,
+    default: 'startDate',
   })
-  mode: number;
+  nameSort: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+  })
+  sort: SortEnum;
+
+  @ApiProperty({
+    required: false,
+    type: 'enum',
+    enum: EEventStatus,
+  })
+  status: EEventStatus;
 }

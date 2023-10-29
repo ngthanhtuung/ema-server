@@ -30,6 +30,7 @@ export enum EPriority {
 export enum ETaskStatus {
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
+  CONFIRM = 'CONFIRM',
   DONE = 'DONE',
   CANCEL = 'CANCEL',
   OVERDUE = 'OVERDUE',
@@ -39,4 +40,22 @@ export enum EReplyRequest {
   PENDING = 'PENDING',
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
+}
+
+export enum SortEnum {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
+export enum ETypeEmployee {
+  FULL_TIME = 'FULL TIME',
+  PART_TIME = 'PART_TIME',
+}
+
+export enum EStatusBudgets {
+  PROCESSING = 'PROCESSING',
+  ACCEPT = 'ACCEPT',
+  REJECT = 'REJECT',
+  USED = 'USED',
+  CANCEL = 'CANCEL',
 }

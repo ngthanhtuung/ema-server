@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { EPriority, ETaskStatus } from 'src/common/enum/enum';
+import { Transform } from 'class-transformer';
+import * as moment from 'moment-timezone';
+import { EPriority, ETaskStatus, SortEnum } from 'src/common/enum/enum';
+import { TaskFileRequest } from 'src/modules/taskfile/dto/taskFile.request';
 
 export class TaskCreateReq {
   @ApiProperty()
@@ -8,29 +11,27 @@ export class TaskCreateReq {
   @ApiProperty()
   eventID: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   startDate: Date;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   endDate: Date;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   desc: string;
 
   @ApiProperty({
     type: 'enum',
     enum: EPriority,
+    required: false,
   })
   priority: EPriority;
 
   @ApiProperty({ required: false })
   parentTask: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   estimationTime: number;
-
-  @ApiProperty()
-  effort: number;
 
   @ApiProperty({ required: false })
   assignee: [string];
@@ -38,8 +39,11 @@ export class TaskCreateReq {
   @ApiProperty({ required: false })
   leader: string;
 
-  @ApiProperty({ required: false })
-  fileUrl: string;
+  @ApiProperty({
+    type: [TaskFileRequest],
+    required: false,
+  })
+  file?: TaskFileRequest[];
 }
 
 export class TaskUpdateReq {
@@ -50,9 +54,19 @@ export class TaskUpdateReq {
   eventID: string;
 
   @ApiProperty({ required: false, default: null })
+  @Transform(({ value }) => {
+    return moment(value)
+      .tz('Asia/Ho_Chi_Minh')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
+  })
   startDate: Date;
 
   @ApiProperty({ required: false, default: null })
+  @Transform(({ value }) => {
+    return moment(value)
+      .tz('Asia/Ho_Chi_Minh')
+      .format('YYYY-MM-DD HH:mm:ss.SSS');
+  })
   endDate: Date;
 
   @ApiProperty({ required: false, default: null })
@@ -98,4 +112,33 @@ export class TaskConditonFind {
 
   @ApiProperty({ required: true })
   conValue: string;
+}
+
+export class FilterTask {
+  @ApiProperty({ required: false })
+  assignee: string;
+
+  @ApiProperty({ required: false })
+  eventID: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: EPriority,
+    required: false,
+  })
+  priority: EPriority;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+  })
+  sort: SortEnum;
+
+  @ApiProperty({
+    required: false,
+    type: 'enum',
+    enum: ETaskStatus,
+  })
+  status: ETaskStatus;
 }

@@ -18,6 +18,7 @@ import {
   EventAssignRequest,
   EventCreateRequest,
   EventUpdateRequest,
+  FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { EEventStatus } from 'src/common/enum/enum';
@@ -40,16 +41,19 @@ export class EventService extends BaseService<EventEntity> {
   }
 
   /**
-   *getAllEvent
-   * @param eventPagination
+   * filterEventByCondition
+   * @param filter
    * @returns
    */
-  async getAllEvent(
+  async filterEventByCondition(
+    filter: FilterEvent,
     eventPagination: EventPagination,
   ): Promise<IPaginateResponse<EventResponse>> {
     try {
+      const { eventName, monthYear, nameSort, sort, status } = filter;
       const { currentPage, sizePage } = eventPagination;
       const query = this.generalBuilderEvent();
+      query.leftJoin('tasks', 'tasks', 'tasks.eventID = events.id');
       query.select([
         'events.id as id',
         'events.eventName as eventName',
@@ -62,30 +66,51 @@ export class EventService extends BaseService<EventEntity> {
         'events.createdAt as createdAt',
         'events.updatedAt as updatedAt',
         'events.status as status',
+        'COUNT(tasks.id) as taskCount',
       ]);
-      const [result, total] = await Promise.all([
+      query.where('tasks.parentTask IS NULL');
+      if (status) {
+        query.andWhere('events.status = :status', {
+          status: status,
+        });
+      }
+      if (eventName) {
+        query.andWhere(`events.eventName LIKE '%${eventName}%'`);
+      }
+      query.groupBy('events.id');
+      query.orderBy(`events.${nameSort}`, sort);
+      const dataPromise = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
           .limit(sizePage as number)
           .execute(),
         query.getCount(),
       ]);
-      const mapData = result?.map((item) => {
+      if (monthYear) {
+        dataPromise[0] = dataPromise[0].filter((item) => {
+          const formatTime = moment(item[`${nameSort}`]).format('YYYY-MM');
+          return moment(formatTime).isSame(monthYear);
+        });
+      }
+      const listStaffOfDivision =
+        await this.assignEventService.getListStaffDivisionAllEvent();
+      dataPromise[0] = dataPromise[0]?.map((item) => {
         item.startDate = moment(item.startDate).format('YYYY-MM-DD');
         item.endDate = moment(item.endDate).format('YYYY-MM-DD');
+        item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+        item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
+        item.taskCount = +item.taskCount;
         return item;
       });
-      if (total === 0) {
-        throw new NotFoundException('Event not found');
-      }
-      const data = plainToInstance(EventResponse, mapData);
+      const data = plainToInstance(EventResponse, dataPromise[0]);
       return paginateResponse<EventResponse>(
-        [data, total],
+        [data, dataPromise[1]],
         currentPage,
         sizePage,
       );
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -99,11 +124,13 @@ export class EventService extends BaseService<EventEntity> {
       const event = await this.findOne({
         where: { id: id },
       });
-
       if (!event) {
         throw new NotFoundException('Event not found');
       }
-      return plainToClass(EventResponse, event);
+      const listStaffOfDivision =
+        await this.assignEventService.getListStaffDivisionByEventID(id);
+      const finalRes = { ...event, listDivision: listStaffOfDivision || [] };
+      return plainToClass(EventResponse, finalRes);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -188,7 +215,6 @@ export class EventService extends BaseService<EventEntity> {
           },
         );
         const dataEditDivision: EventAssignRequest = {
-          mode: event.mode,
           eventId: eventId,
           divisionId: event.divisionId,
         };
@@ -213,51 +239,29 @@ export class EventService extends BaseService<EventEntity> {
     if (!queryRunner) {
       queryRunner = this.dataSource.createQueryRunner();
     }
-    // check division exist in event
-    const listFindDivision = data.divisionId.map((division) =>
-      queryRunner.manager.findOne(AssignEventEntity, {
-        where: {
-          event: { id: data.eventId },
-          division: { id: division },
-        },
-      }),
-    );
-    const checkExistDivision = (await Promise.all(listFindDivision)).filter(
-      (item) => item !== null,
-    );
-    if (data.mode === 1 && checkExistDivision.length > 0) {
-      throw new BadRequestException('Division already exists in event');
-    } else if (data.mode === 2 && checkExistDivision.length === 0) {
-      throw new BadRequestException("Division don't exists in event");
-    }
-    // Mode 1: assign division
     const dataInsert = data.divisionId.map((item) => {
       return {
         event: { id: data.eventId },
         division: { id: item },
       };
     });
-    if (data.mode === 1) {
-      console.log('Test mode 1');
-      await queryRunner.manager
-        .createQueryBuilder()
-        .insert()
-        .into(AssignEventEntity)
-        .values(dataInsert)
-        .execute();
-    } else {
-      await queryRunner.manager
-        .createQueryBuilder()
-        .delete()
-        .from(AssignEventEntity)
-        .where('id In(:id)', {
-          id: checkExistDivision.map((item) => item.id).join(','),
-        })
-        .execute();
+    const assignedExisted = await queryRunner.manager.find(AssignEventEntity, {
+      where: { event: { id: data.eventId } },
+    });
+    const deleteAssignDivision = assignedExisted?.map((item) => {
+      queryRunner.manager.delete(AssignEventEntity, { id: item.id });
+    });
+    if (deleteAssignDivision.length !== 0) {
+      await Promise.all(deleteAssignDivision);
     }
-    return data.mode === 1
-      ? `Add division into event successfully!!!`
-      : 'Remove division into event successfully!!!';
+    await queryRunner.manager
+      .createQueryBuilder()
+      .insert()
+      .into(AssignEventEntity)
+      .values(dataInsert)
+      .execute();
+
+    return `Update division into event successfully!!!`;
   }
 
   /**

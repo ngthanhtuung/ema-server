@@ -14,7 +14,7 @@ import { Public } from 'src/decorators/public.decorator';
 
 @Controller('division')
 @ApiBearerAuth()
-@ApiTags('division-controller')
+@ApiTags('Division')
 export class DivisionController {
   constructor(private readonly divisionService: DivisionService) {}
 
@@ -22,8 +22,12 @@ export class DivisionController {
   @Roles(ERole.MANAGER, ERole.STAFF)
   async getAllDivision(
     @Query() divisionPagination: DivisionPagination,
+    @Query('mode') mode: number,
   ): Promise<IPaginateResponse<DivisionResponse>> {
-    return await this.divisionService.getAllDivision(divisionPagination);
+    return await this.divisionService.getAllDivision(
+      divisionPagination,
+      Number(mode),
+    );
   }
 
   /**
@@ -32,7 +36,7 @@ export class DivisionController {
    */
 
   @Get('/:divisionId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.STAFF)
   async getDivisionById(
     @Param('divisionId') id: string,
   ): Promise<DivisionResponse> {

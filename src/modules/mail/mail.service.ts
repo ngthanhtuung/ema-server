@@ -2,16 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Mailgun, { MessagesSendResult } from 'mailgun.js';
 import * as FormData from 'form-data';
+import MailRepository from './mail.repository';
 import { IMailgunClient } from 'mailgun.js/Interfaces';
-import { InjectRepository } from '@nestjs/typeorm';
-import Mail from './mail.entity';
-import { Repository } from 'typeorm';
 @Injectable()
 export class MailService {
   constructor(
-    @InjectRepository(Mail)
-    private readonly mailRepository: Repository<Mail>,
-    private readonly configService: ConfigService, // private readonly mailRepository: MailRepository,
+    private readonly configService: ConfigService,
+    private readonly mailRepository: MailRepository,
   ) {}
 
   /**
@@ -43,15 +40,14 @@ export class MailService {
   ): Promise<MessagesSendResult> {
     try {
       const mg = await this.getConnection();
-      const mailData = await this.mailRepository.findOne({
-        where: { id: 1 },
-      });
+      const mailData = await this.mailRepository.getDetailMailTemplate(1);
+      console.info('mailData:', mailData);
       const htmlMail = mailData?.mailText
         ?.replace('${email}', toUser)
         ?.replace('${password}', password);
       console.info('htmlMail:', htmlMail);
       const data = {
-        from: 'HREA System <tungnt16092001@gmail.com>',
+        from: 'HREA System <hreasytems.event@gmail.com>',
         to: [toUser],
         subject: mailData?.mailTitle,
         html: htmlMail,
@@ -79,15 +75,15 @@ export class MailService {
   ): Promise<MessagesSendResult> {
     try {
       const mg = await this.getConnection();
-      const mailData = await this.mailRepository.findOne({
-        where: { id: 2 },
-      });
+      // Get ID : 2
+      const mailData = await this.mailRepository.getDetailMailTemplate(2);
+      console.info('mailData:', mailData);
       const htmlMail = mailData?.mailText
         ?.replace('${email}', toUser)
         ?.replace('${code}', code);
       console.info('htmlMail:', htmlMail);
       const data = {
-        from: 'HREA System <tungnt16092001@gmail.com>',
+        from: 'HREA System <hreasytems.event@gmail.com>',
         to: [toUser],
         subject: mailData?.mailTitle,
         html: htmlMail,

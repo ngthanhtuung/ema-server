@@ -64,7 +64,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
 
   /**
    * getDivisionById
-   * @param id
+   * @param ids
    * @returns
    */
   async getDivisionById(id: string): Promise<DivisionResponse> {
@@ -93,13 +93,9 @@ export class DivisionService extends BaseService<DivisionEntity> {
       }
       if (data.status !== divisionExist.status) {
         const query = this.generalBuilderDivision();
-        query.leftJoin(
-          'account',
-          'account',
-          'account.divisionId = division.id',
-        );
-        query.where('division.id = :id', { id: id });
-        query.andWhere('account.status = :status', {
+        query.leftJoin('users', 'users', 'users.divisionId = divisions.id');
+        query.where('divisions.id = :id', { id: id });
+        query.andWhere('users.status = :status', {
           status: EUserStatus.ACTIVE,
         });
         const account = await query.getCount();
@@ -126,16 +122,21 @@ export class DivisionService extends BaseService<DivisionEntity> {
    */
   async getAllDivision(
     divisionPagination: DivisionPagination,
+    mode: number,
   ): Promise<IPaginateResponse<DivisionResponse>> {
     try {
       const { currentPage, sizePage } = divisionPagination;
       const query = this.generalBuilderDivision();
       query.select([
-        'division.id as id',
-        'division.divisionName as divisionName',
-        'division.description as description',
-        'division.status as status',
+        'divisions.id as id',
+        'divisions.divisionName as divisionName',
+        'divisions.description as description',
+        'divisions.status as status',
+        'divisions.staffId as staffId',
       ]);
+      if (mode === 2) {
+        query.where('divisions.staffId IS NULL');
+      }
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
@@ -143,9 +144,6 @@ export class DivisionService extends BaseService<DivisionEntity> {
           .execute(),
         query.getCount(),
       ]);
-      if (total === 0) {
-        throw new NotFoundException('Division not found');
-      }
       const data = plainToInstance(DivisionResponse, result);
       return paginateResponse<DivisionResponse>(
         [data, total],
@@ -170,9 +168,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
       }
       if (division.status === true) {
         const query = this.generalBuilderDivision();
-        query.leftJoin('user', 'user', 'user.divisionId = division.id');
-        query.where('division.id = :id', { id: divisionId });
-        query.andWhere('user.status = :status', { status: EUserStatus.ACTIVE });
+        query.leftJoin('users', 'users', 'users.divisionId = divisions.id');
+        query.where('divisions.id = :id', { id: divisionId });
+        query.andWhere('users.status = :status', {
+          status: EUserStatus.ACTIVE,
+        });
         const account = await query.getCount();
         if (account > 0) {
           throw new BadRequestException(

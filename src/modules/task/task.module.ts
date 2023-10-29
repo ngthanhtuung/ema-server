@@ -5,7 +5,7 @@ import { forwardRef } from '@nestjs/common/utils';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TaskEntity } from './task.entity';
 // import { EventModule } from '../event/event.module';
-import { TaskfileModule } from 'src/modules/taskfile/taskFile.module';
+import { TaskfileModule } from '../taskfile/taskfile.module';
 import { AssignTaskModule } from '../assign-task/assign-task.module';
 
 @Module({

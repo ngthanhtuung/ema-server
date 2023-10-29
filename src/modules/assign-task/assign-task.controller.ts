@@ -8,7 +8,7 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 
 @Controller('assign-task')
 @ApiBearerAuth()
-@ApiTags('assign-task-controller')
+@ApiTags('Assign Task')
 export class AssignTaskController {
   constructor(private readonly assignTaskService: AssignTaskService) {}
 

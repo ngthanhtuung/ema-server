@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { faker } from '@faker-js/faker';
 import { ProfileEntity } from 'src/modules/profile/profile.entity';
 import { UserEntity } from 'src/modules/user/user.entity';
@@ -58,7 +59,7 @@ export class DataSeed implements Seeder {
         profileId: manager['identifiers'][0]['id'],
         role: ERole.MANAGER,
         dob: faker.date.anytime(),
-        nationalId: '111',
+        nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
         address: faker.location.street(),
         phoneNumber: faker.phone.number(),
@@ -73,7 +74,7 @@ export class DataSeed implements Seeder {
         email: 'quanghuy0610.dev@gmail.com',
         password: hashPassword,
         division: {
-          id: divison1['identifiers'][0]['id'],
+          id: divison2['identifiers'][0]['id'],
         },
       })
       .execute();
@@ -86,7 +87,7 @@ export class DataSeed implements Seeder {
         profileId: staff['identifiers'][0]['id'],
         role: ERole.STAFF,
         dob: faker.date.anytime(),
-        nationalId: '111',
+        nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
         address: faker.location.street(),
         phoneNumber: faker.phone.number(),
@@ -101,7 +102,7 @@ export class DataSeed implements Seeder {
         email: 'huydvqse151224@fpt.edu.vn',
         password: hashPassword,
         division: {
-          id: divison1['identifiers'][0]['id'],
+          id: divison3['identifiers'][0]['id'],
         },
       })
       .execute();
@@ -114,7 +115,7 @@ export class DataSeed implements Seeder {
         profileId: employee['identifiers'][0]['id'],
         role: ERole.EMPLOYEE,
         dob: faker.date.anytime(),
-        nationalId: '111',
+        nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
         address: faker.location.street(),
         phoneNumber: faker.phone.number(),

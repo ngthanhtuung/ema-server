@@ -14,7 +14,7 @@ import { IPaginateResponse } from '../base/filter.pagination';
 
 @ApiBearerAuth()
 @Controller('user')
-@ApiTags('user-controller')
+@ApiTags('User')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -24,33 +24,59 @@ export class UserController {
   }
 
   @Get('/:userId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.STAFF)
   async getUserById(@Param('userId') userId: string): Promise<UserProfile> {
     return await this.userService.findByIdV2(userId);
   }
 
+  // @Get('')
+  // @ApiQuery({
+  //   name: 'divisionId',
+  //   required: false,
+  // })
+  // async getUserByDivision(
+  //   @Query('divisionId') divisionId: string,
+  //   @Query() userPagination: UserPagination,
+  //   @GetUser() user: string,
+  // ): Promise<IPaginateResponse<UserProfile>> {
+  //   const role = JSON.parse(user).role;
+  //   return await this.userService.findByDivision(
+  //     divisionId,
+  //     userPagination,
+  //     role,
+  //   );
+  // }
+
   @Get('')
+  @Roles(ERole.MANAGER, ERole.STAFF)
+  @ApiQuery({
+    name: 'role',
+    enum: [ERole.STAFF, ERole.EMPLOYEE],
+    required: false,
+  })
   @ApiQuery({
     name: 'divisionId',
     required: false,
   })
-  async getUserByDivision(
+  async getUserByDivisionAndRole(
     @Query('divisionId') divisionId: string,
+    @Query('role') role: ERole,
     @Query() userPagination: UserPagination,
     @GetUser() user: string,
   ): Promise<IPaginateResponse<UserProfile>> {
-    const role = JSON.parse(user).role;
+    const roleLogin = JSON.parse(user).role;
     return await this.userService.findByDivision(
       divisionId,
       userPagination,
       role,
+      roleLogin,
     );
   }
 
   @Put('/:userId/:status')
   @Roles(ERole.MANAGER)
   @ApiParam({ name: 'status', enum: EUserStatus })
-  async upadateStatus(
+  async updateStatus(
     @Param('userId') userId: string,
     @Param('status') status: EUserStatus,
     @GetUser()

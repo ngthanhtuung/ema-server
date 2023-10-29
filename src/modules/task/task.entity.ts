@@ -4,30 +4,31 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { CommentEntity } from '../comment/comment.entity';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { EventEntity } from '../event/event.entity';
-import { TaskFileEntity } from 'src/modules/taskfile/taskFile.entity';
+import { TaskFileEntity } from '../taskfile/taskfile.entity';
 
 @Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   title: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   startDate: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   endDate: Date;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true, length: 15000 })
   description: string;
 
   @Column({
     type: 'enum',
     enum: EPriority,
+    nullable: true,
   })
   priority: EPriority;
 
-  @Column({ type: 'varchar', nullable: true })
-  parentTask: string;
+  // @Column({ type: 'varchar', nullable: true })
+  // parentTask: string
 
   @Column({
     type: 'enum',
@@ -36,10 +37,10 @@ export class TaskEntity extends BaseEntity {
   })
   status: ETaskStatus;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'float', nullable: true })
   estimationTime: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'float', nullable: true })
   effort: number;
 
   @Column({ type: 'varchar' })
@@ -53,6 +54,13 @@ export class TaskEntity extends BaseEntity {
 
   @Column({ type: String })
   eventID: string;
+
+  @ManyToOne(() => TaskEntity, (task) => task.subTask)
+  @JoinColumn({ name: 'parentTask' })
+  parent: TaskEntity;
+
+  @OneToMany(() => TaskEntity, (task) => task.parent)
+  subTask: TaskEntity[];
 
   @ManyToOne(() => EventEntity, (event) => event.tasks, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventID', referencedColumnName: 'id' })

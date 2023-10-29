@@ -53,6 +53,9 @@ export class AuthService {
       role: user.role,
       email: email,
       divisionID: user.divisionId,
+      avatar: user.avatar,
+      fullName: user.fullName,
+      typeEmployee: user.typeEmployee,
     };
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {
@@ -202,7 +205,7 @@ export class AuthService {
         currentDate,
         loginUser.id,
       );
-      return 'Update password successfully';
+      return 'Update password successfully!!';
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Query, Param, Put, Get } from '@nestjs/common';
+import { Controller, Post, Body, Query, Put, Get } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
 import {
+  FilterTask,
   TaskConditonFind,
   TaskCreateReq,
   TaskIDReq,
@@ -11,18 +12,28 @@ import {
   TaskUpdateStatusReq,
 } from './dto/task.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
-import { UserEntity } from '../user/user.entity';
 import { TaskEntity } from './task.entity';
+import { UserPagination } from '../user/dto/user.request';
 
 @Controller('task')
 @ApiBearerAuth()
-@ApiTags('task-controller')
+@ApiTags('Task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Get()
-  async getTaskById(@Query() condition: TaskConditonFind): Promise<TaskEntity> {
-    return await this.taskService.getTaskInfo(condition);
+  async getTaskById(
+    @Query() condition: TaskConditonFind,
+    @Query() userPagination: UserPagination,
+  ): Promise<TaskEntity> {
+    return await this.taskService.getTaskInfo(condition, userPagination);
+  }
+
+  @Get('/filterByAssignee')
+  async filterTaskByCondition(
+    @Query() filter: FilterTask,
+  ): Promise<TaskEntity> {
+    return await this.taskService.filterTaskByAssignee(filter);
   }
 
   @Post('createTask')
@@ -46,7 +57,13 @@ export class TaskController {
       modifiedBy: oUser.id,
     };
     for (const key in req) {
-      if (req[key]) {
+      if (req[key] && key === 'parentTask') {
+        Object.assign(data, {
+          parent: {
+            id: req[key],
+          },
+        });
+      } else if (req[key]) {
         Object.assign(data, { [key]: req[key] });
       }
     }
