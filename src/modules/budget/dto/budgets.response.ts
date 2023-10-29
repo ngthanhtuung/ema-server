@@ -25,13 +25,10 @@ export class BudgetsResponse {
   createBy: string;
 
   @Expose()
-  createAt: Date;
-
-  @Expose()
   approveBy: string;
 
   @Expose()
-  approveDate: Date;
+  approvedDate: Date;
 
   @Expose()
   urlImage: string;
@@ -41,33 +38,4 @@ export class BudgetsResponse {
 
   @Expose()
   userName: string;
-}
-
-export class FilterBudgets {
-  @ApiProperty({ required: false, default: 'test' })
-  eventName: string;
-
-  @ApiProperty({ required: false, default: '2023-10' })
-  monthYear: string;
-
-  @ApiProperty({
-    type: 'string',
-    required: false,
-    default: 'startDate',
-  })
-  nameSort: string;
-
-  @ApiProperty({
-    type: 'enum',
-    enum: SortEnum,
-    required: false,
-  })
-  sort: SortEnum;
-
-  @ApiProperty({
-    required: false,
-    type: 'enum',
-    enum: EStatusBudgets,
-  })
-  status: EStatusBudgets;
 }

@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { BudgetEntity } from './budget.entity';
 import { DataSource, SelectQueryBuilder } from 'typeorm';
@@ -11,7 +15,7 @@ import {
 import { BudgetsPagination } from './dto/budgets.pagination';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { BudgetsResponse } from './dto/budgets.response';
-import { plainToInstance } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import { EStatusBudgets } from 'src/common/enum/enum';
 import { UserService } from '../user/user.service';
@@ -36,11 +40,15 @@ export class BudgetService extends BaseService<BudgetEntity> {
    * getAllBudgetsByEventID
    * @param budgetsPagination
    * @param eventID
+   * @param mode
+   * @param userID
    * @returns
    */
   async getAllBudgetsByEventID(
     budgetsPagination: BudgetsPagination,
     eventID: string,
+    mode: number,
+    userID: string,
   ): Promise<IPaginateResponse<BudgetsResponse[]>> {
     try {
       const { currentPage, sizePage } = budgetsPagination;
@@ -55,7 +63,8 @@ export class BudgetService extends BaseService<BudgetEntity> {
         'budgets.eventID as eventID',
         'events.eventName as eventName',
         'budgets.createBy as createBy',
-        'budgets.createdAt as createAt',
+        'budgets.createdAt as createdAt',
+        'budgets.updatedAt as updatedAt',
         'budgets.approveBy as approveBy',
         'budgets.approveDate as approveDate',
         'budgets.urlImage as urlImage',
@@ -65,6 +74,21 @@ export class BudgetService extends BaseService<BudgetEntity> {
       query.where('budgets.eventID = :eventID', {
         eventID: eventID,
       });
+      if (Number(mode) === 1) {
+        query.andWhere('budgets.status = :status', {
+          status: EStatusBudgets.PROCESSING,
+        });
+      } else {
+        query.andWhere('budgets.status != :status', {
+          status: EStatusBudgets.PROCESSING,
+        });
+      }
+      if (userID != undefined) {
+        query.andWhere('budgets.createBy = :userID', {
+          userID: userID,
+        });
+      }
+      query.orderBy(`budgets.createdAt`, 'DESC');
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
@@ -72,17 +96,32 @@ export class BudgetService extends BaseService<BudgetEntity> {
           .execute(),
         query.getCount(),
       ]);
+
       const finalRes: BudgetsResponse[] = [];
       for (let index = 0; index < result.length; index++) {
         const item = result[index];
         const userName = (await this.userService.findById(item?.createBy))
           ?.fullName;
+        console.log('item:', item);
+
+        item.createdAt = moment(item.createdAt)
+          .tz('Asia/Ho_Chi_Minh')
+          .format('YYYY-MM-DD HH:mm:ss');
+        item.updatedAt = moment(item.updatedAt)
+          .tz('Asia/Ho_Chi_Minh')
+          .format('YYYY-MM-DD HH:mm:ss');
+        if (item?.approveDate) {
+          item.approvedDate = moment(item.approveDate)
+            .tz('Asia/Ho_Chi_Minh')
+            .format('YYYY-MM-DD HH:mm:ss');
+        }
         const data = {
           ...item,
           userName,
         };
         finalRes.push(data);
       }
+
       return paginateResponse<BudgetsResponse[]>(
         [finalRes, total],
         currentPage as number,
@@ -170,7 +209,44 @@ export class BudgetService extends BaseService<BudgetEntity> {
           urlImage: data.urlImage,
         },
       );
-      return 'Update status successfully!!!';
+      return 'Update budgets successfully!!!';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * getBudgetById
+   * @param ids
+   * @returns
+   */
+  async getBudgetById(id: string): Promise<BudgetsResponse> {
+    try {
+      const budget = await this.findOne({
+        where: { id: id },
+      });
+
+      if (!budget) {
+        throw new NotFoundException('Division not found');
+      }
+      const userName = (await this.userService.findById(budget?.createBy))
+        ?.fullName;
+      const item = {
+        ...budget,
+        createdAt: moment(budget.createdAt)
+          .tz('Asia/Ho_Chi_Minh')
+          .format('YYYY-MM-DD HH:mm:ss'),
+        updatedAt: moment(budget.updatedAt)
+          .tz('Asia/Ho_Chi_Minh')
+          .format('YYYY-MM-DD HH:mm:ss'),
+        approveDate: budget?.approveDate
+          ? moment(budget.approveDate)
+              .tz('Asia/Ho_Chi_Minh')
+              .format('YYYY-MM-DD HH:mm:ss')
+          : null,
+        userName: userName,
+      };
+      return plainToClass(BudgetsResponse, item);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
