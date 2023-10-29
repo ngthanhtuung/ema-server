@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { TaskFileEntity } from './taskfile.entity';
@@ -12,7 +13,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { TaskFileCreateReq } from './dto/taskFile.request';
+import { TaskFileCreateReq, TaskFileRequest } from './dto/taskFile.request';
 import { TaskService } from '../task/task.service';
 import { Inject } from '@nestjs/common/decorators';
 import { forwardRef } from '@nestjs/common/utils';
@@ -58,6 +59,36 @@ export class TaskfileService extends BaseService<TaskFileEntity> {
       });
     };
     await this.transaction(callback, queryRunner);
-    return 'Insert fileUrl successfully';
+    return 'Insert task file successfully';
+  }
+
+  async updateTaskFile(
+    taskId: string,
+    taskFiles: TaskFileRequest[],
+  ): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const callback = async (queryRunner: QueryRunner): Promise<void> => {
+        const taskExist = await queryRunner.manager.findOne(TaskEntity, {
+          where: { id: taskId },
+        });
+        if (!taskExist) {
+          throw new NotFoundException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
+        }
+        await queryRunner.manager.delete(TaskFileEntity, { taskID: taskId });
+        const insertPromises = taskFiles.map((taskFile) =>
+          queryRunner.manager.insert(TaskFileEntity, {
+            taskID: taskId,
+            fileName: taskFile.fileName,
+            fileUrl: taskFile.fileUrl,
+          }),
+        );
+        await Promise.all(insertPromises);
+      };
+      await this.transaction(callback, queryRunner);
+      return 'Update task file successfully';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }

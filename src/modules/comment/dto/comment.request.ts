@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { CommentFileRequest } from 'src/modules/commentfile/dto/commentFile.request';
 
@@ -17,3 +17,6 @@ export class CommentCreateRequest {
   })
   file?: CommentFileRequest[];
 }
+export class CommentUpdateRequest extends OmitType(CommentCreateRequest, [
+  'taskID',
+]) {}

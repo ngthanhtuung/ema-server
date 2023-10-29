@@ -12,12 +12,16 @@ import { CommentEntity } from './comment.entity';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, QueryRunner } from 'typeorm';
-import { CommentCreateRequest } from './dto/comment.request';
+import {
+  CommentCreateRequest,
+  CommentUpdateRequest,
+} from './dto/comment.request';
 import { TaskService } from '../task/task.service';
 import { TaskEntity } from '../task/task.entity';
 import { UserEntity } from '../user/user.entity';
 import { CommentFileEntity } from '../commentfile/commentfile.entity';
 import { ERole } from 'src/common/enum/enum';
+import { CommentfileService } from '../commentfile/commentfile.service';
 
 @Injectable()
 export class CommentService extends BaseService<CommentEntity> {
@@ -27,6 +31,7 @@ export class CommentService extends BaseService<CommentEntity> {
     private readonly taskService: TaskService,
     @InjectDataSource()
     private readonly dataSource: DataSource,
+    private readonly commentFileService: CommentfileService,
   ) {
     super(commentRepository);
   }
@@ -117,6 +122,40 @@ export class CommentService extends BaseService<CommentEntity> {
         return 'Comment successfully';
       }
       throw new BadRequestException(COMMENT_ERROR_MESSAGE.COMMENT_DENIED);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async updateComment(
+    userId: string,
+    commentId: string,
+    data: CommentUpdateRequest,
+  ): Promise<string> {
+    try {
+      const commentExisted = await this.commentRepository.findOne({
+        where: {
+          id: commentId,
+          user: {
+            id: userId,
+          },
+        },
+      });
+      console.log('Comment existed: ', commentExisted);
+      if (commentExisted) {
+        await this.commentRepository.update(
+          { id: commentId },
+          {
+            text: data.content,
+          },
+        );
+        await this.commentFileService.updateCommentFile(commentId, data.file);
+        return 'Update comment successfully';
+      } else {
+        throw new BadRequestException(
+          `${COMMENT_ERROR_MESSAGE.COMMENT_NOT_FOUND} or ${COMMENT_ERROR_MESSAGE.COMMENT_DENIED}`,
+        );
+      }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
