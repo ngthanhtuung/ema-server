@@ -29,6 +29,7 @@ import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
 import { BudgetModule } from './modules/budget/budget.module';
+import { CommentfileModule } from './modules/commentfile/commentfile.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { BudgetModule } from './modules/budget/budget.module';
     NotificationModule,
     GatewayModule,
     CommentModule,
+    CommentfileModule,
     BudgetModule,
   ],
   controllers: [AppController],
