@@ -76,7 +76,7 @@ export class UserController {
   @Put('/:userId/:status')
   @Roles(ERole.MANAGER)
   @ApiParam({ name: 'status', enum: EUserStatus })
-  async upadateStatus(
+  async updateStatus(
     @Param('userId') userId: string,
     @Param('status') status: EUserStatus,
     @GetUser()

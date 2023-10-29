@@ -79,6 +79,7 @@ export class UserService extends BaseService<UserEntity> {
         'users.password as password',
         'users.status as status',
         'users.divisionId as divisionId',
+        'users.typeEmployee as typeEmployee',
         'profiles.avatar as avatar',
         'profiles.fullName as fullName',
       ]);
@@ -186,6 +187,7 @@ export class UserService extends BaseService<UserEntity> {
           'users.id as id',
           'profiles.fullName as fullName',
           'users.email as email',
+          'users.typeEmployee as typeEmployee',
           'profiles.phoneNumber as phoneNumber',
           'profiles.dob as dob',
           'profiles.nationalId as nationalId',

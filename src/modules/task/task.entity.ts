@@ -37,10 +37,10 @@ export class TaskEntity extends BaseEntity {
   })
   status: ETaskStatus;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'float', nullable: true })
   estimationTime: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'float', nullable: true })
   effort: number;
 
   @Column({ type: 'varchar' })

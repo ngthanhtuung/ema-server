@@ -62,5 +62,11 @@ export enum ERequestStatus {
   PENDING = 'PENDING',
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
+}
+export enum EStatusBudgets {
+  PROCESSING = 'PROCESSING',
+  ACCEPT = 'ACCEPT',
+  REJECT = 'REJECT',
+  USED = 'USED',
   CANCEL = 'CANCEL',
 }

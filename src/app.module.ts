@@ -28,8 +28,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
-import { AnnualLeaveModule } from './modules/annual-leave/annual-leave.module';
-import { RequestModule } from './modules/request/request.module';
+import { BudgetModule } from './modules/budget/budget.module';
 
 @Module({
   imports: [
@@ -62,8 +61,7 @@ import { RequestModule } from './modules/request/request.module';
     NotificationModule,
     GatewayModule,
     CommentModule,
-    AnnualLeaveModule,
-    RequestModule,
+    BudgetModule,
   ],
   controllers: [AppController],
   providers: [

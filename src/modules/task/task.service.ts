@@ -7,7 +7,7 @@ import { BaseService } from '../base/base.service';
 import { TaskEntity } from './task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
-import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import { Brackets, DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { FilterTask, TaskCreateReq } from './dto/task.request';
 import { TaskfileService } from '../taskfile/taskfile.service';
 import { Inject } from '@nestjs/common/decorators';
@@ -327,16 +327,32 @@ export class TaskService extends BaseService<TaskEntity> {
     return result;
   }
 
-  async findUserInTask(userId: string): Promise<boolean | undefined> {
+  async findUserInTask(
+    taskId: string,
+    userId: string,
+  ): Promise<boolean | undefined> {
     try {
-      const result = await this.taskRepository.find({
-        where: {
-          assignTasks: {
-            assignee: userId,
-            taskMaster: userId,
-          },
-        },
-      });
+      const queryRunner = this.dataSource.createQueryRunner();
+      const query = await queryRunner.manager.query(`
+      SELECT COUNT(*) as count
+      FROM tasks
+      INNER JOIN assign_tasks ON tasks.id = assign_tasks.taskId
+      WHERE tasks.id = '${taskId}'
+        AND (assign_tasks.assignee = '${userId}' OR assign_tasks.taskMaster = '${userId}')
+      `);
+      console.log(query[0].count);
+      const result = query[0].count;
+      // const result = await this.taskRepository.find({
+      //   // where: [
+      //   //   { assignTasks: { assignee: userId } },
+      //   //   { assignTasks: { taskMaster: userId } },
+      //   // ],a
+      //   where: [
+      //     { id: taskId, assignTasks: { assignee: userId } },
+      //     { id: taskId, assignTasks: { taskMaster: userId } },
+      //   ],
+      // });
+
       return result.length > 0 ? true : false;
     } catch (err) {
       return false;
