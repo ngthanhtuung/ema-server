@@ -48,7 +48,7 @@ export enum SortEnum {
 }
 
 export enum ETypeEmployee {
-  FULL_TIME = 'FULL TIME',
+  FULL_TIME = 'FULL_TIME',
   PART_TIME = 'PART_TIME',
 }
 

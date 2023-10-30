@@ -7,7 +7,7 @@ import { BaseService } from '../base/base.service';
 import { TaskEntity } from './task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
-import { Brackets, DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
 import { FilterTask, TaskCreateReq } from './dto/task.request';
 import { TaskfileService } from '../taskfile/taskfile.service';
 import { Inject } from '@nestjs/common/decorators';

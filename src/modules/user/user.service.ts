@@ -223,7 +223,7 @@ export class UserService extends BaseService<UserEntity> {
    */
   async insertUser(userCreateRequest: UserCreateRequest): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    const { email, isFullTime, ...profile } = userCreateRequest;
+    const { email, typeEmployee, ...profile } = userCreateRequest;
     const generatePassword = this.shareService.generatePassword(8);
     const password = await this.shareService.hashPassword(generatePassword);
     let createUser = undefined;
@@ -250,9 +250,7 @@ export class UserService extends BaseService<UserEntity> {
         email,
         password,
         division,
-        typeEmployee: isFullTime
-          ? ETypeEmployee.FULL_TIME
-          : ETypeEmployee.PART_TIME,
+        typeEmployee: typeEmployee,
       });
       if (profile.role === ERole.STAFF) {
         await queryRunner.manager.update(
@@ -462,9 +460,7 @@ export class UserService extends BaseService<UserEntity> {
         {
           email: data.email,
           status: data.status,
-          typeEmployee: data.isFullTime
-            ? ETypeEmployee.FULL_TIME
-            : ETypeEmployee.PART_TIME,
+          typeEmployee: data.typeEmployee,
           division,
         },
       );
