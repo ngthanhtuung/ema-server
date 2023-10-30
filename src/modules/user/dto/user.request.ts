@@ -53,12 +53,9 @@ export class UserCreateRequest {
   @IsEnum(ERole)
   role: ERole;
 
-  @ApiProperty({
-    default: true,
-    description: 'true: full time, false: parttime',
-  })
-  @IsBoolean()
-  isFullTime: boolean;
+  @ApiProperty({ default: ETypeEmployee.FULL_TIME, enum: ETypeEmployee })
+  @IsEnum(ETypeEmployee)
+  typeEmployee: ETypeEmployee;
 }
 
 export class UserPagination extends FilterPaginationBase {}
@@ -69,7 +66,7 @@ export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
   'gender',
   'divisionId',
   'role',
-  'isFullTime',
+  'typeEmployee',
 ]) {}
 
 export class UserProfileUpdateRequestV2 extends UserCreateRequest {
