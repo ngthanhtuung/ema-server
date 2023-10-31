@@ -7,8 +7,8 @@ export class RequestTypeEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   typeName: string;
 
-  @OneToMany(() => RequestEntity, (request) => request.requestType, {
-    onDelete: 'CASCADE',
-  })
-  requests: RequestEntity[];
+  //   @OneToMany(() => RequestEntity, (request) => request.requestType, {
+  //     onDelete: 'CASCADE',
+  //   })
+  //   requests: RequestEntity[];
 }

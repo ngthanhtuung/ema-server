@@ -90,4 +90,9 @@ export class UserEntity extends BaseEntity {
   @OneToOne(() => ProfileEntity, (profile) => profile.user)
   @JoinColumn({ name: 'profileId' })
   profile: ProfileEntity;
+
+  @OneToMany(() => RequestEntity, (approveReq) => approveReq.approveBy, {
+    onDelete: 'CASCADE',
+  })
+  approveReq: RequestEntity[];
 }

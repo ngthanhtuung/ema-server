@@ -1,6 +1,6 @@
-import { EReplyRequest } from 'src/common/enum/enum';
+import { EReplyRequest, ERequestStatus } from 'src/common/enum/enum';
 import { BaseEntity } from '../base/base.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { RequestTypeEntity } from '../request-type/request-type.entity';
 
@@ -12,21 +12,44 @@ export class RequestEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   content: string;
 
-  @Column({
-    type: 'enum',
-    enum: EReplyRequest,
-    default: EReplyRequest.PENDING,
-  })
-  replyStatus: EReplyRequest;
+  @Column({ type: 'datetime' })
+  startDate: Date;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'datetime' })
+  endDate: Date;
+
+  @Column({ default: true })
+  isFull: boolean;
+
+  @Column({ default: false })
+  isPM: boolean;
+
+  @Column({ nullable: true })
+  approver: string;
+
+  @Column({
+    default: ERequestStatus.PENDING,
+  })
+  status: string;
+
+  @Column({ type: 'varchar', nullable: true })
   replyMessage: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.requests, { onDelete: 'CASCADE' })
-  user: UserEntity;
+  @Column({ type: 'varchar' })
+  requestor: string;
 
-  @ManyToOne(() => RequestTypeEntity, (requestType) => requestType.requests, {
-    onDelete: 'CASCADE',
+  @Column({ type: 'varchar' })
+  type: string;
+
+  @ManyToOne(() => UserEntity, (approveBy) => approveBy.approveReq)
+  @JoinColumn({
+    name: 'approver',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'id',
   })
-  requestType: RequestTypeEntity;
+  approveBy: UserEntity;
+
+  @ManyToOne(() => UserEntity, (user) => user.requests, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'requestor', referencedColumnName: 'id' })
+  user: UserEntity;
 }
