@@ -1,0 +1,26 @@
+@startuml
+actor Manager as Manager
+
+participant Browser as a
+participant DivisionController as b
+participant DivisionService as c
+participant DivisionRepository as d
+database Database as e
+
+Manager -> a: 1. Click "Thêm mới" button
+a -> b++: 2. Send a request
+b -> c++: 3. Call createDivision()
+c -> d++: 4. Call insertDivision()
+d -> e++: 5. insert()
+
+e --> d--: 6. Return result
+alt Create sucess 
+    d --> c: 7.1. Return result
+    c --> b: 8.1. Return sucess response
+    b --> a: 9.1. Return sucess response
+else Create fail
+    d --> c--: 7.2. Return result
+    c --> b--: 8.2. Return fail response
+    b --> a--: 9.2. Return fail response
+end
+@endumls

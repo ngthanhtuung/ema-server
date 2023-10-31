@@ -1,0 +1,21 @@
+@startuml
+actor Manager as Manager
+
+participant Browser as a
+participant DivisionController as b
+participant DivisionService as c
+participant DivisionRepository as d
+database Database as e
+
+Manager -> a: 1. Click "Trang" button
+Manager -> a: 2. Select "Số lượng hiển thị"
+a -> b++: 3. Send a request
+b -> c++: 4. Call getAllDivision()
+c -> d++: 5. Call getDivisions()
+d -> e++: 6. Query
+
+e --> d--: 7. Return result
+d --> c--: 8. Return result
+c --> b--: 9. Return response
+b --> a--: 10. Return response
+@endumls
