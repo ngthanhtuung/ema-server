@@ -30,6 +30,7 @@ import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
 import { BudgetModule } from './modules/budget/budget.module';
 import { CommentfileModule } from './modules/commentfile/commentfile.module';
+import { RequestModule } from './modules/request/request.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { CommentfileModule } from './modules/commentfile/commentfile.module';
     CommentModule,
     CommentfileModule,
     BudgetModule,
+    RequestModule,
   ],
   controllers: [AppController],
   providers: [
