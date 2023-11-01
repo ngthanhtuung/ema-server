@@ -282,7 +282,7 @@ export class RequestService extends BaseService<RequestEntity> {
       }
     }
 
-    return 'update successfull';
+    return 'Update successfully';
   }
 
   async filterRequest(
@@ -316,6 +316,40 @@ export class RequestService extends BaseService<RequestEntity> {
         skip: offset,
         take: sizePage,
         where: whereCondition,
+        relations: {
+          user: {
+            profile: true,
+          },
+        },
+        select: {
+          user: {
+            id: true,
+            profile: {
+              profileId: true,
+              fullName: true,
+              avatar: true,
+              role: true,
+              phoneNumber: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `no request found - ${error.message}`,
+      );
+    }
+
+    return res;
+  }
+
+  async getAllDetailRequest(requestId: string): Promise<RequestEntity> {
+    let res = undefined;
+    try {
+      res = await this.requestRepository.find({
+        where: {
+          id: requestId,
+        },
         relations: {
           user: {
             profile: true,

@@ -1,5 +1,14 @@
 import { BudgetService } from './budget.service';
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import {
   BudgetsCreateRequest,
   BudgetsUpdateRequest,
@@ -55,6 +64,17 @@ export class BudgetController {
     @Param('budgetID') budgetID: string,
   ): Promise<BudgetsResponse> {
     return await this.budgetService.getBudgetById(budgetID);
+  }
+
+  /**
+   * getAllBudgetsByEvent
+   * @param budgetID
+   * @returns
+   */
+
+  @Delete('detail/:budgetID')
+  async deleteBudgets(@Param('budgetID') budgetID: string): Promise<string> {
+    return await this.budgetService.deleteBudgets(budgetID);
   }
 
   /**

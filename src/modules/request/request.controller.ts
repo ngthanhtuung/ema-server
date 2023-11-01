@@ -30,6 +30,11 @@ export class RequestController {
     return await this.requestService.filterRequest(filter, userPagination);
   }
 
+  @Get('/detail/:id')
+  async getDetailRequest(@Param('id') reqID: string): Promise<RequestEntity> {
+    return this.requestService.getAllDetailRequest(reqID);
+  }
+
   @Post()
   async createRequest(
     @Query() dto: RequestCreateRequest,
