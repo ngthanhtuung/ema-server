@@ -285,6 +285,15 @@ export class RequestService extends BaseService<RequestEntity> {
     return 'Update successfully';
   }
 
+  async deleteRequest(requestID: string): Promise<string> {
+    try {
+      await this.requestRepository.delete({ id: requestID });
+      return 'Delete requests successfully!!!';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
   async filterRequest(
     filter: FilterRequest,
     pagination: UserPagination,
