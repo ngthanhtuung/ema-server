@@ -36,6 +36,15 @@ export class EventController {
   }
 
   /**
+   * getEventTemplate
+   */
+
+  @Get('/template-event')
+  async getEventTemplate(): Promise<EventResponse> {
+    return await this.eventService.getEventTemplate();
+  }
+
+  /**
    *
    * @param filter
    * @returns

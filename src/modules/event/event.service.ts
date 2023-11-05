@@ -68,7 +68,7 @@ export class EventService extends BaseService<EventEntity> {
         'events.status as status',
         'COUNT(tasks.id) as taskCount',
       ]);
-      query.where('tasks.parentTask IS NULL');
+      query.where('tasks.parentTask IS NULL AND events.isTemplate = 0');
       if (status) {
         query.andWhere('events.status = :status', {
           status: status,
@@ -131,6 +131,24 @@ export class EventService extends BaseService<EventEntity> {
         await this.assignEventService.getListStaffDivisionByEventID(id);
       const finalRes = { ...event, listDivision: listStaffOfDivision || [] };
       return plainToClass(EventResponse, finalRes);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * getEventTemplate
+   * @returns
+   */
+  async getEventTemplate(): Promise<EventResponse> {
+    try {
+      const event = await this.findOne({
+        where: { isTemplate: true },
+      });
+      if (!event) {
+        throw new NotFoundException('Event not found');
+      }
+      return plainToClass(EventResponse, event);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

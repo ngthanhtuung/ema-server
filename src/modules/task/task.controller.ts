@@ -29,6 +29,17 @@ export class TaskController {
     return await this.taskService.getTaskInfo(condition, userPagination);
   }
 
+  @Get('/template-task')
+  async getTemplateTaskInfo(
+    @Query() condition: TaskConditonFind,
+    @Query() userPagination: UserPagination,
+  ): Promise<TaskEntity> {
+    return await this.taskService.getTemplateTaskInfo(
+      condition,
+      userPagination,
+    );
+  }
+
   @Get('/filterByAssignee')
   async filterTaskByCondition(
     @Query() filter: FilterTask,

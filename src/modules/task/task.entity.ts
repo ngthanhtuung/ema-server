@@ -27,6 +27,12 @@ export class TaskEntity extends BaseEntity {
   })
   priority: EPriority;
 
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  isTemplate: boolean;
+
   // @Column({ type: 'varchar', nullable: true })
   // parentTask: string
 

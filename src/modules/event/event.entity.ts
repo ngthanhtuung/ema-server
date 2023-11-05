@@ -28,6 +28,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'float' })
   estBudget: number;
 
+  @Column({ type: 'boolean', default: false })
+  isTemplate: boolean;
+
   @Column({
     enum: EEventStatus,
     type: 'enum',
