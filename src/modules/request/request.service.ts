@@ -18,6 +18,7 @@ import {
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import { EReplyRequest, ERequestType } from 'src/common/enum/enum';
 import { UserPagination } from '../user/dto/user.request';
+import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 
 @Injectable()
 export class RequestService extends BaseService<RequestEntity> {
@@ -77,8 +78,10 @@ export class RequestService extends BaseService<RequestEntity> {
         throw new BadRequestException(`${key} is require!`);
       }
     }
-    if (data.isFull == data.isPM) {
-      throw new InternalServerErrorException('isFull can not equal isPM');
+    data.isPM = JSON.parse(data.isPM.toString());
+    data.isFull = JSON.parse(data.isFull.toString());
+    if (data.isFull && data.isPM) {
+      throw new InternalServerErrorException('isFull true, isPM can not true');
     }
     let annualLeave;
     try {
@@ -86,8 +89,6 @@ export class RequestService extends BaseService<RequestEntity> {
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
-    data.isPM = JSON.parse(data.isPM.toString());
-    data.isFull = JSON.parse(data.isFull.toString());
     const dataReq = {
       startDateReq: data.startDate,
       endDateReq: data.endDate,
@@ -297,7 +298,7 @@ export class RequestService extends BaseService<RequestEntity> {
   async filterRequest(
     filter: FilterRequest,
     pagination: UserPagination,
-  ): Promise<RequestEntity> {
+  ): Promise<IPaginateResponse<void>> {
     let { sizePage, currentPage } = pagination;
     sizePage = Number(sizePage);
     currentPage = Number(currentPage);
@@ -306,7 +307,7 @@ export class RequestService extends BaseService<RequestEntity> {
     let whereCondition = {};
     if (Object.keys(filter).length != 0) {
       for (const key in filter) {
-        if (key != 'createdAt') {
+        if (key != 'createdAt' && key != 'requestorName') {
           whereCondition = Object.assign(whereCondition, {
             [key]: filter[key],
           });
@@ -314,6 +315,15 @@ export class RequestService extends BaseService<RequestEntity> {
         if (key == 'createdAt') {
           whereCondition = Object.assign(whereCondition, {
             [key]: ILike(`%${filter[key]}%`),
+          });
+        }
+        if (key == 'requestorName') {
+          whereCondition = Object.assign(whereCondition, {
+            user: {
+              profile: {
+                fullName: ILike(`%${filter[key]}%`),
+              },
+            },
           });
         }
       }
@@ -325,6 +335,7 @@ export class RequestService extends BaseService<RequestEntity> {
         skip: offset,
         take: sizePage,
         where: whereCondition,
+
         relations: {
           user: {
             profile: true,
@@ -348,8 +359,7 @@ export class RequestService extends BaseService<RequestEntity> {
         `no request found - ${error.message}`,
       );
     }
-
-    return res;
+    return paginateResponse<void>([res, res.length], currentPage, sizePage);
   }
 
   async getAllDetailRequest(requestId: string): Promise<RequestEntity> {

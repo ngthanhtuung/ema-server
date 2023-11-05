@@ -21,6 +21,7 @@ import { RequestEntity } from './request.entity';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
 import { UserPagination } from '../user/dto/user.request';
+import { IPaginateResponse } from '../base/filter.pagination';
 
 @ApiBearerAuth()
 @Controller('request')
@@ -34,7 +35,7 @@ export class RequestController {
   async filterRequest(
     @Query() filter: FilterRequest,
     @Param() userPagination: UserPagination,
-  ): Promise<RequestEntity> {
+  ): Promise<IPaginateResponse<void>> {
     // const userPagination = params;
     return await this.requestService.filterRequest(filter, userPagination);
   }
