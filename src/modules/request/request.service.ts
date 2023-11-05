@@ -329,9 +329,9 @@ export class RequestService extends BaseService<RequestEntity> {
       }
     }
 
-    let res;
+    let res = undefined;
     try {
-      res = await this.requestRepository.find({
+      res = await this.requestRepository.findAndCount({
         skip: offset,
         take: sizePage,
         where: whereCondition,
@@ -359,7 +359,7 @@ export class RequestService extends BaseService<RequestEntity> {
         `no request found - ${error.message}`,
       );
     }
-    return paginateResponse<void>([res, res.length], currentPage, sizePage);
+    return paginateResponse<void>([res[0], res[1]], currentPage, sizePage);
   }
 
   async getAllDetailRequest(requestId: string): Promise<RequestEntity> {
