@@ -198,7 +198,7 @@ export class EventService extends BaseService<EventEntity> {
       );
       await Promise.all(arrayPromise);
       await queryRunner.commitTransaction();
-      return `Event created successfully`;
+      return `${createEvent.generatedMaps[0]['id']}`;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
