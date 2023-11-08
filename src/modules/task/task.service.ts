@@ -366,7 +366,7 @@ export class TaskService extends BaseService<TaskEntity> {
         },
       });
 
-      if (assignee.length > 0) {
+      if (assignee?.length > 0) {
         const oAssignTask = {
           assignee,
           taskID: createTask.generatedMaps[0]['id'],
@@ -375,7 +375,7 @@ export class TaskService extends BaseService<TaskEntity> {
         this.assignTaskService.assignMemberToTask(oAssignTask, user);
       }
       if (file) {
-        for (let i = 0; i < file.length; i++) {
+        for (let i = 0; i < file?.length; i++) {
           this.taskFileService.insertTaskFile({
             taskID: createTask.generatedMaps[0]['id'],
             fileName: file[0].fileName,
