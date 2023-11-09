@@ -28,6 +28,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'float' })
   estBudget: number;
 
+  @Column({ type: 'text', nullable: true })
+  checkInQRCode: string;
+
   @Column({
     enum: EEventStatus,
     type: 'enum',

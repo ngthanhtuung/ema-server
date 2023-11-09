@@ -23,6 +23,9 @@ import {
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
+import QRCode from 'qrcode';
+import { FileService } from 'src/file/file.service';
+import { clearGlobalAppDefaultCred } from 'firebase-admin/lib/app/credential-factory';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -31,6 +34,7 @@ export class EventService extends BaseService<EventEntity> {
     private readonly eventRepository: EventRepository,
     @InjectDataSource()
     private dataSource: DataSource,
+    private readonly fileService: FileService,
     private readonly assignEventService: AssignEventService,
   ) {
     super(eventRepository);
@@ -281,6 +285,31 @@ export class EventService extends BaseService<EventEntity> {
       }
       await this.eventRepository.update({ id: eventID }, { status: status });
       return 'Update status successfully!!!';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async generateCheckInQRCode(eventId: string): Promise<boolean> {
+    try {
+      console.log('Event ID: ', eventId);
+      const event = await this.findOne({
+        where: { id: eventId },
+      });
+      if (!event) {
+        throw new NotFoundException('Event not found');
+      }
+      const checkInQRCode = await QRCode.toDataURL(eventId);
+      const dataURL = await this.fileService.uploadFile(
+        checkInQRCode,
+        'checkInQRCode',
+      );
+      console.log('DataURL: ', dataURL);
+      const result = await this.eventRepository.update(
+        { id: eventId },
+        { checkInQRCode: checkInQRCode },
+      );
+      return result.affected > 0 ? true : false;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

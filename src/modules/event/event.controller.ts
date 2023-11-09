@@ -107,4 +107,10 @@ export class EventController {
   ): Promise<string> {
     return await this.eventService.updateEventStatus(eventId, status);
   }
+
+  @Put('/:eventId/check-in')
+  async generateQrCode(@Param('eventId') eventId: string): Promise<boolean> {
+    console.log('EventId: ', eventId);
+    return await this.eventService.generateCheckInQRCode(eventId);
+  }
 }

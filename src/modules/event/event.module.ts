@@ -4,9 +4,14 @@ import { EventController } from './event.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEntity } from './event.entity';
 import { AssignEventModule } from '../assign-event/assign-event.module';
+import { FileModule } from 'src/file/file.module';
 
 @Module({
-  imports: [AssignEventModule, TypeOrmModule.forFeature([EventEntity])],
+  imports: [
+    AssignEventModule,
+    TypeOrmModule.forFeature([EventEntity]),
+    FileModule,
+  ],
   controllers: [EventController],
   providers: [EventService],
   exports: [EventService],
