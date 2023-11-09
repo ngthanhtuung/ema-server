@@ -38,6 +38,8 @@ import {
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { ERole } from 'src/common/enum/enum';
 import { DivisionEntity } from '../division/division.entity';
+import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
+import * as moment from 'moment-timezone';
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
@@ -266,6 +268,11 @@ export class UserService extends BaseService<UserEntity> {
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
         profileId: createUser.generatedMaps[0]['id'],
+      });
+      await queryRunner.manager.insert(AnnualLeaveEntity, {
+        year: Number(moment().format('YYYY')),
+        amount: 12,
+        userID: createUser.generatedMaps[0]['id'],
       });
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };

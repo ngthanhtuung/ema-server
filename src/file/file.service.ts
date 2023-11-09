@@ -11,7 +11,6 @@ import { FileRequest } from './dto/file.request';
 export class FileService {
   async uploadFile(data: FileRequest, folderName: string): Promise<object> {
     try {
-      console.log('Data upload: ', data);
       if (parseInt(data.fileSize) > 10 * 1024 * 1024) {
         throw new BadRequestException('File is less than 10MB');
       }

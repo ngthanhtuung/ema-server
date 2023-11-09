@@ -188,6 +188,21 @@ export class BudgetService extends BaseService<BudgetEntity> {
   }
 
   /**
+   * updateBudgetStatus
+   * @param budgetsID
+   * @param status
+   * @returns
+   */
+  async deleteBudgets(budgetsID: string): Promise<string> {
+    try {
+      await this.budgetsRepository.delete({ id: budgetsID });
+      return 'Delete budgets successfully!!!';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
    * updateBudget
    * @param budgetsID
    * @param data

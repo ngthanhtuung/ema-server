@@ -36,6 +36,15 @@ export class EventController {
   }
 
   /**
+   * getEventTemplate
+   */
+
+  @Get('/template-event')
+  async getEventTemplate(): Promise<EventResponse> {
+    return await this.eventService.getEventTemplate();
+  }
+
+  /**
    *
    * @param filter
    * @returns
@@ -108,9 +117,24 @@ export class EventController {
     return await this.eventService.updateEventStatus(eventId, status);
   }
 
-  @Put('/:eventId/check-in')
-  async generateQrCode(@Param('eventId') eventId: string): Promise<boolean> {
-    console.log('EventId: ', eventId);
-    return await this.eventService.generateCheckInQRCode(eventId);
+  @Get('/check-in/qr/:eventId')
+  async getQRCheckIn(@Param('eventId') eventId: string): Promise<string> {
+    return await this.eventService.getQrCheckIn(eventId);
+  }
+
+  @Post('/check-in/qr/:eventId')
+  @Roles(ERole.MANAGER, ERole.STAFF)
+  async generateCheckInQrCode(
+    @Param('eventId') eventId: string,
+  ): Promise<string> {
+    return await this.eventService.generateQRCode(eventId, 'CHECK-IN');
+  }
+
+  @Post('/check-out/qr/:eventId')
+  @Roles(ERole.MANAGER, ERole.STAFF)
+  async generateCheckoutQrCode(
+    @Param('eventId') eventId: string,
+  ): Promise<string> {
+    return await this.eventService.generateQRCode(eventId, 'CHECK-OUT');
   }
 }

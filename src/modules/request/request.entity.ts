@@ -2,7 +2,6 @@ import { EReplyRequest, ERequestStatus } from 'src/common/enum/enum';
 import { BaseEntity } from '../base/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
-import { RequestTypeEntity } from '../request-type/request-type.entity';
 
 @Entity({ name: 'requests' })
 export class RequestEntity extends BaseEntity {

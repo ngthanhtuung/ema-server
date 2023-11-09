@@ -100,7 +100,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
         where: { id: taskID },
       });
-      if (assignee.length > 0 && leader.length == 0) {
+      if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
       }
       if (!taskExisted) {
@@ -114,7 +114,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
 
       // Insert the new assigned tasks.
       await Promise.all(
-        assignee.map(async (assignee) => {
+        assignee.map((assignee) => {
           const isLeader = assignee === leader;
           const assignTask = {
             taskID: taskID,
@@ -123,7 +123,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
             taskMaster: oUser.id,
           };
 
-          return await queryRunner.manager.insert(AssignTaskEntity, assignTask);
+          return queryRunner.manager.insert(AssignTaskEntity, assignTask);
         }),
       );
     };

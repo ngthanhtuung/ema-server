@@ -57,6 +57,149 @@ export class TaskService extends BaseService<TaskEntity> {
     const { sizePage, currentPage } = userPagination;
     const whereCondition = {
       [fieldName]: conValue,
+      isTemplate: false,
+    };
+    let results;
+    const offset = sizePage * (currentPage - 1);
+    try {
+      results = await this.taskRepository.find({
+        where: whereCondition,
+        skip: offset,
+        take: sizePage,
+        order: {
+          assignTasks: { isLeader: 'DESC' },
+        },
+        select: {
+          event: {
+            id: true,
+            eventName: true,
+          },
+          assignTasks: {
+            id: true,
+            isLeader: true,
+            user: {
+              id: true,
+              profile: {
+                profileId: true,
+                avatar: true,
+                fullName: true,
+              },
+            },
+          },
+          subTask: {
+            id: true,
+            createdAt: true,
+            createdBy: true,
+            updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
+            assignTasks: {
+              id: true,
+              isLeader: true,
+              user: {
+                id: true,
+                profile: {
+                  profileId: true,
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
+          parent: {
+            id: true,
+            createdAt: true,
+            createdBy: true,
+            updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
+            assignTasks: {
+              id: true,
+              isLeader: true,
+              user: {
+                id: true,
+                profile: {
+                  profileId: true,
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
+        },
+        relations: {
+          event: true,
+          taskFiles: true,
+          assignTasks: {
+            user: {
+              profile: true,
+            },
+          },
+          subTask: {
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+          },
+          parent: {
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+          },
+        },
+      });
+      if ((!results || results.length == 0) && fieldName !== 'eventID') {
+        throw new BadRequestException('No tasks found');
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+    return results;
+  }
+
+  /**
+   * getTemplateTaskInfo
+   * @param condition
+   * @param userPagination
+   * @returns
+   */
+  async getTemplateTaskInfo(
+    condition: object,
+    userPagination: UserPagination,
+  ): Promise<TaskEntity> {
+    if (!condition['fieldName']) {
+      throw new BadRequestException('Undefined field name!');
+    }
+    if (!condition['conValue']) {
+      throw new BadRequestException('Undefined condition to get information!');
+    }
+    const fieldName = condition['fieldName'];
+    const conValue = condition['conValue'];
+    const { sizePage, currentPage } = userPagination;
+    const whereCondition = {
+      [fieldName]: conValue,
+      isTemplate: true,
     };
     let results;
     const offset = sizePage * (currentPage - 1);
@@ -223,7 +366,7 @@ export class TaskService extends BaseService<TaskEntity> {
         },
       });
 
-      if (assignee.length > 0) {
+      if (assignee?.length > 0) {
         const oAssignTask = {
           assignee,
           taskID: createTask.generatedMaps[0]['id'],
@@ -232,7 +375,7 @@ export class TaskService extends BaseService<TaskEntity> {
         this.assignTaskService.assignMemberToTask(oAssignTask, user);
       }
       if (file) {
-        for (let i = 0; i < file.length; i++) {
+        for (let i = 0; i < file?.length; i++) {
           this.taskFileService.insertTaskFile({
             taskID: createTask.generatedMaps[0]['id'],
             fileName: file[0].fileName,
@@ -303,6 +446,7 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: {
             assignee,
           },
+          isTemplate: false,
           event: {
             id: eventID,
           },

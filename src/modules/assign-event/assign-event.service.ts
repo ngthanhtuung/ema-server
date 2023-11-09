@@ -45,6 +45,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
       query.where('assign_events.divisionId = :divisionId', {
         divisionId: id,
       });
+      query.andWhere('events.isTemplate = 0');
       const data = await query.execute();
       return data;
     } catch (err) {

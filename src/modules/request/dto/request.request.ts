@@ -21,10 +21,10 @@ export class RequestCreateRequest {
   @ApiProperty({ default: new Date() })
   endDate: Date;
 
-  @ApiProperty({ default: true, type: Boolean })
+  @ApiProperty({ default: true })
   isFull: boolean;
 
-  @ApiProperty({ default: false, type: Boolean })
+  @ApiProperty({ default: false })
   isPM: boolean;
 
   @ApiProperty({ enum: ERequestType, default: ERequestType.A })
@@ -50,6 +50,9 @@ export class UpdateRequestStatusReq {
 export class FilterRequest {
   @ApiProperty({ required: false })
   requestor: string;
+
+  @ApiProperty({ required: false })
+  requestorName: string;
 
   @ApiProperty({ default: new Date(), required: false })
   createdAt: Date;

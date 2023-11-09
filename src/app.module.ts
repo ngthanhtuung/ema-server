@@ -31,6 +31,7 @@ import { DeviceModule } from './modules/device/device.module';
 import { BudgetModule } from './modules/budget/budget.module';
 import { CommentfileModule } from './modules/commentfile/commentfile.module';
 import { RequestModule } from './modules/request/request.module';
+import { TimesheetModule } from './modules/timesheet/timesheet.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { RequestModule } from './modules/request/request.module';
     CommentfileModule,
     BudgetModule,
     RequestModule,
+    TimesheetModule,
   ],
   controllers: [AppController],
   providers: [
