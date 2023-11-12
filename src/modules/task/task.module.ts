@@ -7,12 +7,18 @@ import { TaskEntity } from './task.entity';
 // import { EventModule } from '../event/event.module';
 import { TaskfileModule } from '../taskfile/taskfile.module';
 import { AssignTaskModule } from '../assign-task/assign-task.module';
+import { NotificationModule } from '../notification/notification.module';
+import { UserModule } from '../user/user.module';
+import { GatewayModule } from 'src/sockets/gateway.module';
 
 @Module({
   imports: [
+    GatewayModule,
     TypeOrmModule.forFeature([TaskEntity]),
     forwardRef(() => TaskfileModule),
     AssignTaskModule,
+    NotificationModule,
+    UserModule,
   ],
   controllers: [TaskController],
   providers: [TaskService],

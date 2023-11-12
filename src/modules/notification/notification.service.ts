@@ -4,19 +4,24 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { NotificationEntity } from './notification.entity';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { NotificationResponse } from './dto/notification.response';
 import { plainToInstance } from 'class-transformer';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { BaseService } from '../base/base.service';
+import { NotificationCreateRequest } from './dto/notification.request';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
+    protected readonly userService: UserService,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {
     super(notificationRepository);
   }
@@ -36,6 +41,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
         'notifications.id as id',
         'notifications.title as title',
         'notifications.content as content',
+        'notifications.type as type',
+        'notifications.sender as sender',
         'notifications.readFlag as readFlag',
       ]);
       query.where('notifications.userId = :userId', { userId: userId });
@@ -47,10 +54,15 @@ export class NotificationService extends BaseService<NotificationEntity> {
           .execute(),
         query.getCount(),
       ]);
-      if (result === 0) {
-        throw new NotFoundException('Notification not found');
-      }
-      const data = plainToInstance(NotificationResponse, result);
+      const finalRes = result?.map(async (item) => {
+        const avatar = (await this.userService.findByIdV2(item?.sender))
+          ?.avatar;
+        return {
+          ...item,
+          avatarSender: avatar,
+        };
+      });
+      const data = plainToInstance(NotificationResponse, finalRes);
       return paginateResponse<NotificationResponse>(
         [data, total],
         currentPage as number,
@@ -61,6 +73,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
     }
   }
 
+  /**
+   * seenNotification
+   * @param notificationId
+   * @returns
+   */
   async seenNotification(notificationId: string): Promise<string> {
     try {
       const notification = await this.findOne({
@@ -84,6 +101,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
     }
   }
 
+  /**
+   * seenAllNotification
+   * @param userId
+   * @returns
+   */
   async seenAllNotification(userId: string): Promise<string> {
     try {
       const query = this.generalBuilderNotification();
@@ -98,6 +120,35 @@ export class NotificationService extends BaseService<NotificationEntity> {
       return 'Notification read!';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * createNotification
+   * @param event
+   * @returns
+   */
+  async createNotification(
+    notification: NotificationCreateRequest,
+  ): Promise<unknown> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      await queryRunner.startTransaction();
+      const newNoti = await queryRunner.manager.insert(NotificationEntity, {
+        title: notification.title,
+        content: notification.content,
+        readFlag: false,
+        type: notification.type,
+        sender: notification.sender,
+        user: {
+          id: notification.userId,
+        },
+      });
+      await queryRunner.commitTransaction();
+      return newNoti;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(err);
     }
   }
 }

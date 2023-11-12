@@ -96,17 +96,9 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     const oUser = JSON.parse(user);
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      // Check if the task exists.
-      const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
-        where: { id: taskID },
-      });
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
       }
-      if (!taskExisted) {
-        throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
-      }
-
       // Delete all existing assigned tasks for the given task ID.
       await queryRunner.manager.query(
         `DELETE FROM assign_tasks WHERE taskID = '${taskID}'`,

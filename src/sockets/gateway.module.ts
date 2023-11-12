@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from 'src/modules/user/user.module';
-import { CommentModule } from 'src/modules/comment/comment.module';
-import { CommentGateway } from './comment.gateway';
+import { DeviceModule } from 'src/modules/device/device.module';
+import { NotificationModule } from 'src/modules/notification/notification.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
-  imports: [UserModule, CommentModule],
-  providers: [CommentGateway],
+  imports: [UserModule, DeviceModule, NotificationModule],
+  providers: [AppGateway],
+  exports: [AppGateway],
 })
 export class GatewayModule {}
