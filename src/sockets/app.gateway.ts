@@ -18,7 +18,7 @@ import { WsGuard } from 'src/guards/ws.guard';
 import { NotificationService } from 'src/modules/notification/notification.service';
 
 @UseGuards(WsGuard)
-@WebSocketGateway(3006, {
+@WebSocketGateway(+process.env.PORT_SOCKET, {
   cors: true,
 })
 export class AppGateway
