@@ -14,6 +14,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'date' })
   startDate: Date;
 
+  @Column({ type: 'date', nullable: true })
+  processingDate: Date;
+
   @Column({ type: 'date' })
   endDate: Date;
 

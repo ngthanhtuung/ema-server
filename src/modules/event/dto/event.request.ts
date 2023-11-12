@@ -1,13 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  ArrayMinSize,
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { EEventStatus, SortEnum } from 'src/common/enum/enum';
-
 export class EventCreateRequest {
   @IsString()
   @IsNotEmpty()
@@ -23,6 +16,11 @@ export class EventCreateRequest {
   @IsNotEmpty()
   @ApiProperty({ default: '2023-10-10' })
   startDate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2023-11-09' })
+  processingDate: string;
 
   @IsString()
   @IsNotEmpty()
