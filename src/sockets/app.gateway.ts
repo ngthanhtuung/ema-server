@@ -19,10 +19,7 @@ import { NotificationService } from 'src/modules/notification/notification.servi
 
 @UseGuards(WsGuard)
 @WebSocketGateway(3006, {
-  cors: {
-    origin: '*',
-  },
-  transports: ['websocket', 'polling'],
+  cors: true,
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
