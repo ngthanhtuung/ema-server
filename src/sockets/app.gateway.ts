@@ -22,6 +22,7 @@ import { NotificationService } from 'src/modules/notification/notification.servi
   cors: {
     origin: '*',
   },
+  transports: ['websocket', 'polling'],
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
