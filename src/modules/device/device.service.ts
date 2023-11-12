@@ -26,4 +26,16 @@ export class DeviceService extends BaseService<DeviceEntity> {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async deleteByValue(deviceToken: string, userId: string): Promise<string> {
+    try {
+      await this.deviceRepository.delete({
+        deviceToken,
+        user: { id: userId },
+      });
+      return `Device token: '${deviceToken}' has been delete successfully`;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 }

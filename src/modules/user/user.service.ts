@@ -1,9 +1,8 @@
-import { ETypeEmployee, EUserStatus } from './../../common/enum/enum';
+import { EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -18,7 +17,6 @@ import {
   UserPagination,
   UserProfileUpdateRequest,
   UserProfileUpdateRequestV2,
-  // UserProfileUpdateRequest,
 } from 'src/modules/user/dto/user.request';
 import {
   UserResponse,
@@ -45,8 +43,6 @@ export class UserService extends BaseService<UserEntity> {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(ProfileEntity)
-    private readonly profileRepository: Repository<ProfileEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
     private shareService: SharedService,
@@ -108,8 +104,10 @@ export class UserService extends BaseService<UserEntity> {
         'users.id as id',
         'users.email as email',
         'users.status as status',
+        'users.socketId as socketId',
         'profiles.role as role',
         'profiles.fullName as fullName',
+        'profiles.avatar as avatar',
         'users.divisionId as divisionId',
       ]);
 
@@ -300,6 +298,21 @@ export class UserService extends BaseService<UserEntity> {
         { id: id },
         { refreshToken: refreshToken },
       );
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  /**
+   * updateRefreshToken
+   * @param id
+   * @param refreshToken
+   * @returns
+   */
+  async insertSocketId(id: string, socketId: string): Promise<boolean> {
+    try {
+      await this.userRepository.update({ id: id }, { socketId: socketId });
       return true;
     } catch (err) {
       return false;

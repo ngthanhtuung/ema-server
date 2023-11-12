@@ -20,6 +20,11 @@ import {
 import { AssignTaskService } from '../assign-task/assign-task.service';
 import { UserPagination } from '../user/dto/user.request';
 import * as moment from 'moment-timezone';
+import { NotificationService } from '../notification/notification.service';
+import { ETypeNotification } from 'src/common/enum/enum';
+import { NotificationCreateRequest } from '../notification/dto/notification.request';
+import { UserService } from '../user/user.service';
+import { AppGateway } from 'src/sockets/app.gateway';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -28,15 +33,15 @@ export class TaskService extends BaseService<TaskEntity> {
     @InjectDataSource()
     private dataSource: DataSource,
     private assignTaskService: AssignTaskService,
+    private notificationService: NotificationService,
+    private userService: UserService,
     @Inject(forwardRef(() => TaskfileService))
     private readonly taskFileService: TaskfileService,
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
   ) {
     super(taskRepository);
   }
-  generalBuilderTask(): SelectQueryBuilder<TaskEntity> {
-    return this.taskRepository.createQueryBuilder('tasks');
-  }
-
   /**
    * getTaskInfo
    * @param condition
@@ -383,6 +388,30 @@ export class TaskService extends BaseService<TaskEntity> {
           });
         }
       }
+      const createNotification = [];
+      for (let index = 0; index < assignee.length; index++) {
+        const idUser = assignee[index];
+        const dataNotification: NotificationCreateRequest = {
+          title: `Công việc được giao`,
+          content: `${oUser.fullName} đã giao công việc ${title}`,
+          readFlag: false,
+          type: ETypeNotification.TASK,
+          sender: oUser.id,
+          userId: idUser,
+        };
+        const socketId = (await this.userService.findById(idUser))?.socketId;
+        const client = this.appGateWay.server;
+        if (socketId !== null) {
+          client.to(socketId).emit('create-task', {
+            ...dataNotification,
+            avatar: oUser?.avatar,
+          });
+        }
+        createNotification.push(
+          this.notificationService.createNotification(dataNotification),
+        );
+      }
+      await Promise.all(createNotification);
     };
     await this.transaction(callback, queryRunner);
     return 'create task success';

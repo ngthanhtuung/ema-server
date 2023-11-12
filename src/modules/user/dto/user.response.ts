@@ -33,6 +33,8 @@ export class PayloadUser extends OmitType(UserResponse, ['password']) {
   fullName: string;
   @Expose()
   email: string;
+  @Expose()
+  socketId: string;
 }
 
 export class UserProfile extends OmitType(UserResponse, ['password']) {

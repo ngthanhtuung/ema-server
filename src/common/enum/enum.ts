@@ -63,10 +63,18 @@ export enum ERequestStatus {
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
 }
+
 export enum EStatusBudgets {
   PROCESSING = 'PROCESSING',
   ACCEPT = 'ACCEPT',
   REJECT = 'REJECT',
   USED = 'USED',
   CANCEL = 'CANCEL',
+}
+
+export enum ETypeNotification {
+  TASK = 'TASK',
+  COMMENT = 'COMMENT',
+  REQUEST = 'REQUEST',
+  BUDGETS = 'BUDGETS',
 }

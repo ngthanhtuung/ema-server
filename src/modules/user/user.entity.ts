@@ -95,4 +95,7 @@ export class UserEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   approveReq: RequestEntity[];
+
+  @Column({ type: 'varchar', nullable: true })
+  socketId: string;
 }
