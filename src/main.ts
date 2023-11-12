@@ -6,12 +6,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { ServiceAccount } from 'firebase-admin';
 import * as firebaseAdmin from 'firebase-admin';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
   });
-
+  app.useWebSocketAdapter(new IoAdapter(app));
   const configService = app.get(ConfigService);
 
   const port: number = configService.get('PORT');
@@ -61,7 +62,7 @@ async function bootstrap(): Promise<void> {
 
   //end set up firebase
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true })); // apply pipe validation
   await app.listen(port, () => {
     console.info(`Server is running at ${server_host}:${port}/${pathOpenApi}`);
   });
