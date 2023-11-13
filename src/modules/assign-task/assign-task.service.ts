@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { AssignTaskEntity } from './assign-task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -9,10 +10,12 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import { AssignTaskReq } from './dto/assign-task.request';
-import {
-  ASSIGN_ERROR_MESSAGE,
-  TASK_ERROR_MESSAGE,
-} from 'src/common/constants/constants';
+import { NotificationCreateRequest } from '../notification/dto/notification.request';
+import { ETypeNotification } from 'src/common/enum/enum';
+import { NotificationService } from '../notification/notification.service';
+import { UserService } from '../user/user.service';
+import { AppGateway } from 'src/sockets/app.gateway';
+import { TaskCreateReq } from '../task/dto/task.request';
 import { TaskEntity } from '../task/task.entity';
 @Injectable()
 export class AssignTaskService extends BaseService<AssignTaskEntity> {
@@ -21,6 +24,10 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     private readonly assignTaskRepository: Repository<AssignTaskEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
+    private notificationService: NotificationService,
+    private userService: UserService,
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
   ) {
     super(assignTaskRepository);
   }
@@ -29,72 +36,22 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     return this.assignTaskRepository.createQueryBuilder('assign-tasks');
   }
 
-  // async assignMemberToTask(data: AssignTaskReq, user: string): Promise<string> {
-  //   try {
-  //     const queryRunner = this.dataSource.createQueryRunner();
-  //     // eslint-disable-next-line prefer-const
-  //     let { assignee, taskID, leader } = data;
-  //     const oUser = JSON.parse(user);
-  //     if (assignee.length < 0) {
-  //       throw new BadRequestException(ASSIGN_ERROR_MESSAGE.NO_ASSIGNEE);
-  //     }
-
-  //     if (assignee.length > 0 && leader.length == 0) {
-  //       leader = assignee[0];
-  //     }
-
-  //     const callback = async (queryRunner: QueryRunner): Promise<void> => {
-  //       const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
-  //         where: { id: taskID },
-  //       });
-
-  //       if (!taskExisted) {
-  //         throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
-  //       }
-  //       const assignedExisted = await queryRunner.manager.find(
-  //         AssignTaskEntity,
-  //         {
-  //           where: { taskID },
-  //         },
-  //       );
-  //       const deleteAssignTask = assignedExisted?.map((item) => {
-  //         queryRunner.manager.delete(AssignTaskEntity, { id: item.id });
-  //       });
-  //       if (deleteAssignTask.length !== 0) {
-  //         await Promise.all(deleteAssignTask);
-  //       }
-  //       const aAssignTask = [];
-  //       assignee.map((item) => {
-  //         let isLeader = false;
-  //         if (item === leader) {
-  //           isLeader = true;
-  //         }
-  //         const oAssignTask = {
-  //           taskID,
-  //           assignee: item,
-  //           isLeader,
-  //           taskMaster: oUser.id,
-  //         };
-  //         aAssignTask.push(
-  //           queryRunner.manager.insert(AssignTaskEntity, oAssignTask),
-  //         );
-  //       });
-  //       if (aAssignTask.length !== 0) {
-  //         await Promise.all(aAssignTask);
-  //       }
-  //     };
-  //     await this.transaction(callback, queryRunner);
-  //     return 'Assign member successfully';
-  //   } catch (err) {
-  //     return err.message;
-  //   }
-  // }
-
-  async assignMemberToTask(data: AssignTaskReq, user: string): Promise<string> {
+  async assignMemberToTask(
+    data: AssignTaskReq,
+    user: string,
+    task?: TaskCreateReq,
+  ): Promise<string> {
     const { assignee, taskID } = data;
     let { leader } = data;
     const oUser = JSON.parse(user);
     const queryRunner = this.dataSource.createQueryRunner();
+    if (task == undefined) {
+      const taskExisted: any = await queryRunner.manager.findOne(TaskEntity, {
+        where: { id: taskID },
+      });
+      task = taskExisted;
+    }
+    const { title } = task;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
@@ -120,7 +77,31 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       );
     };
     await this.transaction(callback, queryRunner);
-
+    const createNotification = [];
+    for (let index = 0; index < assignee.length; index++) {
+      const idUser = assignee[index];
+      const dataNotification: NotificationCreateRequest = {
+        title: `Công việc được giao`,
+        content: `${oUser.fullName} đã giao công việc ${title}`,
+        readFlag: false,
+        type: ETypeNotification.TASK,
+        sender: oUser.id,
+        userId: idUser,
+      };
+      const socketId = (await this.userService.findById(idUser))?.socketId;
+      const client = this.appGateWay.server;
+      if (socketId !== null) {
+        client.to(socketId).emit('create-task', {
+          ...dataNotification,
+          taskId: taskID,
+          avatar: oUser?.avatar,
+        });
+      }
+      createNotification.push(
+        this.notificationService.createNotification(dataNotification),
+      );
+    }
+    await Promise.all(createNotification);
     return 'Assign member successfully';
   }
 }
