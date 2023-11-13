@@ -39,5 +39,15 @@ export class NotificationCreateRequest {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ default: 'string' })
+  commonId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'string' })
+  eventId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'string' })
   userId: string;
 }
