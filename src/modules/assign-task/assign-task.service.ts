@@ -51,7 +51,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       });
       task = taskExisted;
     }
-    const { title } = task;
+    const { title, eventID } = task;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
@@ -87,13 +87,14 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         type: ETypeNotification.TASK,
         sender: oUser.id,
         userId: idUser,
+        eventId: eventID,
+        commonId: taskID,
       };
       const socketId = (await this.userService.findById(idUser))?.socketId;
       const client = this.appGateWay.server;
       if (socketId !== null) {
         client.to(socketId).emit('create-task', {
           ...dataNotification,
-          taskId: taskID,
           avatar: oUser?.avatar,
         });
       }

@@ -25,4 +25,7 @@ export class NotificationResponse {
 
   @Expose()
   createdAt: Date;
+
+  @Expose()
+  commonId: string;
 }

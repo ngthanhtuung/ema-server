@@ -45,6 +45,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
         'notifications.sender as sender',
         'notifications.readFlag as readFlag',
         'notifications.createdAt as createdAt',
+        'notifications.commonId as commonId',
+        'notifications.eventId as eventId',
       ]);
       query.where('notifications.userId = :userId', { userId: userId });
       const [result, total] = await Promise.all([
@@ -111,14 +113,21 @@ export class NotificationService extends BaseService<NotificationEntity> {
    */
   async seenAllNotification(userId: string): Promise<string> {
     try {
-      const query = this.generalBuilderNotification();
-      query
-        .update(NotificationEntity)
-        .set({ readFlag: true })
-        .where('userId = :userId', { userId });
-      const result = await query.execute();
-      if (result.affected === 0) {
-        throw new InternalServerErrorException('Update failed');
+      const listNotification = await this.notificationRepository.find({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+      });
+      if (listNotification.length !== 0) {
+        const dataSeenAll = listNotification?.map((item) => {
+          return this.notificationRepository.update(
+            { id: item?.id },
+            { readFlag: true },
+          );
+        });
+        await Promise.all(dataSeenAll);
       }
       return 'Notification read!';
     } catch (err) {
@@ -143,6 +152,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
         readFlag: false,
         type: notification.type,
         sender: notification.sender,
+        commonId: notification.commonId,
+        eventId: notification.eventId,
         user: {
           id: notification.userId,
         },
