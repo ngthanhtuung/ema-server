@@ -33,7 +33,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
   async getMyNotifications(
     userId: string,
     pagination: QueryNotificationDto,
-  ): Promise<IPaginateResponse<NotificationResponse>> {
+  ): Promise<IPaginateResponse<NotificationResponse[]>> {
     try {
       const { currentPage, sizePage } = pagination;
       const query = this.generalBuilderNotification();
@@ -44,26 +44,29 @@ export class NotificationService extends BaseService<NotificationEntity> {
         'notifications.type as type',
         'notifications.sender as sender',
         'notifications.readFlag as readFlag',
+        'notifications.createdAt as createdAt',
       ]);
       query.where('notifications.userId = :userId', { userId: userId });
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
           .limit(sizePage as number)
-          .orderBy('notifications.id', 'DESC')
+          .orderBy('notifications.createdAt', 'DESC')
           .execute(),
         query.getCount(),
       ]);
-      const finalRes = result?.map(async (item) => {
+      const finalRes: NotificationResponse[] = [];
+      for (const item of result) {
         const avatar = (await this.userService.findByIdV2(item?.sender))
           ?.avatar;
-        return {
+        const dataUserNotification = {
           ...item,
           avatarSender: avatar,
         };
-      });
+        finalRes.push(dataUserNotification);
+      }
       const data = plainToInstance(NotificationResponse, finalRes);
-      return paginateResponse<NotificationResponse>(
+      return paginateResponse<NotificationResponse[]>(
         [data, total],
         currentPage as number,
         sizePage as number,

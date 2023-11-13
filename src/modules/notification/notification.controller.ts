@@ -16,7 +16,7 @@ export class NotificationController {
   async getAllNotifications(
     @GetUser() user: string,
     @Query() notificationPagination: QueryNotificationDto,
-  ): Promise<IPaginateResponse<NotificationResponse>> {
+  ): Promise<IPaginateResponse<NotificationResponse[]>> {
     return await this.notificationService.getMyNotifications(
       JSON.parse(user).id,
       notificationPagination,
