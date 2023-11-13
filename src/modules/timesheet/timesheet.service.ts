@@ -37,24 +37,115 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
       if (!eventExisted || !userExisted) {
         throw new InternalServerErrorException('Event or User not found');
       }
-      const createTimekeeping = await queryRunner.manager.insert(
-        TimesheetEntity,
-        {
-          date: moment().format('YYYY-MM-DD'),
-          checkinTime: moment().format('HH:mm:ss'),
-          event: eventExisted,
-          user: userExisted,
-        },
+      const checkInExisted = await this.checkTimekeepingInEvent(
+        eventId,
+        userId,
+        moment().format('YYYY-MM-DD').toString(),
       );
-      await queryRunner.commitTransaction();
-      return 'Check-in successfully';
+      if (!checkInExisted) {
+        const createTimekeeping = await queryRunner.manager.insert(
+          TimesheetEntity,
+          {
+            date: moment().format('YYYY-MM-DD'),
+            checkinTime: moment().format('HH:mm:ss'),
+            event: eventExisted,
+            user: userExisted,
+          },
+        );
+        await queryRunner.commitTransaction();
+        return 'Check-in successfully';
+      }
+      await queryRunner.rollbackTransaction();
+      return 'You have check in';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
   }
 
-  async checkOut(): Promise<void> {
+  // async checkTimekeepingInEvent(
+  //   eventId: string,
+  //   userId: string,
+  //   date: string,
+  // ): Promise<boolean> {
+  //   try {
+  //     const userExisted = await this.userService.findOne({
+  //       where: {
+  //         id: userId,
+  //       },
+  //     });
+  //     const eventExisted = await this.eventService.findOne({
+  //       where: {
+  //         id: eventId,
+  //       },
+  //     });
+  //     if (!eventExisted || !userExisted) {
+  //       throw new InternalServerErrorException('Event or User not found');
+  //     }
+  //     const formattedDate = moment(date).format('YYYY-MM-DD');
+  //     const formattedDateAsDate = moment(formattedDate).toDate();
+  //     const timekeeping = await this.timesheetRepository.findOne({
+  //       where: {
+  //         event: {
+  //           id: eventId,
+  //         },
+  //         user: {
+  //           id: userId,
+  //         },
+  //         date: formattedDateAsDate,
+  //       },
+  //     });
+  //     if (timekeeping) {
+  //       return true;
+  //     }
+  //     return false;
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err.message);
+  //   }
+  // }
+
+  async checkTimekeepingInEvent(
+    eventId: string,
+    userId: string,
+    date: string,
+  ): Promise<TimesheetEntity> {
     try {
+      const userExisted = await this.userService.findOne({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!userExisted) {
+        throw new InternalServerErrorException('User not found');
+      }
+
+      // eslint-disable-next-line prefer-const, @typescript-eslint/no-explicit-any
+      let queryConditions: any = {
+        user: {
+          id: userId,
+        },
+      };
+
+      if (eventId) {
+        queryConditions.event = {
+          id: eventId,
+        };
+      }
+
+      if (date) {
+        const formattedDate = moment(date, 'YYYY-MM-DD', true);
+        if (formattedDate.isValid()) {
+          queryConditions.date = formattedDate.toDate();
+        } else {
+          throw new InternalServerErrorException('Invalid date format');
+        }
+      }
+
+      const timekeeping = await this.timesheetRepository.findOne({
+        where: queryConditions,
+        relations: ['event'],
+      });
+      return timekeeping;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
