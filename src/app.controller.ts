@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FirebaseMessageService } from './providers/firebase/message/firebase-message.service';
-import { Controller, InternalServerErrorException, Get } from '@nestjs/common';
+import {
+  Controller,
+  InternalServerErrorException,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { AppService } from './app.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator';
 
 @Controller()
@@ -13,21 +18,25 @@ export class AppController {
     private readonly firebaseMessageService: FirebaseMessageService,
   ) {}
 
-  @Get('test-notification/')
+  @Get('/test-notification')
+  @ApiQuery({
+    name: 'deviceToken',
+    isArray: true,
+    type: String,
+  })
   @Public()
-  async testNotification(): // @Param('deviceToken') deviceToken: string
-  Promise<any | undefined> {
+  async testNotification(
+    @Query('deviceToken') deviceToken: string[],
+  ): Promise<any | undefined> {
     try {
-      const deviceTokenArray = [
-        'fg4PB7SAT4iGYqh9JOad8r:APA91bGv4strxxn0fp2BMcIJ_hx_OUvaU3znrqkAiMCixWqsrxVjkPyei2YheiUdc-3L5UpjWE6F7xKhkRKHRUkWGj_cS0Wa9dKlwMrlYarHWsjaB3HGLwNcgKXriox7nji3dCOEXkb5',
-      ];
+      const deviceTokenArray = deviceToken;
       const result = await this.firebaseMessageService.sendCustomNotification(
         deviceTokenArray,
-        'hahahaha',
+        'Test thử notification',
         'test thử noti',
         { test: 'test' },
       );
-      console.log('Result: ', result);
+      return result;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
