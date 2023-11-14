@@ -60,6 +60,11 @@ export class EventController {
     );
   }
 
+  @Get('/statistic')
+  async eventStatistic(): Promise<unknown> {
+    return await this.eventService.eventStatistics();
+  }
+
   /**
    * getEventById
    * @param data

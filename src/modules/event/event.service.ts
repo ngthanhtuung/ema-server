@@ -26,6 +26,7 @@ import { AssignEventService } from '../assign-event/assign-event.service';
 import { FileService } from 'src/file/file.service';
 import * as QRCode from 'qrcode';
 import { ConfigService } from '@nestjs/config';
+import { TaskService } from '../task/task.service';
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
   constructor(
@@ -36,6 +37,7 @@ export class EventService extends BaseService<EventEntity> {
     private readonly fileService: FileService,
     private readonly assignEventService: AssignEventService,
     private configService: ConfigService,
+    private readonly taskService: TaskService,
   ) {
     super(eventRepository);
   }
@@ -382,6 +384,34 @@ export class EventService extends BaseService<EventEntity> {
         throw new NotFoundException('Event not found');
       }
       return event.checkInQRCode;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async eventStatistics(): Promise<unknown> {
+    try {
+      const events = await this.eventRepository.find({
+        where: { isTemplate: false },
+        select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+      });
+
+      const eventStatisticPromises = events.map(async (event) => {
+        const taskStatistic = await this.taskService.getTaskStatistic(event.id);
+        const peopleInTaskStatistic =
+          await this.taskService.getNumOfPeopleInTaskStatistic(event.id);
+        return {
+          id: event.id,
+          eventName: event.eventName,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          status: event.status,
+          tasks: taskStatistic,
+          totalMember: peopleInTaskStatistic,
+        };
+      });
+      const eventStatistic = await Promise.all(eventStatisticPromises);
+      return eventStatistic;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

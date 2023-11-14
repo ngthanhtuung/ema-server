@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEntity } from './event.entity';
 import { AssignEventModule } from '../assign-event/assign-event.module';
 import { FileModule } from 'src/file/file.module';
+import { TaskModule } from '../task/task.module';
 
 @Module({
   imports: [
     AssignEventModule,
     TypeOrmModule.forFeature([EventEntity]),
     FileModule,
+    TaskModule,
   ],
   controllers: [EventController],
   providers: [EventService],

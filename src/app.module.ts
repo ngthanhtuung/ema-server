@@ -32,6 +32,7 @@ import { BudgetModule } from './modules/budget/budget.module';
 import { CommentfileModule } from './modules/commentfile/commentfile.module';
 import { RequestModule } from './modules/request/request.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
+import { StatisticModule } from './modules/statistic/statistic.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { TimesheetModule } from './modules/timesheet/timesheet.module';
     BudgetModule,
     RequestModule,
     TimesheetModule,
+    StatisticModule,
   ],
   controllers: [AppController],
   providers: [
