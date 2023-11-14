@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   COMMENT_ERROR_MESSAGE,
   TASK_ERROR_MESSAGE,
@@ -22,7 +23,7 @@ import { UserEntity } from '../user/user.entity';
 import { CommentFileEntity } from '../commentfile/commentfile.entity';
 import { ERole } from 'src/common/enum/enum';
 import { CommentfileService } from '../commentfile/commentfile.service';
-
+import * as moment from 'moment-timezone';
 @Injectable()
 export class CommentService extends BaseService<CommentEntity> {
   constructor(
@@ -71,7 +72,13 @@ export class CommentService extends BaseService<CommentEntity> {
         .andWhere('comment.status = :status', { status: true })
         .orderBy('comment.createdAt', 'ASC')
         .getMany();
-      return result;
+      const finalData = result?.map((item: any) => {
+        item.createdAt = moment(item.createdAt)
+          .add(7, 'hours')
+          .format('YYYY-MM-DD HH:mm:ss');
+        return item;
+      });
+      return finalData;
     } catch (err) {
       throw new InternalServerErrorException(err);
     }

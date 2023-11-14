@@ -13,7 +13,7 @@ import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { BaseService } from '../base/base.service';
 import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
-
+import * as moment from 'moment-timezone';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
@@ -61,6 +61,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
       for (const item of result) {
         const avatar = (await this.userService.findByIdV2(item?.sender))
           ?.avatar;
+        item.createdAt = moment(item.createdAt)
+          .add(7, 'hours')
+          .format('YYYY-MM-DD HH:mm:ss');
         const dataUserNotification = {
           ...item,
           avatarSender: avatar,
