@@ -16,7 +16,6 @@ import {
   UpdateRequestStatusReq,
 } from './dto/request.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
-import { UserEntity } from '../user/user.entity';
 import { RequestEntity } from './request.entity';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
@@ -50,8 +49,7 @@ export class RequestController {
     @Body() dto: RequestCreateRequest,
     @GetUser() user: string,
   ): Promise<string> {
-    const oUser = JSON.parse(user);
-    return await this.requestService.createRequest(oUser.id, dto);
+    return await this.requestService.createRequest(user, dto);
   }
 
   @Put('/approveRequest')
@@ -60,8 +58,7 @@ export class RequestController {
     @Body() dto: UpdateRequestStatusReq,
     @GetUser() user: string,
   ): Promise<string> {
-    const oUser = JSON.parse(user);
-    return await this.requestService.updateRequestStatus(dto, oUser.id);
+    return await this.requestService.updateRequestStatus(dto, user);
   }
 
   @Put('/changeRequest/:id')

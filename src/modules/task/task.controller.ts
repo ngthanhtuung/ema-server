@@ -78,7 +78,11 @@ export class TaskController {
         Object.assign(data, { [key]: req[key] });
       }
     }
-    const res = await this.taskService.updateTask(taskIDReq.taskID, data);
+    const res = await this.taskService.updateTask(
+      taskIDReq.taskID,
+      data,
+      oUser,
+    );
     if (res) return 'Update task information success';
   }
 
@@ -94,7 +98,7 @@ export class TaskController {
       status,
       modifiedBy: oUser.id,
     };
-    const res = await this.taskService.updateTask(taskID, data);
+    const res = await this.taskService.updateTask(taskID, data, oUser);
     if (res) return 'Update status success';
   }
 }

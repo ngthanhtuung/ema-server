@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Injectable,
   InternalServerErrorException,
@@ -20,7 +22,12 @@ import {
 import { AssignTaskService } from '../assign-task/assign-task.service';
 import { UserPagination } from '../user/dto/user.request';
 import * as moment from 'moment-timezone';
-import { ETaskStatus } from 'src/common/enum/enum';
+import { ETaskStatus, ETypeNotification } from 'src/common/enum/enum';
+import { NotificationCreateRequest } from '../notification/dto/notification.request';
+import { AssignTaskEntity } from '../assign-task/assign-task.entity';
+import { UserService } from '../user/user.service';
+import { NotificationService } from '../notification/notification.service';
+import { AppGateway } from 'src/sockets/app.gateway';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -29,7 +36,10 @@ export class TaskService extends BaseService<TaskEntity> {
     @InjectDataSource()
     private dataSource: DataSource,
     private assignTaskService: AssignTaskService,
-
+    private notificationService: NotificationService,
+    private userService: UserService,
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
     @Inject(forwardRef(() => TaskfileService))
     private readonly taskFileService: TaskfileService,
   ) {
@@ -392,7 +402,8 @@ export class TaskService extends BaseService<TaskEntity> {
    * @param data
    * @returns
    */
-  async updateTask(taskID: string, data: object): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
     const queryRunner = this.dataSource.createQueryRunner();
     if (!taskID) {
       throw new InternalServerErrorException(`TaskID is empty`);
@@ -407,6 +418,38 @@ export class TaskService extends BaseService<TaskEntity> {
       await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
     };
     try {
+      const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
+        where: { taskID: taskID },
+      });
+      const taskExisted: any = await queryRunner.manager.findOne(TaskEntity, {
+        where: { id: taskID },
+      });
+      const createNotification = [];
+      for (const item of listUser) {
+        const dataNotification: NotificationCreateRequest = {
+          title: `Công việc đã được cập nhât`,
+          content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+          readFlag: false,
+          type: ETypeNotification.TASK,
+          sender: oUser.id,
+          userId: item?.assignee,
+          eventId: taskExisted?.eventID,
+          commonId: taskID,
+        };
+        const socketId = (await this.userService.findById(item?.assignee))
+          ?.socketId;
+        const client = this.appGateWay.server;
+        if (socketId !== null) {
+          client.to(socketId).emit('update-task', {
+            ...dataNotification,
+            avatar: oUser?.avatar,
+          });
+        }
+        createNotification.push(
+          this.notificationService.createNotification(dataNotification),
+        );
+      }
+      await Promise.all(createNotification);
       await this.transaction(callbacks, queryRunner);
     } catch (error) {
       throw new InternalServerErrorException(error.message);

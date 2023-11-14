@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   InternalServerErrorException,
@@ -16,9 +18,18 @@ import {
   UpdateRequestStatusReq,
 } from './dto/request.request';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
-import { EReplyRequest, ERequestType } from 'src/common/enum/enum';
+import {
+  EReplyRequest,
+  ERequestType,
+  ETypeNotification,
+} from 'src/common/enum/enum';
 import { UserPagination } from '../user/dto/user.request';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
+import { NotificationCreateRequest } from '../notification/dto/notification.request';
+import { NotificationService } from '../notification/notification.service';
+import { UserService } from '../user/user.service';
+import { AppGateway } from 'src/sockets/app.gateway';
+import { UserEntity } from '../user/user.entity';
 
 @Injectable()
 export class RequestService extends BaseService<RequestEntity> {
@@ -29,6 +40,10 @@ export class RequestService extends BaseService<RequestEntity> {
     private dataSource: DataSource,
     @Inject(forwardRef(() => AnnualLeaveService))
     private readonly annualLeaveService: AnnualLeaveService,
+    private notificationService: NotificationService,
+    private userService: UserService,
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
   ) {
     super(requestRepository);
   }
@@ -72,6 +87,7 @@ export class RequestService extends BaseService<RequestEntity> {
     userID: string,
     data: RequestCreateRequest,
   ): Promise<string> {
+    const oUser = JSON.parse(userID);
     // validate input
     for (const key in data) {
       if (!data[key] || data[key].length == 0) {
@@ -104,8 +120,25 @@ export class RequestService extends BaseService<RequestEntity> {
     const payload = { ...data, requestor: userID };
     const subDayOffs = annualLeave.amount - dayOffs;
     try {
-      await queryRunner.manager.insert(RequestEntity, payload);
+      const createRequest = await queryRunner.manager.insert(
+        RequestEntity,
+        payload,
+      );
       await this.annualLeaveService.updateAnnualLeaveAmount(userID, subDayOffs);
+      const idReceive = await queryRunner.manager.findOne(UserEntity, {
+        where: { division: { id: null } },
+      });
+      const dataNotification = {
+        title: 'Yêu cầu đã được gửi',
+        content: `${oUser.fullName} đã gửi yêu cầu đến bạn`,
+      };
+      await this.pushNotification(
+        idReceive?.id,
+        userID,
+        createRequest.generatedMaps[0]['id'],
+        dataNotification,
+        'create-request',
+      );
     } catch (error) {
       throw new InternalServerErrorException(
         `Create request fail - ${error.message}`,
@@ -120,6 +153,7 @@ export class RequestService extends BaseService<RequestEntity> {
     userID: string,
   ): Promise<string> {
     let requestFind, annualLeaveFind;
+    const oUser = JSON.parse(userID);
     try {
       requestFind = await this.requestRepository.findOne({
         where: {
@@ -178,6 +212,21 @@ export class RequestService extends BaseService<RequestEntity> {
         );
       }
     }
+    const queryRunner = this.dataSource.createQueryRunner();
+    const idReceive = await queryRunner.manager.findOne(UserEntity, {
+      where: { division: { id: null } },
+    });
+    const dataNotification = {
+      title: 'Yêu cầu đã được phản hồi',
+      content: `${oUser.fullName} đã phản hồi lại yêu cầu của bạn`,
+    };
+    await this.pushNotification(
+      idReceive?.id,
+      userID,
+      req.requestID,
+      dataNotification,
+      'approve-request',
+    );
 
     return 'update successfully';
   }
@@ -394,5 +443,33 @@ export class RequestService extends BaseService<RequestEntity> {
     }
 
     return res;
+  }
+
+  async pushNotification(
+    receive: any,
+    sender: any,
+    requestId: string,
+    data: any,
+    command: any,
+  ): Promise<void> {
+    const dataNotification: NotificationCreateRequest = {
+      title: data.title,
+      content: data.content,
+      readFlag: false,
+      type: ETypeNotification.REQUEST,
+      sender: sender.id,
+      userId: receive,
+      eventId: null,
+      commonId: requestId,
+    };
+    const socketId = (await this.userService.findById(receive))?.socketId;
+    const client = this.appGateWay.server;
+    if (socketId !== null) {
+      client.to(socketId).emit(command, {
+        ...dataNotification,
+        avatar: sender?.avatar,
+      });
+    }
+    await this.notificationService.createNotification(dataNotification);
   }
 }
