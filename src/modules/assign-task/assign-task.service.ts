@@ -93,7 +93,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       const socketId = (await this.userService.findById(idUser))?.socketId;
       const client = this.appGateWay.server;
       if (socketId !== null) {
-        client.to(socketId).emit('assign-task', {
+        client.to(socketId).emit('notification', {
           ...dataNotification,
           avatar: oUser?.avatar,
         });

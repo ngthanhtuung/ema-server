@@ -440,7 +440,7 @@ export class TaskService extends BaseService<TaskEntity> {
           ?.socketId;
         const client = this.appGateWay.server;
         if (socketId !== null) {
-          client.to(socketId).emit('update-task', {
+          client.to(socketId).emit('notification', {
             ...dataNotification,
             avatar: oUser?.avatar,
           });

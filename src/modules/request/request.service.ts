@@ -137,7 +137,7 @@ export class RequestService extends BaseService<RequestEntity> {
         userID,
         createRequest.generatedMaps[0]['id'],
         dataNotification,
-        'create-request',
+        'notification',
       );
     } catch (error) {
       throw new InternalServerErrorException(
@@ -225,7 +225,7 @@ export class RequestService extends BaseService<RequestEntity> {
       userID,
       req.requestID,
       dataNotification,
-      'approve-request',
+      'notification',
     );
 
     return 'update successfully';
