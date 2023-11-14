@@ -101,7 +101,9 @@ export class RequestService extends BaseService<RequestEntity> {
     }
     let annualLeave;
     try {
-      annualLeave = await this.annualLeaveService.getAnnualLeaveOfyear(userID);
+      annualLeave = await this.annualLeaveService.getAnnualLeaveOfyear(
+        oUser.id,
+      );
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -117,14 +119,17 @@ export class RequestService extends BaseService<RequestEntity> {
       throw new InternalServerErrorException('Not enough vacation days');
     }
     const queryRunner = this.dataSource.createQueryRunner();
-    const payload = { ...data, requestor: userID };
+    const payload = { ...data, requestor: oUser.id };
     const subDayOffs = annualLeave.amount - dayOffs;
     try {
       const createRequest = await queryRunner.manager.insert(
         RequestEntity,
         payload,
       );
-      await this.annualLeaveService.updateAnnualLeaveAmount(userID, subDayOffs);
+      await this.annualLeaveService.updateAnnualLeaveAmount(
+        oUser.id,
+        subDayOffs,
+      );
       const idReceive = await queryRunner.manager.findOne(UserEntity, {
         where: { division: { id: null } },
       });
@@ -134,7 +139,7 @@ export class RequestService extends BaseService<RequestEntity> {
       };
       await this.pushNotification(
         idReceive?.id,
-        userID,
+        oUser,
         createRequest.generatedMaps[0]['id'],
         dataNotification,
         'notification',
@@ -169,14 +174,14 @@ export class RequestService extends BaseService<RequestEntity> {
       );
     }
 
-    if (req.status != EReplyRequest.CANCEL && requestFind.userID == userID) {
+    if (req.status != EReplyRequest.CANCEL && requestFind.userID == oUser?.id) {
       throw new InternalServerErrorException("You can't update your request");
     }
     let updateRequest;
     try {
       requestFind.status = req.status;
       requestFind.replyMessage = req.replyMessage;
-      requestFind.approver = userID;
+      requestFind.approver = oUser.id;
       updateRequest = await this.requestRepository.save(requestFind);
     } catch (error) {
       throw new InternalServerErrorException(
@@ -222,7 +227,7 @@ export class RequestService extends BaseService<RequestEntity> {
     };
     await this.pushNotification(
       idReceive?.id,
-      userID,
+      oUser,
       req.requestID,
       dataNotification,
       'notification',
