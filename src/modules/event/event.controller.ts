@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Post, Query, Put } from '@nestjs/common';
 import { EventService } from './event.service';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { EventResponse } from './dto/event.response';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   EventAssignRequest,
   EventCreateRequest,
@@ -61,8 +61,17 @@ export class EventController {
   }
 
   @Get('/statistic')
-  async eventStatistic(): Promise<unknown> {
-    return await this.eventService.eventStatistics();
+  @ApiQuery({
+    name: 'mode',
+    enum: EEventStatus,
+    required: false,
+  })
+  async eventStatistic(
+    @Query('mode') mode: EEventStatus,
+    @GetUser() user: string,
+  ): Promise<unknown> {
+    console.log('Mode: ', mode);
+    return await this.eventService.eventStatistics(mode, user);
   }
 
   /**

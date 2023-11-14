@@ -15,6 +15,7 @@ export enum EUserStatus {
 }
 
 export enum EEventStatus {
+  ALL = 'ALL',
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
   DONE = 'DONE',
