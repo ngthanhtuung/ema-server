@@ -49,7 +49,6 @@ export class AppGateway
         secret: jwtConstants.accessTokenSecret,
       });
       console.log('decoded:', decoded);
-
       return decoded; // response to function
     } catch (ex) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
