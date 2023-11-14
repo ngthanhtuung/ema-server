@@ -218,15 +218,15 @@ export class RequestService extends BaseService<RequestEntity> {
       }
     }
     const queryRunner = this.dataSource.createQueryRunner();
-    const idReceive = await queryRunner.manager.findOne(UserEntity, {
-      where: { division: { id: null } },
+    const idReceive = await queryRunner.manager.findOne(RequestEntity, {
+      where: { id: req.requestID },
     });
     const dataNotification = {
       title: 'Yêu cầu đã được phản hồi',
       content: `${oUser.fullName} đã phản hồi lại yêu cầu của bạn`,
     };
     await this.pushNotification(
-      idReceive?.id,
+      idReceive?.requestor,
       oUser,
       req.requestID,
       dataNotification,
