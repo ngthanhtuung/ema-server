@@ -20,6 +20,7 @@ import {
 import { AssignTaskService } from '../assign-task/assign-task.service';
 import { UserPagination } from '../user/dto/user.request';
 import * as moment from 'moment-timezone';
+import { ETaskStatus } from 'src/common/enum/enum';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -487,7 +488,7 @@ export class TaskService extends BaseService<TaskEntity> {
       //   // where: [
       //   //   { assignTasks: { assignee: userId } },
       //   //   { assignTasks: { taskMaster: userId } },
-      //   // ],a
+      //   // ],
       //   where: [
       //     { id: taskId, assignTasks: { assignee: userId } },
       //     { id: taskId, assignTasks: { taskMaster: userId } },
@@ -497,6 +498,128 @@ export class TaskService extends BaseService<TaskEntity> {
       return result.length > 0 ? true : false;
     } catch (err) {
       return false;
+    }
+  }
+
+  async getTaskStatistic(eventId: string): Promise<unknown> {
+    try {
+      const tasks = await this.taskRepository.find({
+        where: {
+          event: {
+            id: eventId,
+          },
+        },
+      });
+      const taskStatistics = {
+        total: tasks.length,
+        pending: tasks.filter((task) => task.status === ETaskStatus.PENDING)
+          .length,
+        done: tasks.filter((task) => task.status === ETaskStatus.DONE).length,
+        cancel: tasks.filter((task) => task.status === ETaskStatus.CANCEL)
+          .length,
+        overdue: tasks.filter((task) => task.status === ETaskStatus.OVERDUE)
+          .length,
+      };
+      return taskStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
+  //   try {
+  //     const tasks = await this.taskRepository.find({
+  //       where: {
+  //         event: {
+  //           id: eventId,
+  //         },
+  //       },
+  //       relations: ['assignTasks'],
+  //     });
+  //     const uniqueTaskMasters = new Set();
+  //     const uniqueLeaders = new Set();
+  //     const uniqueMembers = new Set();
+  //     const peopleStatistics = {
+  //       leader: tasks.filter((task) =>
+  //         task.assignTasks.some((assignTask) => assignTask.isLeader === true),
+  //       ).length,
+  //       member: tasks.filter((task) =>
+  //         task.assignTasks.some((assignTask) => assignTask.isLeader === false),
+  //       ).length,
+  //       taskMaster: tasks.filter((task) =>
+  //         task.assignTasks.some((assignTask) => {
+  //           if (assignTask.taskMaster) {
+  //             // Check if the taskMaster is not already counted
+  //             if (!uniqueTaskMasters.has(assignTask.taskMaster)) {
+  //               uniqueTaskMasters.add(assignTask.taskMaster);
+  //               return true; // Include this taskMaster in the count
+  //             }
+  //           }
+  //           return false; // Skip this taskMaster in the count
+  //         }),
+  //       ).length,
+  //     };
+  //     return peopleStatistics;
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err.message);
+  //   }
+  // }
+
+  async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
+    try {
+      const tasks = await this.taskRepository.find({
+        where: {
+          event: {
+            id: eventId,
+          },
+        },
+        relations: ['assignTasks'],
+      });
+
+      const uniquePeople = {
+        leaders: new Set<string>(),
+        members: new Set<string>(),
+        taskMasters: new Set<string>(),
+      };
+
+      const peopleStatistics = tasks.reduce(
+        (stats, task) => {
+          task.assignTasks.forEach((assignTask) => {
+            if (
+              assignTask.isLeader === true &&
+              !uniquePeople.leaders.has(assignTask.id)
+            ) {
+              uniquePeople.leaders.add(assignTask.id);
+              stats.leader += 1;
+            } else if (
+              assignTask.isLeader === false &&
+              !uniquePeople.members.has(assignTask.id)
+            ) {
+              uniquePeople.members.add(assignTask.id);
+              stats.member += 1;
+            }
+
+            if (
+              assignTask.taskMaster &&
+              !uniquePeople.taskMasters.has(assignTask.taskMaster)
+            ) {
+              uniquePeople.taskMasters.add(assignTask.taskMaster);
+              stats.taskMaster += 1;
+            }
+          });
+
+          return stats;
+        },
+        {
+          leader: 0,
+          member: 0,
+          taskMaster: 0,
+        },
+      );
+
+      return peopleStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }
