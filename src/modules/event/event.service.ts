@@ -21,7 +21,7 @@ import {
   FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { EEventStatus } from 'src/common/enum/enum';
+import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { FileService } from 'src/file/file.service';
 import * as QRCode from 'qrcode';
@@ -389,13 +389,37 @@ export class EventService extends BaseService<EventEntity> {
     }
   }
 
-  async eventStatistics(): Promise<unknown> {
+  async eventStatistics(mode: EEventStatus, user: string): Promise<unknown> {
     try {
-      const events = await this.eventRepository.find({
-        where: { isTemplate: false },
-        select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-      });
+      let events;
+      if (JSON.parse(user).role === ERole.MANAGER) {
+        if (mode === undefined || mode === EEventStatus.ALL) {
+          events = await this.eventRepository.find({
+            where: { isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        } else {
+          events = await this.eventRepository.find({
+            where: { status: mode, isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        }
+      } else {
+        if (mode === undefined || mode === EEventStatus.ALL) {
+          events = await this.eventRepository.find({
+            where: {
+              isTemplate: false,
+            },
 
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        } else {
+          events = await this.eventRepository.find({
+            where: { status: mode, isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        }
+      }
       const eventStatisticPromises = events.map(async (event) => {
         const taskStatistic = await this.taskService.getTaskStatistic(event.id);
         const peopleInTaskStatistic =
