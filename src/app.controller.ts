@@ -5,10 +5,14 @@ import {
   InternalServerErrorException,
   Get,
   Query,
+  Body,
+  Post,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator';
+import * as firebaseAdmin from 'firebase-admin';
+import * as FCM from 'fcm-node';
 
 @Controller()
 @ApiTags('TESTING API')
@@ -18,24 +22,26 @@ export class AppController {
     private readonly firebaseMessageService: FirebaseMessageService,
   ) {}
 
-  @Get('/test-notification')
-  @ApiQuery({
-    name: 'deviceToken',
-    isArray: true,
-    type: String,
-  })
+  @Post('/test-notification')
+  // @ApiBody({
+  //   type: String,
+  //   isArray: true,
+  // })
   @Public()
   async testNotification(
-    @Query('deviceToken') deviceToken: string[],
+    @Body() deviceToken: string[],
   ): Promise<any | undefined> {
     try {
       const deviceTokenArray = deviceToken;
-      const result = await this.firebaseMessageService.sendCustomNotification(
-        deviceTokenArray,
-        'Test thử notification',
-        'test thử noti',
-        { test: 'test' },
-      );
+      let result = null;
+      result = firebaseAdmin.messaging().sendEachForMulticast({
+        tokens: deviceTokenArray,
+        notification: {
+          title: 'Test thử notification',
+          body: 'test thử noti',
+        },
+      });
+
       return result;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
