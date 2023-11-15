@@ -452,29 +452,31 @@ export class TaskService extends BaseService<TaskEntity> {
         }
       }
       // Notificaiton task master
-      const socketId = (
-        await this.userService.findById(listUser?.[0].taskMaster)
-      )?.socketId;
-      const dataNotification: NotificationCreateRequest = {
-        title: `Công việc đã được cập nhât`,
-        content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-        readFlag: false,
-        type: ETypeNotification.TASK,
-        sender: oUser.id,
-        userId: listUser?.[0].taskMaster,
-        eventId: taskExisted?.eventID,
-        commonId: taskID,
-      };
-      const client = this.appGateWay.server;
-      if (socketId !== null) {
-        client.to(socketId).emit('notification', {
-          ...dataNotification,
-          avatar: oUser?.avatar,
-        });
+      if (listUser?.[0].taskMaster !== oUser?.id) {
+        const socketId = (
+          await this.userService.findById(listUser?.[0].taskMaster)
+        )?.socketId;
+        const dataNotification: NotificationCreateRequest = {
+          title: `Công việc đã được cập nhât`,
+          content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+          readFlag: false,
+          type: ETypeNotification.TASK,
+          sender: oUser.id,
+          userId: listUser?.[0].taskMaster,
+          eventId: taskExisted?.eventID,
+          commonId: taskID,
+        };
+        const client = this.appGateWay.server;
+        if (socketId !== null) {
+          client.to(socketId).emit('notification', {
+            ...dataNotification,
+            avatar: oUser?.avatar,
+          });
+        }
+        createNotification.push(
+          this.notificationService.createNotification(dataNotification),
+        );
       }
-      createNotification.push(
-        this.notificationService.createNotification(dataNotification),
-      );
       await Promise.all(createNotification);
       await this.transaction(callbacks, queryRunner);
     } catch (error) {
