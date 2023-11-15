@@ -37,28 +37,26 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
       if (!eventExisted || !userExisted) {
         throw new InternalServerErrorException('Event or User not found');
       }
-      const checkInExisted = await this.checkTimekeepingInEvent(
-        eventId,
-        userId,
-        moment().format('YYYY-MM-DD').toString(),
-        moment().format('YYYY-MM-DD').toString(),
-        true,
+      // const checkInExisted = await this.checkTimekeepingInEvent(
+      //   eventId,
+      //   userId,
+      //   moment().format('YYYY-MM-DD').toString(),
+      //   moment().format('YYYY-MM-DD').toString(),
+      //   true,
+      // );
+      // if (!checkInExisted) {
+      // }
+      const createTimekeeping = await queryRunner.manager.insert(
+        TimesheetEntity,
+        {
+          date: moment().format('YYYY-MM-DD'),
+          checkinTime: moment().format('HH:mm:ss'),
+          event: eventExisted,
+          user: userExisted,
+        },
       );
-      if (!checkInExisted) {
-        const createTimekeeping = await queryRunner.manager.insert(
-          TimesheetEntity,
-          {
-            date: moment().format('YYYY-MM-DD'),
-            checkinTime: moment().format('HH:mm:ss'),
-            event: eventExisted,
-            user: userExisted,
-          },
-        );
-        await queryRunner.commitTransaction();
-        return 'Check-in successfully';
-      }
-      await queryRunner.rollbackTransaction();
-      return 'You have check in';
+      await queryRunner.commitTransaction();
+      return 'Check-in successfully';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
