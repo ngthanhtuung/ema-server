@@ -456,14 +456,15 @@ export class TaskService extends BaseService<TaskEntity> {
           );
         }
       }
-
-      const listAssigneeDeviceToken =
-        await this.deviceService.getListDeviceTokens(listAssigneeId);
-      await this.notificationService.pushNotificationFirebase(
-        listAssigneeDeviceToken,
-        `Công việc đã được cập nhât`,
-        `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-      );
+      if (listAssigneeId.length !== 0) {
+        const listAssigneeDeviceToken =
+          await this.deviceService.getListDeviceTokens(listAssigneeId);
+        await this.notificationService.pushNotificationFirebase(
+          listAssigneeDeviceToken,
+          `Công việc đã được cập nhât`,
+          `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+        );
+      }
       // Notificaiton task master
       if (listUser?.[0].taskMaster !== oUser?.id) {
         const socketId = (
@@ -487,13 +488,15 @@ export class TaskService extends BaseService<TaskEntity> {
           });
         }
         listTaskMasterId.push(listUser?.[0].taskMaster);
-        const listTaskMasterToken =
-          await this.deviceService.getListDeviceTokens(listTaskMasterId);
-        await this.notificationService.pushNotificationFirebase(
-          listTaskMasterToken,
-          `Công việc đã được cập nhât`,
-          `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-        );
+        if (listTaskMasterId?.length !== 0) {
+          const listTaskMasterToken =
+            await this.deviceService.getListDeviceTokens(listTaskMasterId);
+          await this.notificationService.pushNotificationFirebase(
+            listTaskMasterToken,
+            `Công việc đã được cập nhât`,
+            `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+          );
+        }
         createNotification.push(
           this.notificationService.createNotification(dataNotification),
         );

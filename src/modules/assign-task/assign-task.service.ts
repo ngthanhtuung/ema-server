@@ -100,19 +100,18 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
           avatar: oUser?.avatar,
         });
       }
-      const listOfDeviceTokens = await this.deviceService.getListDeviceTokens(
-        assignee,
-      );
-      const pushNotificationFirebase =
-        await this.notificationService.pushNotificationFirebase(
-          listOfDeviceTokens,
-          'Công việc được giao',
-          `${oUser.fullName} đã giao công việc ${title}`,
-        );
       createNotification.push(
         this.notificationService.createNotification(dataNotification),
       );
     }
+    const listOfDeviceTokens = await this.deviceService.getListDeviceTokens(
+      assignee,
+    );
+    await this.notificationService.pushNotificationFirebase(
+      listOfDeviceTokens,
+      'Công việc được giao',
+      `${oUser.fullName} đã giao công việc ${title}`,
+    );
     await Promise.all(createNotification);
     return 'Assign member successfully';
   }
