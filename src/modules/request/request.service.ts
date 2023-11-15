@@ -17,7 +17,6 @@ import {
   RequestCreateRequest,
   UpdateRequestStatusReq,
 } from './dto/request.request';
-import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import {
   EReplyRequest,
   ERequestType,
@@ -30,6 +29,7 @@ import { NotificationService } from '../notification/notification.service';
 import { UserService } from '../user/user.service';
 import { AppGateway } from 'src/sockets/app.gateway';
 import { UserEntity } from '../user/user.entity';
+import { DeviceService } from '../device/device.service';
 
 @Injectable()
 export class RequestService extends BaseService<RequestEntity> {
@@ -44,6 +44,7 @@ export class RequestService extends BaseService<RequestEntity> {
     private userService: UserService,
     @Inject(forwardRef(() => AppGateway))
     private readonly appGateWay: AppGateway,
+    private readonly deviceService: DeviceService,
   ) {
     super(requestRepository);
   }
@@ -143,6 +144,7 @@ export class RequestService extends BaseService<RequestEntity> {
         createRequest.generatedMaps[0]['id'],
         dataNotification,
         'notification',
+        oUser.fullName,
       );
     } catch (error) {
       throw new InternalServerErrorException(
@@ -231,6 +233,7 @@ export class RequestService extends BaseService<RequestEntity> {
       req.requestID,
       dataNotification,
       'notification',
+      oUser.fullName,
     );
 
     return 'update successfully';
@@ -456,6 +459,7 @@ export class RequestService extends BaseService<RequestEntity> {
     requestId: string,
     data: any,
     command: any,
+    nameUser: string,
   ): Promise<void> {
     const dataNotification: NotificationCreateRequest = {
       title: data.title,
@@ -476,5 +480,12 @@ export class RequestService extends BaseService<RequestEntity> {
       });
     }
     await this.notificationService.createNotification(dataNotification);
+    const listAssigneeDeviceToken =
+      await this.deviceService.getListDeviceTokens([receive]);
+    await this.notificationService.pushNotificationFirebase(
+      listAssigneeDeviceToken,
+      `Công việc đã được cập nhât`,
+      `${nameUser} đã cập nhât công việc ${data.title}`,
+    );
   }
 }
