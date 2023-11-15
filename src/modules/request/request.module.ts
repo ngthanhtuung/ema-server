@@ -8,6 +8,7 @@ import { AnnualLeaveModule } from '../annual-leave/annual-leave.module';
 import { NotificationModule } from '../notification/notification.module';
 import { UserModule } from '../user/user.module';
 import { GatewayModule } from 'src/sockets/gateway.module';
+import { DeviceModule } from '../device/device.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { GatewayModule } from 'src/sockets/gateway.module';
     NotificationModule,
     UserModule,
     GatewayModule,
+    DeviceModule,
   ],
   controllers: [RequestController],
   providers: [RequestService],
