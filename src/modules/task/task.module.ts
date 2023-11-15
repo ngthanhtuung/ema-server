@@ -10,6 +10,7 @@ import { AssignTaskModule } from '../assign-task/assign-task.module';
 import { NotificationModule } from '../notification/notification.module';
 import { UserModule } from '../user/user.module';
 import { GatewayModule } from 'src/sockets/gateway.module';
+import { DeviceModule } from '../device/device.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GatewayModule } from 'src/sockets/gateway.module';
     AssignTaskModule,
     NotificationModule,
     UserModule,
+    DeviceModule,
   ],
   controllers: [TaskController],
   providers: [TaskService],

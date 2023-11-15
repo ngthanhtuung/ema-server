@@ -17,6 +17,7 @@ import { UserService } from '../user/user.service';
 import { AppGateway } from 'src/sockets/app.gateway';
 import { TaskCreateReq } from '../task/dto/task.request';
 import { TaskEntity } from '../task/task.entity';
+import { DeviceService } from '../device/device.service';
 @Injectable()
 export class AssignTaskService extends BaseService<AssignTaskEntity> {
   constructor(
@@ -28,6 +29,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     private userService: UserService,
     @Inject(forwardRef(() => AppGateway))
     private readonly appGateWay: AppGateway,
+    private deviceService: DeviceService,
   ) {
     super(assignTaskRepository);
   }
@@ -98,6 +100,15 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
           avatar: oUser?.avatar,
         });
       }
+      const listOfDeviceTokens = await this.deviceService.getListDeviceTokens(
+        assignee,
+      );
+      const pushNotificationFirebase =
+        await this.notificationService.pushNotificationFirebase(
+          listOfDeviceTokens,
+          'Công việc được giao',
+          `${oUser.fullName} đã giao công việc ${title}`,
+        );
       createNotification.push(
         this.notificationService.createNotification(dataNotification),
       );

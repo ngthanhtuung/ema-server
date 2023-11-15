@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Query } from '@nestjs/common';
+import { Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { QueryNotificationDto } from './dto/query-notification.dto';
@@ -33,6 +33,24 @@ export class NotificationController {
   @Put('/seen-all')
   async seenAllNotifications(@GetUser() user: string): Promise<string> {
     return await this.notificationService.seenAllNotification(
+      JSON.parse(user).id,
+    );
+  }
+
+  @Put('/delete-all')
+  async deleteAllNotification(@GetUser() user: string): Promise<string> {
+    return await this.notificationService.deleteAllNotification(
+      JSON.parse(user).id,
+    );
+  }
+
+  @Put('/delete/:notificationId')
+  async deleteNotificationById(
+    @Param('notificationId') notificationId: string,
+    @GetUser() user: string,
+  ): Promise<string> {
+    return await this.notificationService.deleteNotificationById(
+      notificationId,
       JSON.parse(user).id,
     );
   }
