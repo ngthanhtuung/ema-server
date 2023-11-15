@@ -469,6 +469,7 @@ export class RequestService extends BaseService<RequestEntity> {
       sender: sender.id,
       userId: receive,
       eventId: null,
+      parentTaskId: null,
       commonId: requestId,
     };
     const socketId = (await this.userService.findById(receive))?.socketId;

@@ -69,7 +69,7 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
     endDate: string,
     // date: string,
     me: boolean,
-  ): Promise<TimesheetEntity> {
+  ): Promise<TimesheetEntity[]> {
     try {
       const userExisted = await this.userService.findOne({
         where: {
@@ -107,10 +107,12 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
         }
       }
 
-      const timekeeping = await this.timesheetRepository.findOne({
+      const timekeeping = await this.timesheetRepository.find({
         where: queryConditions,
         relations: ['event'],
       });
+      console.log('timekeeping:', timekeeping);
+
       return timekeeping;
     } catch (err) {
       throw new InternalServerErrorException(err.message);

@@ -47,6 +47,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         'notifications.readFlag as readFlag',
         'notifications.createdAt as createdAt',
         'notifications.commonId as commonId',
+        'notifications.parentTaskId as parentTaskId',
         'notifications.eventId as eventId',
       ]);
       query.where('notifications.userId = :userId', { userId: userId });
@@ -157,6 +158,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         type: notification.type,
         sender: notification.sender,
         commonId: notification.commonId,
+        parentTaskId: notification.parentTaskId,
         eventId: notification.eventId,
         user: {
           id: notification.userId,
@@ -191,13 +193,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
       });
       if (notification !== undefined) {
-        const result = await this.notificationRepository.update(
-          { id: notificationId },
-          { status: false },
-        );
-        if (result.affected === 0) {
-          throw new InternalServerErrorException('Delete failed');
-        }
+        await this.notificationRepository.delete({
+          id: notificationId,
+        });
         return 'Notification deleted!';
       }
       throw new NotFoundException('Notification not found');
@@ -221,17 +219,12 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
       });
       if (notification.length !== 0) {
-        const result = await this.notificationRepository.update(
-          {
-            user: {
-              id: userId,
-            },
-          },
-          { status: false },
+        const mapData = notification?.map((item) =>
+          this.notificationRepository.delete({
+            id: item?.id,
+          }),
         );
-        if (result.affected === 0) {
-          throw new InternalServerErrorException('Delete failed');
-        }
+        await Promise.all(mapData);
         return 'Notification deleted!';
       }
       throw new NotFoundException('Notification not found');

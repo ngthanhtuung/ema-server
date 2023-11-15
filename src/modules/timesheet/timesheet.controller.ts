@@ -47,7 +47,7 @@ export class TimesheetController {
     @Query('endDate') endDate: string,
     // @Query('date') date: string,
     @Query('me') me: boolean,
-  ): Promise<TimesheetEntity> {
+  ): Promise<TimesheetEntity[]> {
     return await this.timesheetService.checkTimekeepingInEvent(
       eventId,
       JSON.parse(user).id,

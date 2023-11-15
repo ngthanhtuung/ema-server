@@ -439,6 +439,7 @@ export class TaskService extends BaseService<TaskEntity> {
             sender: oUser.id,
             userId: item?.assignee,
             eventId: taskExisted?.eventID,
+            parentTaskId: taskExisted?.parentTask,
             commonId: taskID,
           };
           listAssigneeId.push(item?.assignee);
@@ -478,6 +479,7 @@ export class TaskService extends BaseService<TaskEntity> {
           sender: oUser.id,
           userId: listUser?.[0].taskMaster,
           eventId: taskExisted?.eventID,
+          parentTaskId: taskExisted?.parentTask,
           commonId: taskID,
         };
         const client = this.appGateWay.server;

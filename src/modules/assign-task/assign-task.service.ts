@@ -53,7 +53,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       });
       task = taskExisted;
     }
-    const { title, eventID } = task;
+    const { title, eventID, parentTask } = task;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
@@ -90,6 +90,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         sender: oUser.id,
         userId: idUser,
         eventId: eventID,
+        parentTaskId: parentTask,
         commonId: taskID,
       };
       const socketId = (await this.userService.findById(idUser))?.socketId;

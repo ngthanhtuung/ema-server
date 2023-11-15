@@ -31,6 +31,9 @@ export class NotificationEntity extends BaseEntity {
   commonId: string;
 
   @Column({ type: 'varchar', nullable: true })
+  parentTaskId: string;
+
+  @Column({ type: 'varchar', nullable: true })
   eventId: string;
 
   @Column({ type: 'boolean', default: true })

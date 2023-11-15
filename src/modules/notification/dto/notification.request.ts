@@ -44,6 +44,11 @@ export class NotificationCreateRequest {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ default: 'string' })
+  parentTaskId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'string' })
   eventId: string;
 
   @IsString()
