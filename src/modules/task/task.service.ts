@@ -490,7 +490,7 @@ export class TaskService extends BaseService<TaskEntity> {
         const listTaskMasterToken =
           await this.deviceService.getListDeviceTokens(listTaskMasterId);
         await this.notificationService.pushNotificationFirebase(
-          listTaskMasterId,
+          listTaskMasterToken,
           `Công việc đã được cập nhât`,
           `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
         );
