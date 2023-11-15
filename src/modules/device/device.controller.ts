@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { DeviceService } from './device.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DeviceRequest } from './dto/device.request';
@@ -19,5 +19,10 @@ export class DeviceController {
       device.deviceToken,
       JSON.parse(user).id,
     );
+  }
+
+  @Post('/getDeviceToken')
+  async getDeviceToken(@Body() listUserId: string[]): Promise<string[]> {
+    return await this.deviceService.getListDeviceTokens(listUserId);
   }
 }

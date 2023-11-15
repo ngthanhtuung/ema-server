@@ -33,6 +33,9 @@ export class NotificationEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   eventId: string;
 
+  @Column({ type: 'boolean', default: true })
+  status: boolean;
+
   @ManyToOne(() => UserEntity, (user) => user.notifications, {
     onDelete: 'CASCADE',
   })

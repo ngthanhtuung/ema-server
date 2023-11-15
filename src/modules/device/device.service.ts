@@ -1,3 +1,4 @@
+import { messaging } from 'firebase-admin';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { DeviceEntity } from './device.entity';
@@ -36,6 +37,19 @@ export class DeviceService extends BaseService<DeviceEntity> {
       return `Device token: '${deviceToken}' has been delete successfully`;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getListDeviceTokens(listUserId: string[]): Promise<string[]> {
+    try {
+      const listDeviceTokens = await this.deviceRepository
+        .createQueryBuilder('device')
+        .select('device.deviceToken')
+        .where('device.user IN (:...listUserId)', { listUserId })
+        .getMany();
+      return listDeviceTokens.map((device) => device.deviceToken);
+    } catch (err) {
+      throw new InternalServerErrorException(err.messaging);
     }
   }
 }

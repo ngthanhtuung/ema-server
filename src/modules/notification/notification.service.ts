@@ -14,6 +14,7 @@ import { BaseService } from '../base/base.service';
 import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
+import * as firebaseAdmin from 'firebase-admin';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
@@ -166,6 +167,104 @@ export class NotificationService extends BaseService<NotificationEntity> {
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
+    }
+  }
+
+  /**
+   *
+   * @param notificationId
+   * @param userId
+   * @returns
+   */
+
+  async deleteNotificationById(
+    notificationId: string,
+    userId: string,
+  ): Promise<string> {
+    try {
+      const notification = await this.findOne({
+        where: {
+          id: notificationId,
+          user: {
+            id: userId,
+          },
+        },
+      });
+      if (notification !== undefined) {
+        const result = await this.notificationRepository.update(
+          { id: notificationId },
+          { status: false },
+        );
+        if (result.affected === 0) {
+          throw new InternalServerErrorException('Delete failed');
+        }
+        return 'Notification deleted!';
+      }
+      throw new NotFoundException('Notification not found');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * deleteAllNotification
+   * @param userId
+   * @returns
+   */
+  async deleteAllNotification(userId: string): Promise<string> {
+    try {
+      const notification = await this.notificationRepository.find({
+        where: {
+          user: {
+            id: userId,
+          },
+        },
+      });
+      if (notification.length !== 0) {
+        const result = await this.notificationRepository.update(
+          {
+            user: {
+              id: userId,
+            },
+          },
+          { status: false },
+        );
+        if (result.affected === 0) {
+          throw new InternalServerErrorException('Delete failed');
+        }
+        return 'Notification deleted!';
+      }
+      throw new NotFoundException('Notification not found');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   *
+   * @param listDeviceToke
+   * @param title
+   * @param body
+   * @returns
+   */
+
+  async pushNotificationFirebase(
+    listDeviceToken: string[],
+    title: string,
+    body: string,
+  ): Promise<boolean> {
+    try {
+      const deviceTokenArray = listDeviceToken;
+      const result = firebaseAdmin.messaging().sendEachForMulticast({
+        tokens: deviceTokenArray,
+        notification: {
+          title: title,
+          body: body,
+        },
+      });
+      return true;
+    } catch (err) {
+      return false;
     }
   }
 }
