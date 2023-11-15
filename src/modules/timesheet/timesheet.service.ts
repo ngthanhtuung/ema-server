@@ -1,6 +1,6 @@
 import { EventService } from './../event/event.service';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { Between, DataSource, Repository } from 'typeorm';
 import { TimesheetEntity } from './timesheet.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { BaseService } from '../base/base.service';
@@ -41,6 +41,8 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
         eventId,
         userId,
         moment().format('YYYY-MM-DD').toString(),
+        moment().format('YYYY-MM-DD').toString(),
+        true,
       );
       if (!checkInExisted) {
         const createTimekeeping = await queryRunner.manager.insert(
@@ -62,51 +64,13 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
     }
   }
 
-  // async checkTimekeepingInEvent(
-  //   eventId: string,
-  //   userId: string,
-  //   date: string,
-  // ): Promise<boolean> {
-  //   try {
-  //     const userExisted = await this.userService.findOne({
-  //       where: {
-  //         id: userId,
-  //       },
-  //     });
-  //     const eventExisted = await this.eventService.findOne({
-  //       where: {
-  //         id: eventId,
-  //       },
-  //     });
-  //     if (!eventExisted || !userExisted) {
-  //       throw new InternalServerErrorException('Event or User not found');
-  //     }
-  //     const formattedDate = moment(date).format('YYYY-MM-DD');
-  //     const formattedDateAsDate = moment(formattedDate).toDate();
-  //     const timekeeping = await this.timesheetRepository.findOne({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //         user: {
-  //           id: userId,
-  //         },
-  //         date: formattedDateAsDate,
-  //       },
-  //     });
-  //     if (timekeeping) {
-  //       return true;
-  //     }
-  //     return false;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
-
   async checkTimekeepingInEvent(
     eventId: string,
     userId: string,
-    date: string,
+    startDate: string,
+    endDate: string,
+    // date: string,
+    me: boolean,
   ): Promise<TimesheetEntity> {
     try {
       const userExisted = await this.userService.findOne({
@@ -118,26 +82,30 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
       if (!userExisted) {
         throw new InternalServerErrorException('User not found');
       }
-
       // eslint-disable-next-line prefer-const, @typescript-eslint/no-explicit-any
       let queryConditions: any = {
-        user: {
-          id: userId,
+        event: {
+          id: eventId,
         },
       };
 
-      if (eventId) {
-        queryConditions.event = {
-          id: eventId,
+      if (me) {
+        queryConditions.user = {
+          id: userId,
         };
       }
-
-      if (date) {
-        const formattedDate = moment(date, 'YYYY-MM-DD', true);
-        if (formattedDate.isValid()) {
-          queryConditions.date = formattedDate.toDate();
+      if (startDate && endDate) {
+        const formattedStartDate = moment(startDate, 'YYYY-MM-DD', true);
+        const formattedEndDate = moment(endDate, 'YYYY-MM-DD', true);
+        if (formattedStartDate.isValid() && formattedEndDate) {
+          queryConditions.date = Between(
+            formattedStartDate.toDate(),
+            formattedEndDate.toDate(),
+          );
         } else {
-          throw new InternalServerErrorException('Invalid date format');
+          throw new InternalServerErrorException(
+            'Invalid date format. YYYY-MM-DD is correct format',
+          );
         }
       }
 
