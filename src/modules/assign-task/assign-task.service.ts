@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
@@ -41,7 +42,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
   async assignMemberToTask(
     data: AssignTaskReq,
     user: string,
-    task?: TaskCreateReq,
+    task?: any,
   ): Promise<string> {
     const { assignee, taskID } = data;
     let { leader } = data;
@@ -50,10 +51,19 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     if (task == undefined) {
       const taskExisted: any = await queryRunner.manager.findOne(TaskEntity, {
         where: { id: taskID },
+        select: {
+          parent: {
+            id: true,
+          },
+        },
+        relations: {
+          parent: true,
+        },
       });
       task = taskExisted;
     }
-    const { title, eventID, parentTask } = task;
+    console.log('task:', task);
+
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
@@ -84,13 +94,13 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       const idUser = assignee[index];
       const dataNotification: NotificationCreateRequest = {
         title: `Công việc được giao`,
-        content: `${oUser.fullName} đã giao công việc ${title}`,
+        content: `${oUser.fullName} đã giao công việc ${task?.title}`,
         readFlag: false,
         type: ETypeNotification.TASK,
         sender: oUser.id,
         userId: idUser,
-        eventId: eventID,
-        parentTaskId: parentTask,
+        eventId: task?.eventID,
+        parentTaskId: task?.parentTask || task?.parent?.id,
         commonId: taskID,
       };
       const socketId = (await this.userService.findById(idUser))?.socketId;
@@ -111,7 +121,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     await this.notificationService.pushNotificationFirebase(
       listOfDeviceTokens,
       'Công việc được giao',
-      `${oUser.fullName} đã giao công việc ${title}`,
+      `${oUser.fullName} đã giao công việc ${task?.title}`,
     );
     await Promise.all(createNotification);
     return 'Assign member successfully';

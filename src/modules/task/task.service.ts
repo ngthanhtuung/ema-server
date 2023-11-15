@@ -423,8 +423,16 @@ export class TaskService extends BaseService<TaskEntity> {
       const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
         where: { taskID: taskID },
       });
-      const taskExisted: any = await queryRunner.manager.findOne(TaskEntity, {
+      const taskExisted: any = await this.taskRepository.findOne({
         where: { id: taskID },
+        select: {
+          parent: {
+            id: true,
+          },
+        },
+        relations: {
+          parent: true,
+        },
       });
       const createNotification = [];
       const listAssigneeId = [];
@@ -439,7 +447,7 @@ export class TaskService extends BaseService<TaskEntity> {
             sender: oUser.id,
             userId: item?.assignee,
             eventId: taskExisted?.eventID,
-            parentTaskId: taskExisted?.parentTask,
+            parentTaskId: taskExisted?.parent?.id,
             commonId: taskID,
           };
           listAssigneeId.push(item?.assignee);
