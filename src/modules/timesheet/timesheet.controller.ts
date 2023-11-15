@@ -20,22 +20,40 @@ export class TimesheetController {
 
   @Get('')
   @ApiQuery({
+    name: 'me',
+    type: 'boolean',
+    required: true,
+  })
+  @ApiQuery({
     name: 'eventId',
+    required: true,
+  })
+  // @ApiQuery({
+  //   name: 'date',
+  //   required: false,
+  // })
+  @ApiQuery({
+    name: 'startDate',
     required: false,
   })
   @ApiQuery({
-    name: 'date',
+    name: 'endDate',
     required: false,
   })
   async checkEventTimekeeping(
     @Query('eventId') eventId: string,
     @GetUser() user: string,
-    @Query('date') date: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    // @Query('date') date: string,
+    @Query('me') me: boolean,
   ): Promise<TimesheetEntity> {
     return await this.timesheetService.checkTimekeepingInEvent(
       eventId,
       JSON.parse(user).id,
-      date,
+      startDate,
+      endDate,
+      me,
     );
   }
 }
