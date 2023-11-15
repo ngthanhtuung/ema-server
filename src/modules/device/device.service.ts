@@ -18,10 +18,17 @@ export class DeviceService extends BaseService<DeviceEntity> {
     userId: string,
   ): Promise<string> {
     try {
-      await this.deviceRepository.insert({
-        deviceToken,
-        user: { id: userId },
+      const checkExist = await this.deviceRepository.findOne({
+        where: {
+          deviceToken: deviceToken,
+        },
       });
+      if (!checkExist) {
+        await this.deviceRepository.insert({
+          deviceToken,
+          user: { id: userId },
+        });
+      }
       return `Device token: '${deviceToken}' has been added successfully`;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
