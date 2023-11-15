@@ -20,9 +20,4 @@ export class DeviceController {
       JSON.parse(user).id,
     );
   }
-
-  @Post('/getDeviceToken')
-  async getDeviceToken(@Body() listUserId: string[]): Promise<string[]> {
-    return await this.deviceService.getListDeviceTokens(listUserId);
-  }
 }
