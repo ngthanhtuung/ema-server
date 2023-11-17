@@ -37,15 +37,6 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
       if (!eventExisted || !userExisted) {
         throw new InternalServerErrorException('Event or User not found');
       }
-      // const checkInExisted = await this.checkTimekeepingInEvent(
-      //   eventId,
-      //   userId,
-      //   moment().format('YYYY-MM-DD').toString(),
-      //   moment().format('YYYY-MM-DD').toString(),
-      //   true,
-      // );
-      // if (!checkInExisted) {
-      // }
       const createTimekeeping = await queryRunner.manager.insert(
         TimesheetEntity,
         {
@@ -109,10 +100,8 @@ export class TimesheetService extends BaseService<TimesheetEntity> {
 
       const timekeeping = await this.timesheetRepository.find({
         where: queryConditions,
-        relations: ['event'],
+        relations: ['event', 'user'],
       });
-      console.log('timekeeping:', timekeeping);
-
       return timekeeping;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
