@@ -20,6 +20,11 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
+  @Get('')
+  async getUserInEvent(@Query('eventId') eventId: string): Promise<unknown> {
+    return await this.eventService.getUserInEvent(eventId);
+  }
+
   /**
    * getAllEventByDivisionID
    * @param data

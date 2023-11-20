@@ -440,4 +440,27 @@ export class EventService extends BaseService<EventEntity> {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async getUserInEvent(eventId: string): Promise<unknown> {
+    try {
+      const query = `SELECT p.profileId as 'id',
+                            p.role ,
+                            p.fullName ,
+                            p.dob,
+                            p.nationalId ,
+                            p.gender,
+                            p.address,
+                            p.phoneNumber,
+                            p.avatar 
+      FROM events e inner join assign_events ae ON e.id = ae.eventId 
+              inner join divisions d on ae.divisionId = d.id 
+              inner join users u on d.id = u.divisionId 
+              inner join profiles p on u.id = p.profileId 
+      where e.id = '${eventId}';`;
+      const data = await this.eventRepository.query(query);
+      return data;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 }
