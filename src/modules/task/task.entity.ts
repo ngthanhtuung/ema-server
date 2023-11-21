@@ -37,6 +37,12 @@ export class TaskEntity extends BaseEntity {
   // parentTask: string
 
   @Column({
+    type: 'integer',
+    default: 0,
+  })
+  progress: number;
+
+  @Column({
     type: 'enum',
     enum: ETaskStatus,
     default: ETaskStatus.PENDING,

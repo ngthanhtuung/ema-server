@@ -29,6 +29,7 @@ import { UserService } from '../user/user.service';
 import { NotificationService } from '../notification/notification.service';
 import { AppGateway } from 'src/sockets/app.gateway';
 import { DeviceService } from '../device/device.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -723,6 +724,47 @@ export class TaskService extends BaseService<TaskEntity> {
       );
 
       return peopleStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async checkUserInTask(userId: string): Promise<boolean> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const query = await queryRunner.manager.query(`
+      SELECT COUNT(*) as count
+      FROM tasks
+      INNER JOIN assign_tasks ON tasks.id = assign_tasks.taskId
+      WHERE assign_tasks.assignee = '${userId}' AND (tasks.status IN ('PENDING', 'PROCESSING')) 
+      `);
+      const result = query[0].count;
+      console.log(`User has task: ${result}`);
+      return result > 0 ? true : false;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async autoUpdateTask(): Promise<void> {
+    try {
+      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      const tasks = await this.taskRepository.find({
+        where: [
+          { status: ETaskStatus.PENDING },
+          { status: ETaskStatus.PROCESSING },
+        ],
+      });
+      const overdueTasks = tasks.filter((task) => task.endDate <= currentDate);
+      if (overdueTasks.length > 0) {
+        await Promise.all(
+          overdueTasks.map(async (task) => {
+            task.status = ETaskStatus.OVERDUE;
+            return await this.taskRepository.save(task);
+          }),
+        );
+      }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

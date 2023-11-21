@@ -38,6 +38,7 @@ import { ERole } from 'src/common/enum/enum';
 import { DivisionEntity } from '../division/division.entity';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import * as moment from 'moment-timezone';
+import { TaskService } from '../task/task.service';
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
@@ -45,7 +46,7 @@ export class UserService extends BaseService<UserEntity> {
     private readonly userRepository: Repository<UserEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
-    private shareService: SharedService,
+    private shareService: SharedService, // private taskService: TaskService,
   ) {
     super(userRepository);
   }
@@ -481,9 +482,26 @@ export class UserService extends BaseService<UserEntity> {
           email: data.email,
           status: data.status,
           typeEmployee: data.typeEmployee,
-          division,
         },
       );
+
+      const query = await queryRunner.manager.query(`
+      SELECT COUNT(*) as count
+      FROM tasks
+      INNER JOIN assign_tasks ON tasks.id = assign_tasks.taskId
+      WHERE assign_tasks.assignee = '${userIdUpdate}' AND (tasks.status IN ('PENDING', 'PROCESSING')) 
+      `);
+      const result = query[0].count;
+      if (result === 0) {
+        await queryRunner.manager.update(
+          UserEntity,
+          { id: userIdUpdate },
+          {
+            division: division,
+          },
+        );
+      }
+
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
         await queryRunner.manager.update(
           ProfileEntity,
