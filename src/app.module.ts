@@ -33,6 +33,7 @@ import { CommentfileModule } from './modules/commentfile/commentfile.module';
 import { RequestModule } from './modules/request/request.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
 import { StatisticModule } from './modules/statistic/statistic.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { StatisticModule } from './modules/statistic/statistic.module';
         PORT: Joi.number(),
       }),
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     SharedModule,
     JwtModule.register({
