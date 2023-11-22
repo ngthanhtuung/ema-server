@@ -25,6 +25,11 @@ export class EventController {
     return await this.eventService.getUserInEvent(eventId);
   }
 
+  @Get('/today')
+  async getListEventToday(): Promise<undefined> {
+    return await this.eventService.getListEventByTask();
+  }
+
   /**
    * getAllEventByDivisionID
    * @param data

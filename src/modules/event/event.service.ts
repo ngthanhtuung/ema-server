@@ -463,4 +463,19 @@ export class EventService extends BaseService<EventEntity> {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async getListEventByTask(): Promise<undefined> {
+    try {
+      const events = await this.eventRepository.query(`
+      SELECT e.* 
+      FROM events e inner join tasks t ON e.id = t.eventID 
+      WHERE t.startDate >= '${moment().format(
+        'YYYY-MM-DD HH:mm:ss',
+      )}' AND t.endDate <= '${moment().format('YYYY-MM-DD HH:mm:ss')}';
+      `);
+      return events;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 }
