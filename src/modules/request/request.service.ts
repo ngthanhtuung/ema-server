@@ -16,13 +16,15 @@ import {
   FilterRequest,
   RequestCreateRequest,
   UpdateRequestStatusReq,
+  requestEmployee,
 } from './dto/request.request';
 import {
   EReplyRequest,
   ERequestType,
   ETypeNotification,
+  EUserStatus,
 } from 'src/common/enum/enum';
-import { UserPagination } from '../user/dto/user.request';
+import { UserCreateRequest, UserPagination } from '../user/dto/user.request';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { NotificationCreateRequest } from '../notification/dto/notification.request';
 import { NotificationService } from '../notification/notification.service';
@@ -485,5 +487,37 @@ export class RequestService extends BaseService<RequestEntity> {
       data.title,
       data.content,
     );
+  }
+
+  async createRequestEmployee(
+    reqInfo: requestEmployee,
+    requestor: string,
+  ): Promise<string> {
+    const { title, content, form } = reqInfo;
+    for (const key in reqInfo) {
+      if (!reqInfo[key] || reqInfo[key].length == 0) {
+        throw new BadRequestException(`${key} is require!`);
+      }
+    }
+    for (const key in form) {
+      if (!form[key] || form[key].length == 0) {
+        throw new BadRequestException(`${key} is require!`);
+      }
+    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    const payloadReq = { title, content, type: ERequestType.U, requestor };
+    try {
+      const createRequest = await queryRunner.manager.insert(
+        RequestEntity,
+        payloadReq,
+      );
+
+      const insertUser = await this.userService.insertUserNoSendEmail(form);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Create request fail - ${error.message}`,
+      );
+    }
+    return 'create request successfully';
   }
 }

@@ -11,16 +11,16 @@ export class RequestEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   content: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   startDate: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', nullable: true })
   endDate: Date;
 
-  @Column({ default: true })
+  @Column({ default: true, nullable: true })
   isFull: boolean;
 
-  @Column({ default: false })
+  @Column({ default: false, nullable: true })
   isPM: boolean;
 
   @Column({ nullable: true })

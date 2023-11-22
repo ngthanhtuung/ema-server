@@ -54,6 +54,7 @@
     "dotenv": "^16.3.1",
     "fcm-node": "^1.6.1",
     "firebase-admin": "^11.11.0",
+    "lodash": "^4.17.21",
     "mailgun.js": "^9.1.2",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",

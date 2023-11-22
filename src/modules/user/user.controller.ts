@@ -1,9 +1,10 @@
 import {
+  FilterFreeEmployee,
   UserPagination,
   UserProfileUpdateRequest,
   UserProfileUpdateRequestV2,
 } from './dto/user.request';
-import { Controller, Get, Param, Query, Put, Body } from '@nestjs/common';
+import { Controller, Get, Param, Query, Put, Body, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { UserService } from './user.service';
@@ -112,5 +113,14 @@ export class UserController {
       updateProfile,
       userId,
     );
+  }
+
+  @Get('/getFreeEmployee/:startDate/:endDate')
+  async getFreeEmployee(
+    @Param('startDate') startDate: Date,
+    @Param('endDate') endDate: Date,
+  ): Promise<string> {
+    const filter = { startDate, endDate };
+    return await this.userService.getFreeEmployee(filter);
   }
 }

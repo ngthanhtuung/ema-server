@@ -14,6 +14,7 @@ import {
   FilterRequest,
   RequestCreateRequest,
   UpdateRequestStatusReq,
+  requestEmployee,
 } from './dto/request.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { RequestEntity } from './request.entity';
@@ -74,5 +75,14 @@ export class RequestController {
   @Delete('/changeRequest/:id')
   async deleteRequest(@Param('id') reqID: string): Promise<string> {
     return this.requestService.deleteRequest(reqID);
+  }
+
+  @Post('/requestEmployee')
+  async createRequestEmployee(
+    @Body() req: requestEmployee,
+    @GetUser() user: string,
+  ): Promise<string> {
+    const oUser = JSON.parse(user);
+    return await this.requestService.createRequestEmployee(req, oUser.id);
   }
 }

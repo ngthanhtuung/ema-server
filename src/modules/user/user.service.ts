@@ -13,6 +13,7 @@ import {
 } from 'src/common/constants/constants';
 import { UserEntity } from 'src/modules/user/user.entity';
 import {
+  FilterFreeEmployee,
   UserCreateRequest,
   UserPagination,
   UserProfileUpdateRequest,
@@ -29,6 +30,11 @@ import { ProfileEntity } from 'src/modules/profile/profile.entity';
 import { SharedService } from 'src/shared/shared.service';
 import {
   DataSource,
+  LessThan,
+  LessThanOrEqual,
+  MoreThan,
+  MoreThanOrEqual,
+  Not,
   QueryRunner,
   Repository,
   SelectQueryBuilder,
@@ -39,6 +45,7 @@ import { DivisionEntity } from '../division/division.entity';
 import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import * as moment from 'moment-timezone';
 import { TaskService } from '../task/task.service';
+import * as _ from 'lodash';
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
@@ -547,5 +554,127 @@ export class UserService extends BaseService<UserEntity> {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  async getFreeEmployee(filter: FilterFreeEmployee): Promise<string> {
+    let listFreeEmployee;
+    try {
+      const listEmployeeBusy = await this.userRepository.find({
+        //   select: {
+        //     profile: {
+        //       profileId: true,
+        //       fullName: true,
+        //     },
+        //     division: {
+        //       id: true,
+        //       divisionName: true,
+        //     },
+        //   },
+        where: {
+          assignee: {
+            task: {
+              startDate: filter.startDate,
+              endDate: filter.endDate,
+            },
+          },
+          profile: {
+            role: ERole.EMPLOYEE,
+          },
+        },
+      });
+      const listEmployee = await this.userRepository.find({
+        select: {
+          profile: {
+            profileId: true,
+            fullName: true,
+          },
+          division: {
+            id: true,
+            divisionName: true,
+          },
+        },
+        where: {
+          profile: { role: ERole.EMPLOYEE },
+        },
+        relations: {
+          profile: true,
+          division: true,
+        },
+        order: {
+          division: { divisionName: 'DESC' },
+        },
+      });
+      listFreeEmployee = _.differenceBy(listEmployee, listEmployeeBusy, 'id');
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+    return listFreeEmployee;
+  }
+
+  async insertUserNoSendEmail(
+    userCreateRequest: UserCreateRequest,
+  ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    const { email, typeEmployee, ...profile } = userCreateRequest;
+    const generatePassword = this.shareService.generatePassword(8);
+    const password = await this.shareService.hashPassword(generatePassword);
+    let createUser = undefined;
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
+      const userExist = await queryRunner.manager.findOne(UserEntity, {
+        where: { email: userCreateRequest.email },
+      });
+
+      if (userExist) {
+        throw new BadRequestException(AUTH_ERROR_MESSAGE.EMAIL_EXIST);
+      }
+
+      const division = await queryRunner.manager.findOne(DivisionEntity, {
+        where: { id: userCreateRequest.divisionId },
+      });
+
+      if (!division) {
+        throw new BadRequestException(
+          DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
+        );
+      }
+
+      createUser = await queryRunner.manager.insert(UserEntity, {
+        email,
+        password,
+        division,
+        typeEmployee: typeEmployee,
+        status: EUserStatus.INACTIVE,
+      });
+      if (profile.role === ERole.STAFF) {
+        await queryRunner.manager.update(
+          DivisionEntity,
+          {
+            id: division.id,
+          },
+          {
+            staffId: createUser.generatedMaps[0]['id'],
+          },
+        );
+      }
+      await queryRunner.manager.insert(ProfileEntity, {
+        ...profile,
+        profileId: createUser.generatedMaps[0]['id'],
+      });
+      await queryRunner.manager.insert(AnnualLeaveEntity, {
+        year: Number(moment().format('YYYY')),
+        amount: 12,
+        userID: createUser.generatedMaps[0]['id'],
+      });
+    };
+    await this.transaction(callback, queryRunner);
+    await this.userRepository.update(
+      {
+        id: createUser.generatedMaps[0]['id'],
+      },
+      {
+        profile: createUser.generatedMaps[0]['id'],
+      },
+    );
+    return 'Create user success';
   }
 }
