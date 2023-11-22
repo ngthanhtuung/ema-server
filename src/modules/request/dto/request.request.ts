@@ -7,6 +7,7 @@ import {
   ERequestStatus,
   ERequestType,
 } from 'src/common/enum/enum';
+import { UserCreateRequest } from 'src/modules/user/dto/user.request';
 
 export class RequestCreateRequest {
   @ApiProperty()
@@ -62,4 +63,15 @@ export class FilterRequest {
 
   @ApiProperty({ enum: ERequestType, required: false })
   type: ERequestType;
+}
+
+export class requestEmployee {
+  @ApiProperty()
+  title: string;
+
+  @ApiProperty()
+  content: string;
+
+  @ApiProperty()
+  form: UserCreateRequest;
 }

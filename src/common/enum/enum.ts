@@ -57,6 +57,7 @@ export enum ERequestType {
   A = 'A',
   L = 'L',
   M = 'M',
+  U = 'U',
 }
 
 export enum ERequestStatus {

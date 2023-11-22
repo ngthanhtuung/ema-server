@@ -76,3 +76,11 @@ export class UserProfileUpdateRequestV2 extends UserCreateRequest {
   })
   status: EUserStatus;
 }
+
+export class FilterFreeEmployee {
+  @ApiProperty({ default: new Date() })
+  startDate: Date;
+
+  @ApiProperty({ default: new Date() })
+  endDate: Date;
+}
