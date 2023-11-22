@@ -417,7 +417,7 @@ export class TaskService extends BaseService<TaskEntity> {
     if (!taskID) {
       throw new InternalServerErrorException(`TaskID is empty`);
     }
-    const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
+    try {
       const taskExist = await queryRunner.manager.findOne(TaskEntity, {
         where: { id: taskID },
       });
@@ -425,8 +425,6 @@ export class TaskService extends BaseService<TaskEntity> {
         throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
       }
       await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
-    };
-    try {
       const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
         where: { taskID: taskID },
       });
@@ -519,7 +517,6 @@ export class TaskService extends BaseService<TaskEntity> {
         );
       }
       await Promise.all(createNotification);
-      await this.transaction(callbacks, queryRunner);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
