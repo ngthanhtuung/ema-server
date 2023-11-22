@@ -109,7 +109,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
         query.getCount(),
       ]);
 
-      const finalRes: BudgetsResponse[] = [];
+      const finalRes = [];
       for (let index = 0; index < result.length; index++) {
         const item = result[index];
         const userName = (await this.userService.findById(item?.createBy))
@@ -117,14 +117,14 @@ export class BudgetService extends BaseService<BudgetEntity> {
         console.log('item:', item);
 
         item.createdAt = moment(item.createdAt)
-          .tz('Asia/Ho_Chi_Minh')
+          .add(7, 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
         item.updatedAt = moment(item.updatedAt)
-          .tz('Asia/Ho_Chi_Minh')
+          .add(7, 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
         if (item?.approveDate) {
           item.approvedDate = moment(item.approveDate)
-            .tz('Asia/Ho_Chi_Minh')
+            .add(7, 'hours')
             .format('YYYY-MM-DD HH:mm:ss');
         }
         const data = {
@@ -133,7 +133,6 @@ export class BudgetService extends BaseService<BudgetEntity> {
         };
         finalRes.push(data);
       }
-
       return paginateResponse<BudgetsResponse[]>(
         [finalRes, total],
         currentPage as number,
@@ -221,6 +220,7 @@ export class BudgetService extends BaseService<BudgetEntity> {
         title: 'Yêu cầu đã được phản hồi',
         content: `${oUser.fullName} đã phản hồi lại yêu cầu của bạn`,
       };
+
       await this.pushNotification(
         idReceive?.createBy,
         oUser,
@@ -313,14 +313,14 @@ export class BudgetService extends BaseService<BudgetEntity> {
       const item = {
         ...budget,
         createdAt: moment(budget.createdAt)
-          .tz('Asia/Ho_Chi_Minh')
+          .add(7, 'hours')
           .format('YYYY-MM-DD HH:mm:ss'),
         updatedAt: moment(budget.updatedAt)
-          .tz('Asia/Ho_Chi_Minh')
+          .add(7, 'hours')
           .format('YYYY-MM-DD HH:mm:ss'),
         approveDate: budget?.approveDate
           ? moment(budget.approveDate)
-              .tz('Asia/Ho_Chi_Minh')
+              .add(7, 'hours')
               .format('YYYY-MM-DD HH:mm:ss')
           : null,
         userName: userName,

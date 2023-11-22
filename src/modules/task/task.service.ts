@@ -753,7 +753,7 @@ export class TaskService extends BaseService<TaskEntity> {
   @Cron(CronExpression.EVERY_MINUTE)
   async autoUpdateTask(): Promise<void> {
     try {
-      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      const currentDate = moment().add(7, 'hours').toDate();
       const tasks = await this.taskRepository.find({
         where: [
           { status: ETaskStatus.PENDING },
