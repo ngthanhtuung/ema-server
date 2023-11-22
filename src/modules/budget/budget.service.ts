@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Injectable,
   InternalServerErrorException,
@@ -15,11 +17,17 @@ import {
 import { BudgetsPagination } from './dto/budgets.pagination';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { BudgetsResponse } from './dto/budgets.response';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import * as moment from 'moment-timezone';
-import { EStatusBudgets } from 'src/common/enum/enum';
+import { EStatusBudgets, ETypeNotification } from 'src/common/enum/enum';
 import { UserService } from '../user/user.service';
-
+import { AppGateway } from 'src/sockets/app.gateway';
+import { DeviceService } from '../device/device.service';
+import { NotificationService } from '../notification/notification.service';
+import { Inject } from '@nestjs/common/decorators';
+import { forwardRef } from '@nestjs/common/utils';
+import { NotificationCreateRequest } from '../notification/dto/notification.request';
+import { UserEntity } from '../user/user.entity';
 @Injectable()
 export class BudgetService extends BaseService<BudgetEntity> {
   constructor(
@@ -27,7 +35,11 @@ export class BudgetService extends BaseService<BudgetEntity> {
     private readonly budgetsRepository: BudgetRepository,
     @InjectDataSource()
     private dataSource: DataSource,
-    private readonly userService: UserService,
+    private notificationService: NotificationService,
+    private userService: UserService,
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
+    private readonly deviceService: DeviceService,
   ) {
     super(budgetsRepository);
   }
@@ -137,11 +149,15 @@ export class BudgetService extends BaseService<BudgetEntity> {
    * @param budgets
    * @returns
    */
-  async createBudgetRequest(budgets: BudgetsCreateRequest): Promise<string> {
+  async createBudgetRequest(
+    budgets: BudgetsCreateRequest,
+    userID: string,
+  ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
+    const oUser = JSON.parse(userID);
     try {
       await queryRunner.startTransaction();
-      await queryRunner.manager.insert(BudgetEntity, {
+      const createBudget = await queryRunner.manager.insert(BudgetEntity, {
         budgetName: budgets.budgetName,
         estExpense: budgets.estExpense,
         realExpense: budgets.realExpense,
@@ -153,6 +169,21 @@ export class BudgetService extends BaseService<BudgetEntity> {
         urlImage: budgets.urlImage,
         supplier: budgets.supplier,
       });
+      const idReceive = await queryRunner.manager.findOne(UserEntity, {
+        where: { division: { id: null } },
+      });
+      const dataNotification = {
+        title: `Yêu cầu thu chi đã được gửi`,
+        content: `${oUser?.fullName} đã gửi yêu cầu thu chi đến bạn`,
+      };
+
+      await this.pushNotification(
+        idReceive?.id,
+        oUser,
+        createBudget.generatedMaps[0]['id'],
+        dataNotification,
+        'notification',
+      );
       await queryRunner.commitTransaction();
       return `Budgets created successfully`;
     } catch (err) {
@@ -173,13 +204,29 @@ export class BudgetService extends BaseService<BudgetEntity> {
     idUser: string,
   ): Promise<string> {
     try {
+      const oUser = JSON.parse(idUser);
       await this.budgetsRepository.update(
         { id: budgetsID },
         {
           status: status,
-          approveBy: idUser,
+          approveBy: oUser.id,
           approveDate: moment().format('YYYY-MM-DD HH:mm:ss'),
         },
+      );
+      const queryRunner = this.dataSource.createQueryRunner();
+      const idReceive = await queryRunner.manager.findOne(BudgetEntity, {
+        where: { id: budgetsID },
+      });
+      const dataNotification = {
+        title: 'Yêu cầu đã được phản hồi',
+        content: `${oUser.fullName} đã phản hồi lại yêu cầu của bạn`,
+      };
+      await this.pushNotification(
+        idReceive?.createBy,
+        oUser,
+        budgetsID,
+        dataNotification,
+        'notification',
       );
       return 'Update status successfully!!!';
     } catch (err) {
@@ -211,8 +258,10 @@ export class BudgetService extends BaseService<BudgetEntity> {
   async updateBudget(
     budgetsID: string,
     data: BudgetsUpdateRequest,
+    idUser: string,
   ): Promise<string> {
     try {
+      const oUser = JSON.parse(idUser);
       await this.budgetsRepository.update(
         { id: budgetsID },
         {
@@ -223,6 +272,21 @@ export class BudgetService extends BaseService<BudgetEntity> {
           supplier: data.supplier,
           urlImage: data.urlImage,
         },
+      );
+      const queryRunner = this.dataSource.createQueryRunner();
+      const idReceive = await queryRunner.manager.findOne(UserEntity, {
+        where: { division: { id: null } },
+      });
+      const dataNotification = {
+        title: 'Yêu cầu thu chi đã được chỉnh sửa',
+        content: `${oUser.fullName} đã chỉnh sửa lại yêu cầu thu chi`,
+      };
+      await this.pushNotification(
+        idReceive?.id,
+        oUser,
+        budgetsID,
+        dataNotification,
+        'notification',
       );
       return 'Update budgets successfully!!!';
     } catch (err) {
@@ -265,5 +329,41 @@ export class BudgetService extends BaseService<BudgetEntity> {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  async pushNotification(
+    receive: any,
+    sender: any,
+    requestId: string,
+    data: any,
+    command: any,
+  ): Promise<void> {
+    const dataNotification: NotificationCreateRequest = {
+      title: data.title,
+      content: data.content,
+      readFlag: false,
+      type: ETypeNotification.BUDGETS,
+      sender: sender.id,
+      userId: receive,
+      eventId: null,
+      parentTaskId: null,
+      commonId: requestId,
+    };
+    const socketId = (await this.userService.findById(receive))?.socketId;
+    const client = this.appGateWay.server;
+    if (socketId !== null) {
+      client.to(socketId).emit(command, {
+        ...dataNotification,
+        avatar: sender?.avatar,
+      });
+    }
+    await this.notificationService.createNotification(dataNotification);
+    const listAssigneeDeviceToken =
+      await this.deviceService.getListDeviceTokens([receive]);
+    await this.notificationService.pushNotificationFirebase(
+      listAssigneeDeviceToken,
+      data.title,
+      data.content,
+    );
   }
 }

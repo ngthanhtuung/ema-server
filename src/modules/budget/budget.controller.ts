@@ -84,8 +84,9 @@ export class BudgetController {
   @Post()
   async createBudgetRequest(
     @Body() data: BudgetsCreateRequest,
+    @GetUser() user: string,
   ): Promise<string | undefined> {
-    return await this.budgetService.createBudgetRequest(data);
+    return await this.budgetService.createBudgetRequest(data, user);
   }
 
   /**
@@ -96,9 +97,10 @@ export class BudgetController {
   @Roles(ERole.MANAGER, ERole.STAFF)
   async updateBudget(
     @Param('budgetsId') budgetId: string,
+    @GetUser() user: string,
     @Body() data: BudgetsUpdateRequest,
   ): Promise<string | undefined> {
-    return await this.budgetService.updateBudget(budgetId, data);
+    return await this.budgetService.updateBudget(budgetId, data, user);
   }
 
   /**
@@ -114,11 +116,6 @@ export class BudgetController {
     @Param('status') status: EStatusBudgets,
     @GetUser() user: string,
   ): Promise<string | undefined> {
-    const idUser = JSON.parse(user).id;
-    return await this.budgetService.updateBudgetStatus(
-      budgetId,
-      status,
-      idUser,
-    );
+    return await this.budgetService.updateBudgetStatus(budgetId, status, user);
   }
 }

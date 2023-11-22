@@ -144,7 +144,6 @@ export class RequestService extends BaseService<RequestEntity> {
         createRequest.generatedMaps[0]['id'],
         dataNotification,
         'notification',
-        oUser.fullName,
       );
     } catch (error) {
       throw new InternalServerErrorException(
@@ -233,7 +232,6 @@ export class RequestService extends BaseService<RequestEntity> {
       req.requestID,
       dataNotification,
       'notification',
-      oUser.fullName,
     );
 
     return 'update successfully';
@@ -459,7 +457,6 @@ export class RequestService extends BaseService<RequestEntity> {
     requestId: string,
     data: any,
     command: any,
-    nameUser: string,
   ): Promise<void> {
     const dataNotification: NotificationCreateRequest = {
       title: data.title,
@@ -485,8 +482,8 @@ export class RequestService extends BaseService<RequestEntity> {
       await this.deviceService.getListDeviceTokens([receive]);
     await this.notificationService.pushNotificationFirebase(
       listAssigneeDeviceToken,
-      `Công việc đã được cập nhât`,
-      `${nameUser} đã cập nhât công việc ${data.title}`,
+      data.title,
+      data.content,
     );
   }
 }

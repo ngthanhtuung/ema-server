@@ -232,6 +232,7 @@ export class TaskService extends BaseService<TaskEntity> {
             isLeader: true,
             user: {
               id: true,
+              email: true,
               profile: {
                 profileId: true,
                 avatar: true,
@@ -259,6 +260,7 @@ export class TaskService extends BaseService<TaskEntity> {
               isLeader: true,
               user: {
                 id: true,
+                email: true,
                 profile: {
                   profileId: true,
                   avatar: true,
@@ -287,6 +289,7 @@ export class TaskService extends BaseService<TaskEntity> {
               isLeader: true,
               user: {
                 id: true,
+                email: true,
                 profile: {
                   profileId: true,
                   avatar: true,
