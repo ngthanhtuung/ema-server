@@ -464,12 +464,21 @@ export class EventService extends BaseService<EventEntity> {
     }
   }
 
-  async getListEventByTask(): Promise<undefined> {
+  async getListEventByTask(userIdLogin: string): Promise<undefined> {
     try {
       const events = await this.eventRepository.query(`
-      SELECT e.* 
-      FROM events e inner join tasks t ON e.id = t.eventID 
-      WHERE t.startDate >= '${moment().format('YYYY-MM-DD HH:mm:ss')}'
+      SELECT
+      e.*
+    FROM
+      events e
+    inner join tasks t ON
+      e.id = t.eventID
+    inner join assign_tasks at2 ON
+      t.id = at2.taskID 
+    WHERE
+      t.startDate >= '${moment().format(
+        'YYYY-MM-DD HH:mm:ss',
+      )}' AND at2.assignee = '${userIdLogin}';
       `);
       return events;
     } catch (err) {
