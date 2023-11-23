@@ -12,13 +12,13 @@ export class BaseEntity {
 
   @CreateDateColumn()
   @Transform(({ value }) => {
-    return moment(value).format('YYYY-MM-DD HH:mm:ss.SSS');
+    return moment(value).format('YYYY-MM-DD HH:mm:ss');
   })
   public createdAt: Date;
 
   @UpdateDateColumn()
   @Transform(({ value }) => {
-    return moment(value).format('YYYY-MM-DD HH:mm:ss.SSS');
+    return moment(value).format('YYYY-MM-DD HH:mm:ss');
   })
   public updatedAt: Date;
 }

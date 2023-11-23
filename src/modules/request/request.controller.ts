@@ -85,4 +85,9 @@ export class RequestController {
     const oUser = JSON.parse(user);
     return await this.requestService.createRequestEmployee(req, oUser.id);
   }
+
+  @Get('/day-off/user')
+  async getListUserDayOff(@Query('date') date: string): Promise<unknown> {
+    return await this.requestService.getUserDayOff(date);
+  }
 }

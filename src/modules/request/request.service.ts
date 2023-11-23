@@ -410,6 +410,7 @@ export class RequestService extends BaseService<RequestEntity> {
             },
           },
         },
+        order: { createdAt: 'DESC' },
       });
     } catch (error) {
       throw new InternalServerErrorException(
@@ -519,5 +520,18 @@ export class RequestService extends BaseService<RequestEntity> {
       );
     }
     return 'create request successfully';
+  }
+
+  async getUserDayOff(date: string): Promise<unknown> {
+    try {
+      const result = await this.requestRepository.query(`
+      SELECT DISTINCT  u.*
+      FROM requests r inner join users u ON r.requestor = u.id 
+      WHERE '${date}' BETWEEN r.startDate AND r.endDate;
+      `);
+      return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }
