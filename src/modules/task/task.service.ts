@@ -733,20 +733,27 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
-  async checkUserInTask(userId: string): Promise<boolean> {
+  async checkUserInTask(
+    userId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<unknown> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const query = await queryRunner.manager.query(`
-      SELECT COUNT(*) as count
-      FROM tasks
-      INNER JOIN assign_tasks ON tasks.id = assign_tasks.taskId
-      WHERE assign_tasks.assignee = '${userId}' AND (tasks.status IN ('PENDING', 'PROCESSING')) 
+      const result = await queryRunner.manager.query(`
+      SELECT T.*
+      FROM tasks T
+      INNER JOIN assign_tasks AT ON T.id = AT.taskId
+      WHERE AT.assignee = '${userId}' AND (T.status IN ('PENDING', 'PROCESSING')) AND ('${startDate}' <= T.startDate AND '${endDate}' >= T.endDate)
       `);
-      const result = query[0].count;
-      console.log(`User has task: ${result}`);
-      return result > 0 ? true : false;
+      console.log('Result: ', result);
+      const totalTasks = result.length;
+      return {
+        totalTasks: totalTasks,
+        tasks: result,
+      };
     } catch (err) {
-      return false;
+      throw new InternalServerErrorException(err.message);
     }
   }
 
