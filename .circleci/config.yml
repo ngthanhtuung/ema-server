@@ -43,7 +43,7 @@ jobs:
       - discord/notify:
           color: '438476'
           mentions: everyone
-          message: Build and push successfully. Please wait 5 minutes to deploy to server, thank you
+          message: Build and push successfully. Please wait 5 minutes to deploy to server, thank you!
           webhook: https://discord.com/api/webhooks/1182906567507574934/DDDkyT-GT2jx8PKcOuhTCktntvYdeXPz2ogagn69Z6fXhpWQYzleO92ES57fbmd3-jKv
   deploy:
    executor: docker/docker
