@@ -15,7 +15,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
-import { LoginDto } from 'src/auth/dto/login.dto';
+import { LoginDto, LoginGoogleRequest } from 'src/auth/dto/login.dto';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { Public } from 'src/decorators/public.decorator';
 import { UserCreateRequest } from 'src/modules/user/dto/user.request';
@@ -23,7 +23,7 @@ import { PayloadUser } from 'src/modules/user/dto/user.response';
 import ChangePasswordDto from './dto/changePassword.dto';
 import SendCodeRequest from './dto/sendCode.dto';
 import VerifyCodeRequest from './dto/verifyCode.dto';
-import ForgetPasswordRequest from './dto/fortgetPassword.dto';
+import ForgetPasswordRequest from './dto/forgetPassword.dto';
 
 @ApiBearerAuth()
 @Controller('auth')
@@ -62,6 +62,38 @@ export class AuthenticationController {
     const dataUser = await this.authService.login(data.email, data.password);
     return res.status(HttpStatus.OK).send(dataUser);
   }
+
+  /**
+   *  http://localhost:6969/api/v1/auth/login-google(Post)
+   * @param LoginGoogleRequest
+   * @returns
+   */
+  @Post('/login-google')
+  @Public()
+  @ApiBody({ type: LoginGoogleRequest })
+  @ApiOkResponse({ description: 'Login by Google successfully' })
+  async loginGoogle(
+    @Body() accessToken: LoginGoogleRequest,
+    @Res() res: Response,
+  ): Promise<
+    Response<
+      {
+        access_token: string;
+        refresh_token: string;
+      },
+      Record<
+        string,
+        {
+          access_token: string;
+          refresh_token: string;
+        }
+      >
+    >
+  > {
+    const dataUser = await this.authService.loginGoogle(accessToken.token);
+    return res.status(HttpStatus.OK).send(dataUser);
+  }
+
   /**
    *  http://localhost:6969/api/v1/auth/sign-up(Post)
    * @param userRequest
