@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH_ERROR_MESSAGE } from 'src/common/constants/constants';
@@ -13,6 +14,8 @@ import { SharedService } from 'src/shared/shared.service';
 import ChangePasswordDto from './dto/changePassword.dto';
 import { UserEntity } from 'src/modules/user/user.entity';
 import * as moment from 'moment-timezone';
+import * as firebaseAdmin from 'firebase-admin';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -208,6 +211,51 @@ export class AuthService {
       return 'Update password successfully!!';
     } catch (error) {
       throw new InternalServerErrorException(error.message);
+    }
+  }
+  async loginGoogle(
+    token: string,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    try {
+      const decode = await firebaseAdmin.auth().verifyIdToken(token);
+      const { email } = decode;
+      const user = await this.userService.findByEmail(email);
+      if (!user) {
+        throw new BadRequestException(AUTH_ERROR_MESSAGE.USER_NOT_EXIST);
+      }
+
+      if (user.status === EUserStatus.INACTIVE) {
+        throw new BadRequestException(AUTH_ERROR_MESSAGE.USER_NOT_VERIFY);
+      }
+      const payload = {
+        id: user.id,
+        role: user.role,
+        email: email,
+        divisionID: user.divisionId,
+        avatar: user.avatar,
+        fullName: user.fullName,
+        typeEmployee: user.typeEmployee,
+      };
+      // Create accessToken
+      const accessToken = this.jwtService.sign(payload, {
+        secret: jwtConstants.accessTokenSecret,
+        expiresIn: '1d',
+      });
+      // Create refreshToken
+      const refreshToken = this.jwtService.sign(
+        { id: payload.id },
+        {
+          secret: jwtConstants.refreshTokenSecret,
+          expiresIn: '60days',
+        },
+      );
+      await this.userService.updateRefreshToken(user.id, refreshToken);
+      return {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

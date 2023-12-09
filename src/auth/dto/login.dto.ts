@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
   @IsNotEmpty()
@@ -9,4 +9,10 @@ export class LoginDto {
   @IsNotEmpty()
   @ApiProperty({ default: '123456' })
   password: string;
+}
+
+export class LoginGoogleRequest {
+  @IsString()
+  @ApiProperty()
+  token: string;
 }

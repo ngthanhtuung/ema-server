@@ -12,6 +12,8 @@ import { AppService } from './app.service';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator';
 import * as firebaseAdmin from 'firebase-admin';
+import { AuthService } from './auth/auth.service';
+import { LoginGoogleRequest } from './auth/dto/login.dto';
 
 @Controller()
 @ApiTags('TESTING API')
@@ -19,6 +21,7 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly firebaseMessageService: FirebaseMessageService,
+    private readonly authService: AuthService,
   ) {}
 
   @Post('/test-notification')
@@ -42,6 +45,18 @@ export class AppController {
       });
 
       return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  @Post('/login-google')
+  @Public()
+  async testLoginGoogle(
+    @Body() accessToken: LoginGoogleRequest,
+  ): Promise<unknown> {
+    try {
+      return await this.authService.loginGoogle(accessToken.token);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
