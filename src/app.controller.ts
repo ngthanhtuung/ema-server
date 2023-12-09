@@ -50,7 +50,7 @@ export class AppController {
     }
   }
 
-  @Post('/login-google')
+  @Post('/test-login-google')
   @Public()
   async testLoginGoogle(
     @Body() accessToken: LoginGoogleRequest,
