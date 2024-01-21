@@ -1,8 +1,10 @@
 import { EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
@@ -30,11 +32,8 @@ import { ProfileEntity } from 'src/modules/profile/profile.entity';
 import { SharedService } from 'src/shared/shared.service';
 import {
   DataSource,
-  LessThan,
   LessThanOrEqual,
-  MoreThan,
   MoreThanOrEqual,
-  Not,
   QueryRunner,
   Repository,
   SelectQueryBuilder,
@@ -42,7 +41,6 @@ import {
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { ERole } from 'src/common/enum/enum';
 import { DivisionEntity } from '../division/division.entity';
-import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import * as moment from 'moment-timezone';
 import { TaskService } from '../task/task.service';
 import * as _ from 'lodash';
@@ -274,11 +272,6 @@ export class UserService extends BaseService<UserEntity> {
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
         profileId: createUser.generatedMaps[0]['id'],
-      });
-      await queryRunner.manager.insert(AnnualLeaveEntity, {
-        year: Number(moment().format('YYYY')),
-        amount: 12,
-        userID: createUser.generatedMaps[0]['id'],
       });
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
@@ -560,21 +553,21 @@ export class UserService extends BaseService<UserEntity> {
     let listFreeEmployee;
     try {
       const listEmployeeBusy = await this.userRepository.find({
-        //   select: {
-        //     profile: {
-        //       profileId: true,
-        //       fullName: true,
-        //     },
-        //     division: {
-        //       id: true,
-        //       divisionName: true,
-        //     },
-        //   },
+        select: {
+          id: true,
+          email: true,
+          typeEmployee: true,
+          division: {
+            id: true,
+            divisionName: true,
+            description: true,
+          },
+        },
         where: {
           assignee: {
             task: {
-              startDate: filter.startDate,
-              endDate: filter.endDate,
+              startDate: MoreThanOrEqual(filter.startDate),
+              endDate: LessThanOrEqual(filter.endDate),
             },
           },
           profile: {
@@ -584,13 +577,13 @@ export class UserService extends BaseService<UserEntity> {
       });
       const listEmployee = await this.userRepository.find({
         select: {
-          profile: {
-            profileId: true,
-            fullName: true,
-          },
+          id: true,
+          email: true,
+          typeEmployee: true,
           division: {
             id: true,
             divisionName: true,
+            description: true,
           },
         },
         where: {
@@ -659,11 +652,6 @@ export class UserService extends BaseService<UserEntity> {
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
         profileId: createUser.generatedMaps[0]['id'],
-      });
-      await queryRunner.manager.insert(AnnualLeaveEntity, {
-        year: Number(moment().format('YYYY')),
-        amount: 12,
-        userID: createUser.generatedMaps[0]['id'],
       });
     };
     await this.transaction(callback, queryRunner);

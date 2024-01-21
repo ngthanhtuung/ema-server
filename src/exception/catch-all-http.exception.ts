@@ -12,6 +12,10 @@ import {
   QueryFailedError,
   TypeORMError,
 } from 'typeorm';
+import { config } from 'dotenv';
+import axios from 'axios';
+import * as moment from 'moment-timezone';
+config();
 
 @Catch(
   QueryFailedError,
@@ -21,7 +25,6 @@ import {
 )
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
-
   catch(exception: unknown, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
@@ -48,6 +51,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = (exception as CannotCreateEntityIdMapError).message;
         httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
       }
+    }
+
+    const currentDate = moment().tz('Asia/Ho_Chi_Minh');
+    const formattedDate = currentDate.format('DD/MM/YYYY, h:mm:ss A');
+    const discordWebHookUrl = process.env.ERROR_DISCORD_WEBHOOK_URL;
+
+    if (httpStatus !== 401 && httpStatus !== 403) {
+      const errorMessage = `\`\`\`diff
+- [${formattedDate}] ERROR - [${request.method}] - ${request.url} | ${httpStatus}
+
++ ${message}
+\`\`\``;
+      axios
+        .post(discordWebHookUrl, {
+          content: errorMessage,
+        })
+        .catch((error) => console.error('Discord error:', error));
     }
 
     httpAdapter.reply(

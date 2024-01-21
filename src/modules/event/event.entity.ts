@@ -4,7 +4,6 @@ import { BaseEntity } from '../base/base.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { BudgetEntity } from '../budget/budget.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { TimesheetEntity } from '../timesheet/timesheet.entity';
 
 @Entity({ name: 'events' })
 export class EventEntity extends BaseEntity {
@@ -60,9 +59,4 @@ export class EventEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   assignEvents: [];
-
-  @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.event, {
-    onDelete: 'CASCADE',
-  })
-  timesheets: TimesheetEntity[];
 }
