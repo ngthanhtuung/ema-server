@@ -5,7 +5,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 @Entity({ name: 'profiles' })
 export class ProfileEntity {
   @PrimaryColumn()
-  public profileId: string;
+  profileId: string;
 
   @Column({ enum: ERole, type: 'enum' })
   role: ERole;
@@ -34,6 +34,7 @@ export class ProfileEntity {
   @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'id' })
+  // @JoinColumn({ name: 'id' })
+  @JoinColumn({ name: 'profileId' })
   user: UserEntity;
 }

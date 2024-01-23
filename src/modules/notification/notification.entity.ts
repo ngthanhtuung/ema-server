@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { UserEntity } from '../user/user.entity';
 import { ETypeNotification } from 'src/common/enum/enum';
+import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
 
 @Entity({ name: 'notifications' })
 export class NotificationEntity extends BaseEntity {
@@ -12,35 +13,18 @@ export class NotificationEntity extends BaseEntity {
   content: string;
 
   @Column({
-    type: 'boolean',
-    default: false,
-  })
-  readFlag: boolean;
-
-  @Column({
     enum: ETypeNotification,
     type: 'enum',
     nullable: false,
   })
   type: ETypeNotification;
 
-  @Column({ type: 'varchar', nullable: true })
-  sender: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  commonId: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  parentTaskId: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  eventId: string;
-
   @Column({ type: 'boolean', default: true })
   status: boolean;
 
-  @ManyToOne(() => UserEntity, (user) => user.notifications, {
-    onDelete: 'CASCADE',
-  })
-  user: UserEntity;
+  @OneToMany(
+    () => UserNotificationsEntity,
+    (userNotification) => userNotification.notification,
+  )
+  userNotifications: UserNotificationsEntity[];
 }

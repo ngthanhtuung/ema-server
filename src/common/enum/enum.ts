@@ -80,3 +80,16 @@ export enum ETypeNotification {
   REQUEST = 'REQUEST',
   BUDGETS = 'BUDGETS',
 }
+
+export enum ETypeMessage {
+  TASK = 'TASK',
+  COMMENT = 'COMMENT',
+  REQUEST = 'REQUEST',
+  BUDGETS = 'BUDGETS',
+}
+
+export enum ERoleParticipant {
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER',
+  MODERATOR = 'MODERATOR',
+}

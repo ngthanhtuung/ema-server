@@ -28,13 +28,11 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
-import { BudgetModule } from './modules/budget/budget.module';
 import { CommentfileModule } from './modules/commentfile/commentfile.module';
-import { RequestModule } from './modules/request/request.module';
-import { TimesheetModule } from './modules/timesheet/timesheet.module';
 import { StatisticModule } from './modules/statistic/statistic.module';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import { RolesModule } from './modules/roles/roles.module';
+import { UserNotificationsModule } from './modules/user_notifications/user_notifications.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -68,10 +66,9 @@ import { ScheduleModule } from '@nestjs/schedule';
     GatewayModule,
     CommentModule,
     CommentfileModule,
-    BudgetModule,
-    RequestModule,
-    TimesheetModule,
     StatisticModule,
+    RolesModule,
+    UserNotificationsModule,
   ],
   controllers: [AppController],
   providers: [

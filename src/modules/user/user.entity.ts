@@ -7,16 +7,18 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
-import { TimesheetEntity } from '../timesheet/timesheet.entity';
-import { RequestEntity } from '../request/request.entity';
 import { NotificationEntity } from '../notification/notification.entity';
 import { DeviceEntity } from '../device/device.entity';
 import { DivisionEntity } from '../division/division.entity';
-import { AnnualLeaveEntity } from '../annual-leave/annual-leave.entity';
 import { CommentEntity } from '../comment/comment.entity';
 import { ETypeEmployee, EUserStatus } from 'src/common/enum/enum';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { ProfileEntity } from '../profile/profile.entity';
+import { RoleEntity } from '../roles/roles.entity';
+import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
+import { MessageEntity } from '../messages/messages.entity';
+import { DeletedMessagesEntity } from '../deleted_messages/deleted_messages.entity';
+import { ParticipantsEntity } from '../participants/participants.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -49,21 +51,6 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
 
-  @OneToMany(() => TimesheetEntity, (timesheet) => timesheet.user, {
-    onDelete: 'CASCADE',
-  })
-  timesheets: TimesheetEntity[];
-
-  @OneToMany(() => RequestEntity, (request) => request.user, {
-    onDelete: 'CASCADE',
-  })
-  requests: RequestEntity[];
-
-  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
-    onDelete: 'CASCADE',
-  })
-  notifications: NotificationEntity[];
-
   @OneToMany(() => DeviceEntity, (device) => device.user, {
     onDelete: 'CASCADE',
   })
@@ -73,11 +60,6 @@ export class UserEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   division: DivisionEntity;
-
-  @OneToMany(() => AnnualLeaveEntity, (annualLeaves) => annualLeaves.user, {
-    onDelete: 'CASCADE',
-  })
-  annualLeaves: AnnualLeaveEntity[];
 
   @OneToMany(() => CommentEntity, (comments) => comments.user, {
     onDelete: 'CASCADE',
@@ -89,12 +71,31 @@ export class UserEntity extends BaseEntity {
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user)
   @JoinColumn({ name: 'profileId' })
+  // @JoinColumn()
   profile: ProfileEntity;
 
-  @OneToMany(() => RequestEntity, (approveReq) => approveReq.approveBy, {
+  @ManyToOne(() => RoleEntity, (role) => role.users, {
     onDelete: 'CASCADE',
   })
-  approveReq: RequestEntity[];
+  role: RoleEntity;
+
+  @OneToMany(
+    () => UserNotificationsEntity,
+    (userNotification) => userNotification.user,
+  )
+  userNotifications: UserNotificationsEntity[];
+
+  @OneToMany(() => MessageEntity, (message) => message.user)
+  messages: MessageEntity[];
+
+  @OneToMany(
+    () => DeletedMessagesEntity,
+    (deletedMessages) => deletedMessages.user,
+  )
+  deletedMessages: DeletedMessagesEntity[];
+
+  @OneToMany(() => ParticipantsEntity, (participant) => participant.user)
+  participants: ParticipantsEntity[];
 
   @Column({ type: 'varchar', nullable: true })
   socketId: string;

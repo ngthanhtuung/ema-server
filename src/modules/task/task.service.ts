@@ -68,7 +68,7 @@ export class TaskService extends BaseService<TaskEntity> {
     const { sizePage, currentPage } = userPagination;
     const whereCondition = {
       [fieldName]: conValue,
-      isTemplate: false,
+      // isTemplate: false,
     };
     let results;
     const offset = sizePage * (currentPage - 1);
@@ -81,10 +81,10 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: { isLeader: 'DESC' },
         },
         select: {
-          event: {
-            id: true,
-            eventName: true,
-          },
+          // event: {
+          //   id: true,
+          //   eventName: true,
+          // },
           assignTasks: {
             id: true,
             isLeader: true,
@@ -100,9 +100,9 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           subTask: {
             id: true,
-            createdAt: true,
+            // createdAt: true,
             createdBy: true,
-            updatedAt: true,
+            // updatedAt: true,
             title: true,
             startDate: true,
             endDate: true,
@@ -129,9 +129,9 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           parent: {
             id: true,
-            createdAt: true,
+            // createdAt: true,
             createdBy: true,
-            updatedAt: true,
+            // updatedAt: true,
             title: true,
             startDate: true,
             endDate: true,
@@ -158,7 +158,7 @@ export class TaskService extends BaseService<TaskEntity> {
           },
         },
         relations: {
-          event: true,
+          // event: true,
           taskFiles: true,
           assignTasks: {
             user: {
@@ -213,7 +213,6 @@ export class TaskService extends BaseService<TaskEntity> {
     const { sizePage, currentPage } = userPagination;
     const whereCondition = {
       [fieldName]: conValue,
-      isTemplate: true,
     };
     let results;
     const offset = sizePage * (currentPage - 1);
@@ -226,10 +225,10 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: { isLeader: 'DESC' },
         },
         select: {
-          event: {
-            id: true,
-            eventName: true,
-          },
+          // event: {
+          //   id: true,
+          //   eventName: true,
+          // },
           assignTasks: {
             id: true,
             isLeader: true,
@@ -245,9 +244,9 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           subTask: {
             id: true,
-            createdAt: true,
+            // createdAt: true,
             createdBy: true,
-            updatedAt: true,
+            // updatedAt: true,
             title: true,
             startDate: true,
             endDate: true,
@@ -274,9 +273,9 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           parent: {
             id: true,
-            createdAt: true,
+            // createdAt: true,
             createdBy: true,
-            updatedAt: true,
+            // updatedAt: true,
             title: true,
             startDate: true,
             endDate: true,
@@ -303,7 +302,7 @@ export class TaskService extends BaseService<TaskEntity> {
           },
         },
         relations: {
-          event: true,
+          // event: true,
           taskFiles: true,
           assignTasks: {
             user: {
@@ -343,186 +342,186 @@ export class TaskService extends BaseService<TaskEntity> {
    * @param user
    * @returns
    */
-  async createTask(task: TaskCreateReq, user: string): Promise<string> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    const {
-      title,
-      eventID,
-      startDate,
-      endDate,
-      desc,
-      priority,
-      parentTask,
-      estimationTime,
-      assignee,
-      file,
-      leader,
-    } = task;
-    const oUser = JSON.parse(user);
-    const createBy = oUser.id;
-    const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      const eventExisted = await queryRunner.manager.findOne(EventEntity, {
-        where: { id: eventID },
-      });
+  // async createTask(task: TaskCreateReq, user: string): Promise<string> {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   const {
+  //     title,
+  //     eventID,
+  //     startDate,
+  //     endDate,
+  //     desc,
+  //     priority,
+  //     parentTask,
+  //     estimationTime,
+  //     assignee,
+  //     file,
+  //     leader,
+  //   } = task;
+  //   const oUser = JSON.parse(user);
+  //   const createBy = oUser.id;
+  //   const callback = async (queryRunner: QueryRunner): Promise<void> => {
+  //     const eventExisted = await queryRunner.manager.findOne(EventEntity, {
+  //       where: { id: eventID },
+  //     });
 
-      if (!eventExisted) {
-        throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
-      }
+  //     if (!eventExisted) {
+  //       throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
+  //     }
 
-      const createTask = await queryRunner.manager.insert(TaskEntity, {
-        title: title,
-        createdBy: createBy,
-        eventID: eventID,
-        startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
-        endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
-        description: desc,
-        estimationTime: estimationTime,
-        priority: priority,
-        parent: {
-          id: parentTask,
-        },
-      });
+  //     const createTask = await queryRunner.manager.insert(TaskEntity, {
+  //       title: title,
+  //       createdBy: createBy,
+  //       eventID: eventID,
+  //       startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
+  //       endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
+  //       description: desc,
+  //       estimationTime: estimationTime,
+  //       priority: priority,
+  //       parent: {
+  //         id: parentTask,
+  //       },
+  //     });
 
-      if (assignee?.length > 0) {
-        const oAssignTask = {
-          assignee,
-          taskID: createTask.generatedMaps[0]['id'],
-          leader,
-        };
-        this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
-      }
-      if (file) {
-        for (let i = 0; i < file?.length; i++) {
-          this.taskFileService.insertTaskFile({
-            taskID: createTask.generatedMaps[0]['id'],
-            fileName: file[0].fileName,
-            fileUrl: file[0].fileUrl,
-          });
-        }
-      }
-    };
-    await this.transaction(callback, queryRunner);
-    return 'create task success';
-  }
+  //     if (assignee?.length > 0) {
+  //       const oAssignTask = {
+  //         assignee,
+  //         taskID: createTask.generatedMaps[0]['id'],
+  //         leader,
+  //       };
+  //       this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
+  //     }
+  //     if (file) {
+  //       for (let i = 0; i < file?.length; i++) {
+  //         this.taskFileService.insertTaskFile({
+  //           taskID: createTask.generatedMaps[0]['id'],
+  //           fileName: file[0].fileName,
+  //           fileUrl: file[0].fileUrl,
+  //         });
+  //       }
+  //     }
+  //   };
+  //   await this.transaction(callback, queryRunner);
+  //   return 'create task success';
+  // }
 
-  /**
-   * updateTask
-   * @param taskID
-   * @param data
-   * @returns
-   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    if (!taskID) {
-      throw new InternalServerErrorException(`TaskID is empty`);
-    }
-    try {
-      const taskExist = await queryRunner.manager.findOne(TaskEntity, {
-        where: { id: taskID },
-      });
-      if (!taskExist) {
-        throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
-      }
-      await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
-      const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
-        where: { taskID: taskID },
-      });
-      const taskExisted: any = await this.taskRepository.findOne({
-        where: { id: taskID },
-        select: {
-          parent: {
-            id: true,
-          },
-        },
-        relations: {
-          parent: true,
-        },
-      });
-      const createNotification = [];
-      const listAssigneeId = [];
-      const listTaskMasterId = [];
-      for (const item of listUser) {
-        if (item?.assignee !== oUser?.id) {
-          const dataNotification: NotificationCreateRequest = {
-            title: `Công việc đã được cập nhât`,
-            content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-            readFlag: false,
-            type: ETypeNotification.TASK,
-            sender: oUser.id,
-            userId: item?.assignee,
-            eventId: taskExisted?.eventID,
-            parentTaskId: taskExisted?.parent?.id,
-            commonId: taskID,
-          };
-          listAssigneeId.push(item?.assignee);
-          const socketId = (await this.userService.findById(item?.assignee))
-            ?.socketId;
-          const client = this.appGateWay.server;
-          if (socketId !== null) {
-            client.to(socketId).emit('notification', {
-              ...dataNotification,
-              avatar: oUser?.avatar,
-            });
-          }
-          createNotification.push(
-            this.notificationService.createNotification(dataNotification),
-          );
-        }
-      }
-      if (listAssigneeId.length !== 0) {
-        const listAssigneeDeviceToken =
-          await this.deviceService.getListDeviceTokens(listAssigneeId);
-        await this.notificationService.pushNotificationFirebase(
-          listAssigneeDeviceToken,
-          `Công việc đã được cập nhât`,
-          `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-        );
-      }
-      // Notificaiton task master
-      if (listUser?.[0].taskMaster !== oUser?.id) {
-        const socketId = (
-          await this.userService.findById(listUser?.[0].taskMaster)
-        )?.socketId;
-        const dataNotification: NotificationCreateRequest = {
-          title: `Công việc đã được cập nhât`,
-          content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-          readFlag: false,
-          type: ETypeNotification.TASK,
-          sender: oUser.id,
-          userId: listUser?.[0].taskMaster,
-          eventId: taskExisted?.eventID,
-          parentTaskId: taskExisted?.parent?.id,
-          commonId: taskID,
-        };
-        const client = this.appGateWay.server;
-        if (socketId !== null) {
-          client.to(socketId).emit('notification', {
-            ...dataNotification,
-            avatar: oUser?.avatar,
-          });
-        }
-        listTaskMasterId.push(listUser?.[0].taskMaster);
-        if (listTaskMasterId?.length !== 0) {
-          const listTaskMasterToken =
-            await this.deviceService.getListDeviceTokens(listTaskMasterId);
-          await this.notificationService.pushNotificationFirebase(
-            listTaskMasterToken,
-            `Công việc đã được cập nhât`,
-            `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-          );
-        }
-        createNotification.push(
-          this.notificationService.createNotification(dataNotification),
-        );
-      }
-      await Promise.all(createNotification);
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
-    }
+  // /**
+  //  * updateTask
+  //  * @param taskID
+  //  * @param data
+  //  * @returns
+  //  */
+  // // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  // async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   if (!taskID) {
+  //     throw new InternalServerErrorException(`TaskID is empty`);
+  //   }
+  //   try {
+  //     const taskExist = await queryRunner.manager.findOne(TaskEntity, {
+  //       where: { id: taskID },
+  //     });
+  //     if (!taskExist) {
+  //       throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
+  //     }
+  //     await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
+  //     const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
+  //       where: { taskID: taskID },
+  //     });
+  //     const taskExisted: any = await this.taskRepository.findOne({
+  //       where: { id: taskID },
+  //       select: {
+  //         parent: {
+  //           id: true,
+  //         },
+  //       },
+  //       relations: {
+  //         parent: true,
+  //       },
+  //     });
+  //     const createNotification = [];
+  //     const listAssigneeId = [];
+  //     const listTaskMasterId = [];
+  //     for (const item of listUser) {
+  //       if (item?.assignee !== oUser?.id) {
+  //         const dataNotification: NotificationCreateRequest = {
+  //           title: `Công việc đã được cập nhât`,
+  //           content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+  //           readFlag: false,
+  //           type: ETypeNotification.TASK,
+  //           sender: oUser.id,
+  //           userId: item?.assignee,
+  //           eventId: taskExisted?.eventID,
+  //           parentTaskId: taskExisted?.parent?.id,
+  //           commonId: taskID,
+  //         };
+  //         listAssigneeId.push(item?.assignee);
+  //         const socketId = (await this.userService.findById(item?.assignee))
+  //           ?.socketId;
+  //         const client = this.appGateWay.server;
+  //         if (socketId !== null) {
+  //           client.to(socketId).emit('notification', {
+  //             ...dataNotification,
+  //             avatar: oUser?.avatar,
+  //           });
+  //         }
+  //         createNotification.push(
+  //           this.notificationService.createNotification(dataNotification),
+  //         );
+  //       }
+  //     }
+  //     if (listAssigneeId.length !== 0) {
+  //       const listAssigneeDeviceToken =
+  //         await this.deviceService.getListDeviceTokens(listAssigneeId);
+  //       await this.notificationService.pushNotificationFirebase(
+  //         listAssigneeDeviceToken,
+  //         `Công việc đã được cập nhât`,
+  //         `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+  //       );
+  //     }
+  //     // Notificaiton task master
+  //     if (listUser?.[0].taskMaster !== oUser?.id) {
+  //       const socketId = (
+  //         await this.userService.findById(listUser?.[0].taskMaster)
+  //       )?.socketId;
+  //       const dataNotification: NotificationCreateRequest = {
+  //         title: `Công việc đã được cập nhât`,
+  //         content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+  //         readFlag: false,
+  //         type: ETypeNotification.TASK,
+  //         sender: oUser.id,
+  //         userId: listUser?.[0].taskMaster,
+  //         eventId: taskExisted?.eventID,
+  //         parentTaskId: taskExisted?.parent?.id,
+  //         commonId: taskID,
+  //       };
+  //       const client = this.appGateWay.server;
+  //       if (socketId !== null) {
+  //         client.to(socketId).emit('notification', {
+  //           ...dataNotification,
+  //           avatar: oUser?.avatar,
+  //         });
+  //       }
+  //       listTaskMasterId.push(listUser?.[0].taskMaster);
+  //       if (listTaskMasterId?.length !== 0) {
+  //         const listTaskMasterToken =
+  //           await this.deviceService.getListDeviceTokens(listTaskMasterId);
+  //         await this.notificationService.pushNotificationFirebase(
+  //           listTaskMasterToken,
+  //           `Công việc đã được cập nhât`,
+  //           `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+  //         );
+  //       }
+  //       createNotification.push(
+  //         this.notificationService.createNotification(dataNotification),
+  //       );
+  //     }
+  //     await Promise.all(createNotification);
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(error.message);
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   /**
    * filterTaskByAssignee
@@ -549,15 +548,15 @@ export class TaskService extends BaseService<TaskEntity> {
           },
         },
         where: {
-          priority,
+          // priority,
           status,
           assignTasks: {
             assignee,
           },
-          isTemplate: false,
-          event: {
-            id: eventID,
-          },
+          // isTemplate: false,
+          // event: {
+          //   id: eventID,
+          // },
         },
         relations: {
           subTask: true,
@@ -569,9 +568,9 @@ export class TaskService extends BaseService<TaskEntity> {
           },
           taskFiles: true,
         },
-        order: {
-          createdAt: { direction: sort },
-        },
+        // order: {
+        //   createdAt: { direction: sort },
+        // },
       });
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -611,30 +610,30 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
-  async getTaskStatistic(eventId: string): Promise<unknown> {
-    try {
-      const tasks = await this.taskRepository.find({
-        where: {
-          event: {
-            id: eventId,
-          },
-        },
-      });
-      const taskStatistics = {
-        total: tasks.length,
-        pending: tasks.filter((task) => task.status === ETaskStatus.PENDING)
-          .length,
-        done: tasks.filter((task) => task.status === ETaskStatus.DONE).length,
-        cancel: tasks.filter((task) => task.status === ETaskStatus.CANCEL)
-          .length,
-        overdue: tasks.filter((task) => task.status === ETaskStatus.OVERDUE)
-          .length,
-      };
-      return taskStatistics;
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
+  // async getTaskStatistic(eventId: string): Promise<unknown> {
+  //   try {
+  //     const tasks = await this.taskRepository.find({
+  //       where: {
+  //         event: {
+  //           id: eventId,
+  //         },
+  //       },
+  //     });
+  //     const taskStatistics = {
+  //       total: tasks.length,
+  //       pending: tasks.filter((task) => task.status === ETaskStatus.PENDING)
+  //         .length,
+  //       done: tasks.filter((task) => task.status === ETaskStatus.DONE).length,
+  //       cancel: tasks.filter((task) => task.status === ETaskStatus.CANCEL)
+  //         .length,
+  //       overdue: tasks.filter((task) => task.status === ETaskStatus.OVERDUE)
+  //         .length,
+  //     };
+  //     return taskStatistics;
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err.message);
+  //   }
+  // }
 
   // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
   //   try {
@@ -675,63 +674,63 @@ export class TaskService extends BaseService<TaskEntity> {
   //   }
   // }
 
-  async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
-    try {
-      const tasks = await this.taskRepository.find({
-        where: {
-          event: {
-            id: eventId,
-          },
-        },
-        relations: ['assignTasks'],
-      });
+  // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
+  //   try {
+  //     const tasks = await this.taskRepository.find({
+  //       where: {
+  //         event: {
+  //           id: eventId,
+  //         },
+  //       },
+  //       relations: ['assignTasks'],
+  //     });
 
-      const uniquePeople = {
-        leaders: new Set<string>(),
-        members: new Set<string>(),
-        taskMasters: new Set<string>(),
-      };
+  //     const uniquePeople = {
+  //       leaders: new Set<string>(),
+  //       members: new Set<string>(),
+  //       taskMasters: new Set<string>(),
+  //     };
 
-      const peopleStatistics = tasks.reduce(
-        (stats, task) => {
-          task.assignTasks.forEach((assignTask) => {
-            if (
-              assignTask.isLeader === true &&
-              !uniquePeople.leaders.has(assignTask.id)
-            ) {
-              uniquePeople.leaders.add(assignTask.id);
-              stats.leader += 1;
-            } else if (
-              assignTask.isLeader === false &&
-              !uniquePeople.members.has(assignTask.id)
-            ) {
-              uniquePeople.members.add(assignTask.id);
-              stats.member += 1;
-            }
+  //     const peopleStatistics = tasks.reduce(
+  //       (stats, task) => {
+  //         task.assignTasks.forEach((assignTask) => {
+  //           if (
+  //             assignTask.isLeader === true &&
+  //             !uniquePeople.leaders.has(assignTask.id)
+  //           ) {
+  //             uniquePeople.leaders.add(assignTask.id);
+  //             stats.leader += 1;
+  //           } else if (
+  //             assignTask.isLeader === false &&
+  //             !uniquePeople.members.has(assignTask.id)
+  //           ) {
+  //             uniquePeople.members.add(assignTask.id);
+  //             stats.member += 1;
+  //           }
 
-            if (
-              assignTask.taskMaster &&
-              !uniquePeople.taskMasters.has(assignTask.taskMaster)
-            ) {
-              uniquePeople.taskMasters.add(assignTask.taskMaster);
-              stats.taskMaster += 1;
-            }
-          });
+  //           if (
+  //             assignTask.taskMaster &&
+  //             !uniquePeople.taskMasters.has(assignTask.taskMaster)
+  //           ) {
+  //             uniquePeople.taskMasters.add(assignTask.taskMaster);
+  //             stats.taskMaster += 1;
+  //           }
+  //         });
 
-          return stats;
-        },
-        {
-          leader: 0,
-          member: 0,
-          taskMaster: 0,
-        },
-      );
+  //         return stats;
+  //       },
+  //       {
+  //         leader: 0,
+  //         member: 0,
+  //         taskMaster: 0,
+  //       },
+  //     );
 
-      return peopleStatistics;
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
+  //     return peopleStatistics;
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err.message);
+  //   }
+  // }
 
   async checkUserInTask(
     userId: string,
