@@ -70,19 +70,19 @@ export class EventController {
     );
   }
 
-  @Get('/statistic')
-  @ApiQuery({
-    name: 'mode',
-    enum: EEventStatus,
-    required: false,
-  })
-  async eventStatistic(
-    @Query('mode') mode: EEventStatus,
-    @GetUser() user: string,
-  ): Promise<unknown> {
-    console.log('Mode: ', mode);
-    return await this.eventService.eventStatistics(mode, user);
-  }
+  // @Get('/statistic')
+  // @ApiQuery({
+  //   name: 'mode',
+  //   enum: EEventStatus,
+  //   required: false,
+  // })
+  // async eventStatistic(
+  //   @Query('mode') mode: EEventStatus,
+  //   @GetUser() user: string,
+  // ): Promise<unknown> {
+  //   console.log('Mode: ', mode);
+  //   return await this.eventService.eventStatistics(mode, user);
+  // }
 
   /**
    * getEventById

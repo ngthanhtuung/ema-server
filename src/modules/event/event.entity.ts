@@ -1,9 +1,12 @@
 import { TaskEntity } from './../task/task.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { EEventStatus } from 'src/common/enum/enum';
-import { BudgetEntity } from '../budget/budget.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
+import { FeedbackEntity } from '../feedbacks/feedbacks.entity';
+import { ContractEntity } from '../contracts/contracts.entity';
+import { EventTypeEntity } from '../event_types/event_types.entity';
+import { ItemEntity } from '../items/items.entity';
 
 @Entity({ name: 'events' })
 export class EventEntity extends BaseEntity {
@@ -47,16 +50,23 @@ export class EventEntity extends BaseEntity {
   })
   status: EEventStatus;
 
-  @OneToMany(() => BudgetEntity, (budget) => budget.event, {
-    onDelete: 'CASCADE',
-  })
-  budgets: BudgetEntity[];
-
-  @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
-  tasks: TaskEntity[];
+  // @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
+  // tasks: TaskEntity[];
 
   @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
     onDelete: 'CASCADE',
   })
   assignEvents: [];
+
+  @OneToMany(() => FeedbackEntity, (feedback) => feedback.event)
+  feedbacks: FeedbackEntity[];
+
+  @OneToMany(() => ContractEntity, (contract) => contract.event)
+  contracts: ContractEntity[];
+
+  @ManyToOne(() => EventTypeEntity, (type) => type.events)
+  eventType: EventTypeEntity;
+
+  @OneToMany(() => ItemEntity, (item) => item.event)
+  items: ItemEntity[];
 }

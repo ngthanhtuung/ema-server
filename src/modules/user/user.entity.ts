@@ -14,6 +14,11 @@ import { CommentEntity } from '../comment/comment.entity';
 import { ETypeEmployee, EUserStatus } from 'src/common/enum/enum';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { ProfileEntity } from '../profile/profile.entity';
+import { RoleEntity } from '../roles/roles.entity';
+import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
+import { MessageEntity } from '../messages/messages.entity';
+import { DeletedMessagesEntity } from '../deleted_messages/deleted_messages.entity';
+import { ParticipantsEntity } from '../participants/participants.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -46,11 +51,6 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
 
-  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
-    onDelete: 'CASCADE',
-  })
-  notifications: NotificationEntity[];
-
   @OneToMany(() => DeviceEntity, (device) => device.user, {
     onDelete: 'CASCADE',
   })
@@ -71,7 +71,31 @@ export class UserEntity extends BaseEntity {
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user)
   @JoinColumn({ name: 'profileId' })
+  // @JoinColumn()
   profile: ProfileEntity;
+
+  @ManyToOne(() => RoleEntity, (role) => role.users, {
+    onDelete: 'CASCADE',
+  })
+  role: RoleEntity;
+
+  @OneToMany(
+    () => UserNotificationsEntity,
+    (userNotification) => userNotification.user,
+  )
+  userNotifications: UserNotificationsEntity[];
+
+  @OneToMany(() => MessageEntity, (message) => message.user)
+  messages: MessageEntity[];
+
+  @OneToMany(
+    () => DeletedMessagesEntity,
+    (deletedMessages) => deletedMessages.user,
+  )
+  deletedMessages: DeletedMessagesEntity[];
+
+  @OneToMany(() => ParticipantsEntity, (participant) => participant.user)
+  participants: ParticipantsEntity[];
 
   @Column({ type: 'varchar', nullable: true })
   socketId: string;

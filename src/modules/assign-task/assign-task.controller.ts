@@ -12,12 +12,12 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 export class AssignTaskController {
   constructor(private readonly assignTaskService: AssignTaskService) {}
 
-  @Post()
-  @Roles(ERole.MANAGER, ERole.STAFF)
-  async assignMemberToTask(
-    @Body() req: AssignTaskReq,
-    @GetUser() user: string,
-  ): Promise<string> {
-    return await this.assignTaskService.assignMemberToTask(req, user);
-  }
+  // @Post()
+  // @Roles(ERole.MANAGER, ERole.STAFF)
+  // async assignMemberToTask(
+  //   @Body() req: AssignTaskReq,
+  //   @GetUser() user: string,
+  // ): Promise<string> {
+  //   return await this.assignTaskService.assignMemberToTask(req, user);
+  // }
 }

@@ -366,7 +366,7 @@ export class UserService extends BaseService<UserEntity> {
         { id: loginUserId },
         {
           password: password,
-          updatedAt: modifiedDate,
+          // updatedAt: modifiedDate,
         },
       );
     } catch (err) {

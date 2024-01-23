@@ -57,7 +57,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const formattedDate = currentDate.format('DD/MM/YYYY, h:mm:ss A');
     const discordWebHookUrl = process.env.ERROR_DISCORD_WEBHOOK_URL;
 
-    if (httpStatus !== 401 && httpStatus !== 403) {
+    if (
+      httpStatus !== 401 &&
+      httpStatus !== 403 &&
+      process.env.ENVIRONMENT !== 'dev'
+    ) {
       const errorMessage = `\`\`\`diff
 - [${formattedDate}] ERROR - [${request.method}] - ${request.url} | ${httpStatus}
 
