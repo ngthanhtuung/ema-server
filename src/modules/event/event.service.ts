@@ -1,7 +1,6 @@
 import {
   Injectable,
   InternalServerErrorException,
-  BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
@@ -24,9 +23,10 @@ import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { FileService } from 'src/file/file.service';
-import * as QRCode from 'qrcode';
 import { ConfigService } from '@nestjs/config';
 import { TaskService } from '../task/task.service';
+import { EventTypeEntity } from '../event_types/event_types.entity';
+import { UserEntity } from '../user/user.entity';
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
   constructor(
@@ -184,10 +184,20 @@ export class EventService extends BaseService<EventEntity> {
    * @param event
    * @returns
    */
-  async createEvent(event: EventCreateRequest): Promise<string> {
+  async createEvent(
+    event: EventCreateRequest,
+    user: UserEntity,
+  ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
       await queryRunner.startTransaction();
+
+      const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
+        where: { id: event.eventTypeId },
+      });
+      if (!eventType) {
+        throw new NotFoundException('Event type not found');
+      }
       const createEvent = await queryRunner.manager.insert(EventEntity, {
         eventName: event.eventName,
         description: event.description,
@@ -197,6 +207,8 @@ export class EventService extends BaseService<EventEntity> {
         location: event.location,
         coverUrl: event.coverUrl,
         estBudget: event.estBudget,
+        eventType: eventType,
+        createdBy: user.id,
       });
       const arrayPromise = event.divisionId.map((id) =>
         queryRunner.manager.insert(AssignEventEntity, {
@@ -222,6 +234,7 @@ export class EventService extends BaseService<EventEntity> {
   async updateEvent(
     eventId: string,
     event: EventUpdateRequest,
+    user: UserEntity,
   ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
@@ -239,6 +252,10 @@ export class EventService extends BaseService<EventEntity> {
             location: event.location,
             coverUrl: event.coverUrl,
             estBudget: event.estBudget,
+            updatedBy: user.id,
+            updatedAt: moment()
+              .tz('Asia/Ho_Chi_Minh')
+              .format('YYYY-MM-DD HH:mm:ss'),
           },
         );
         const dataEditDivision: EventAssignRequest = {
@@ -308,82 +325,6 @@ export class EventService extends BaseService<EventEntity> {
       }
       await this.eventRepository.update({ id: eventID }, { status: status });
       return 'Update status successfully!!!';
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
-
-  async generateQRCode(eventId: string, type: string): Promise<string> {
-    try {
-      const env = this.configService.get<string>('ENVIRONMENT');
-      const server_host = this.configService.get<string>('SERVER_HOST');
-      const port = this.configService.get<string>('PORT');
-      const path_open_api = this.configService.get<string>('PATH_OPEN_API');
-      const event = await this.findOne({
-        where: { id: eventId },
-      });
-      if (!event) {
-        throw new NotFoundException('Event not found');
-      }
-      switch (type) {
-        case 'CHECK-IN':
-          let checkInUrl;
-          if (env === 'production') {
-            checkInUrl = `${server_host}/${path_open_api}/timesheet/check-in?eventId=${eventId}`;
-          } else {
-            checkInUrl = `${server_host}:${port}/${path_open_api}/timesheet/check-in?eventId=${eventId}`;
-          }
-          const checkInQRCode = await QRCode.toDataURL(checkInUrl);
-          const checkInDataURL = await this.fileService.uploadFile(
-            {
-              fileName: `${eventId}_checkin.png`,
-              fileType: 'image/png',
-              fileBuffer: Buffer.from(checkInQRCode.split(',')[1], 'base64'),
-            },
-            'checkInQRCode',
-          );
-          const checkInQrResult = await this.eventRepository.update(
-            { id: eventId },
-            { checkInQRCode: checkInDataURL['downloadUrl'] },
-          );
-          return checkInQrResult.affected > 0
-            ? checkInDataURL['downloadUrl']
-            : 'Has Error';
-          break;
-
-        case 'CHECK-OUT':
-          const checkOutQRCode = await QRCode.toDataURL(eventId);
-          const checkOutDataURL = await this.fileService.uploadFile(
-            {
-              fileName: `${eventId}_checkout.png`,
-              fileType: 'image/png',
-              fileBuffer: Buffer.from(checkOutQRCode.split(',')[1], 'base64'),
-            },
-            'checkOutQRCode',
-          );
-          const checkOutQrResult = await this.eventRepository.update(
-            { id: eventId },
-            { checkOutQRCode: checkOutDataURL['downloadUrl'] },
-          );
-          return checkOutQrResult.affected > 0
-            ? checkInDataURL['downloadUrl']
-            : 'Has Error';
-          break;
-      }
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
-
-  async getQrCheckIn(eventId: string): Promise<string> {
-    try {
-      const event = await this.findOne({
-        where: { id: eventId },
-      });
-      if (!event) {
-        throw new NotFoundException('Event not found');
-      }
-      return event.checkInQRCode;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

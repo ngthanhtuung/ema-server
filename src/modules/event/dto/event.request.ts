@@ -48,6 +48,11 @@ export class EventCreateRequest {
   @IsArray()
   @ApiProperty({ default: [] })
   divisionId: Array<string>;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  eventTypeId: string;
 }
 
 export class EventAssignRequest {
