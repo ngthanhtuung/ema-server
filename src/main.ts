@@ -31,18 +31,16 @@ async function bootstrap(): Promise<void> {
   // end setup CORS
 
   // setup swagger
-  if (environment === 'dev') {
-    const config = new DocumentBuilder()
-      .setTitle('Human Resource for The Event Organizer System')
-      .setDescription(
-        'The Human Resource for The Event Organizer System API description',
-      )
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup(pathOpenApi, app, document);
-  }
+  const config = new DocumentBuilder()
+    .setTitle('Human Resource for The Event Organizer System')
+    .setDescription(
+      'The Human Resource for The Event Organizer System API description',
+    )
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup(pathOpenApi, app, document);
 
   // end seup swagger
 
