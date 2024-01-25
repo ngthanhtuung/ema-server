@@ -1,7 +1,8 @@
 export enum ERole {
-  MANAGER = 'MANAGER',
-  STAFF = 'STAFF',
-  EMPLOYEE = 'EMPLOYEE',
+  ADMIN = 'Administrator',
+  MANAGER = 'Quản Lý',
+  STAFF = 'Trưởng Nhóm',
+  EMPLOYEE = 'Nhân Viên',
 }
 
 export enum EGender {
@@ -92,4 +93,15 @@ export enum ERoleParticipant {
   ADMIN = 'ADMIN',
   MEMBER = 'MEMBER',
   MODERATOR = 'MODERATOR',
+}
+
+export enum EGroupSetting {
+  MAIL = 'MAIL',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum EContactInformation {
+  PENDING = 'PENDING',
+  ACCEPT = 'ACCEPTED',
+  REJECT = 'REJECTED',
 }

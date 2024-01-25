@@ -46,7 +46,7 @@ export class AuthGuard implements CanActivate {
         secret: jwtConstants.accessTokenSecret,
       });
 
-      const user = await this.userService.findById(payload.id);
+      const user = await this.userService.findByIdV2(payload.id);
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers

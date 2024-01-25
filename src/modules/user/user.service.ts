@@ -44,6 +44,7 @@ import { DivisionEntity } from '../division/division.entity';
 import * as moment from 'moment-timezone';
 import { TaskService } from '../task/task.service';
 import * as _ from 'lodash';
+import { RoleEntity } from '../roles/roles.entity';
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
@@ -74,10 +75,11 @@ export class UserService extends BaseService<UserEntity> {
 
     query
       .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+      .leftJoin('roles', 'roles', 'roles.id = users.roleId')
       .where('users.email = :email', { email });
 
     query
-      .select('profiles.role as role')
+      .select('roles.roleName as role')
       .addSelect([
         'users.id as id',
         'users.password as password',
@@ -102,10 +104,11 @@ export class UserService extends BaseService<UserEntity> {
     const query = this.generalBuilderUser();
     query
       .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+      .leftJoin('roles', 'roles', 'users.roleId = roles.id')
       .where('users.id = :id', { id });
 
     query
-      .select('profiles.role as role')
+      .select('roles.roleName as role')
       .addSelect([
         'users.id as id',
         'users.email as email',
@@ -118,6 +121,7 @@ export class UserService extends BaseService<UserEntity> {
       ]);
 
     const data = await query.execute();
+    console.log('Data after query: ', data);
     return plainToClass(PayloadUser, data[0]);
   }
 
@@ -133,9 +137,10 @@ export class UserService extends BaseService<UserEntity> {
       query
         .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
+        .leftJoin('roles', 'roles', 'users.roleId = roles.id')
         .where('users.id = :id', { id });
       query
-        .select('profiles.role as role')
+        .select('roles.roleName as role')
         .addSelect([
           'users.id as id',
           'profiles.fullName as fullName',
@@ -246,6 +251,9 @@ export class UserService extends BaseService<UserEntity> {
         where: { id: userCreateRequest.divisionId },
       });
 
+      const role = await queryRunner.manager.findOne(RoleEntity, {
+        where: { id: userCreateRequest.roleId },
+      });
       if (!division) {
         throw new BadRequestException(
           DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
@@ -256,9 +264,10 @@ export class UserService extends BaseService<UserEntity> {
         email,
         password,
         division,
+        role,
         typeEmployee: typeEmployee,
       });
-      if (profile.role === ERole.STAFF) {
+      if (role.roleName === ERole.STAFF) {
         await queryRunner.manager.update(
           DivisionEntity,
           {
@@ -469,6 +478,10 @@ export class UserService extends BaseService<UserEntity> {
         where: { id: data.divisionId },
       });
 
+      const role = await queryRunner.manager.findOne(RoleEntity, {
+        where: { id: data.roleId },
+      });
+
       if (!division) {
         throw new BadRequestException(
           DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
@@ -514,7 +527,6 @@ export class UserService extends BaseService<UserEntity> {
             gender: data.gender,
             address: data.address,
             avatar: data.avatar,
-            role: data.role,
           },
         );
         const divisionFilterStaff = await queryRunner.manager.findOne(
@@ -532,7 +544,7 @@ export class UserService extends BaseService<UserEntity> {
             },
           );
         }
-        if (data.role === ERole.STAFF) {
+        if (role.roleName === ERole.STAFF) {
           await queryRunner.manager.update(
             DivisionEntity,
             { id: division.id },
@@ -625,6 +637,10 @@ export class UserService extends BaseService<UserEntity> {
         where: { id: userCreateRequest.divisionId },
       });
 
+      const role = await queryRunner.manager.findOne(RoleEntity, {
+        where: { id: userCreateRequest.roleId },
+      });
+
       if (!division) {
         throw new BadRequestException(
           DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
@@ -638,7 +654,7 @@ export class UserService extends BaseService<UserEntity> {
         typeEmployee: typeEmployee,
         status: EUserStatus.INACTIVE,
       });
-      if (profile.role === ERole.STAFF) {
+      if (role.roleName === ERole.STAFF) {
         await queryRunner.manager.update(
           DivisionEntity,
           {

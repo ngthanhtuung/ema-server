@@ -1,6 +1,12 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 import * as moment from 'moment';
 import {
   EGender,
@@ -49,9 +55,9 @@ export class UserCreateRequest {
   @ApiProperty({})
   divisionId: string;
 
-  @ApiProperty({ default: ERole.EMPLOYEE, enum: ERole })
-  @IsEnum(ERole)
-  role: ERole;
+  @IsString()
+  @ApiProperty()
+  roleId: string;
 
   @ApiProperty({ default: ETypeEmployee.FULL_TIME, enum: ETypeEmployee })
   @IsEnum(ETypeEmployee)
@@ -65,7 +71,7 @@ export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
   'nationalId',
   'gender',
   'divisionId',
-  'role',
+  'roleId',
   'typeEmployee',
 ]) {}
 

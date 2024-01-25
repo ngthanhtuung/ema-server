@@ -47,7 +47,8 @@ export class MailService {
         ?.replace('${password}', password);
       console.info('htmlMail:', htmlMail);
       const data = {
-        from: 'HREA System <hreasytems.event@gmail.com>',
+        // from: 'EMA System <hreasytems.event@gmail.com>',
+        from: 'EMA System <ema.event@gmail.com>',
         to: [toUser],
         subject: mailData?.mailTitle,
         html: htmlMail,
@@ -83,7 +84,7 @@ export class MailService {
         ?.replace('${code}', code);
       console.info('htmlMail:', htmlMail);
       const data = {
-        from: 'HREA System <hreasytems.event@gmail.com>',
+        from: 'EMA System <ema.event@gmail.com>',
         to: [toUser],
         subject: mailData?.mailTitle,
         html: htmlMail,
