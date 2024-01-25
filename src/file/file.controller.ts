@@ -25,7 +25,7 @@ export class FileController {
       properties: {
         folderName: {
           type: 'enum',
-          enum: ['event', 'comment', 'avatar', 'task'],
+          enum: ['event', 'comment', 'avatar', 'task', 'contract'],
           default: 'avatar',
         },
         file: {
