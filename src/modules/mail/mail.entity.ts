@@ -11,6 +11,6 @@ export default class Mail {
   public mailTitle: string;
 
   @AutoMap()
-  @Column('nvarchar', { name: 'mailText', nullable: false, length: 500 })
+  @Column({ type: 'text', nullable: false })
   public mailText: string;
 }

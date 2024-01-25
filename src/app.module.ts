@@ -33,6 +33,8 @@ import { StatisticModule } from './modules/statistic/statistic.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RolesModule } from './modules/roles/roles.module';
 import { UserNotificationsModule } from './modules/user_notifications/user_notifications.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { CustomerContactsModule } from './modules/customer_contacts/customer_contacts.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -52,6 +54,8 @@ import { UserNotificationsModule } from './modules/user_notifications/user_notif
       signOptions: { expiresIn: '1d' },
     }),
     AuthenticationModule,
+    SettingsModule,
+    CustomerContactsModule,
     ProfileModule,
     UserModule,
     DivisionModule,

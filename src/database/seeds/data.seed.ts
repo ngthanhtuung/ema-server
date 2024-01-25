@@ -18,6 +18,14 @@ export class DataSeed implements Seeder {
     const hashPassword = await bcrypt.hash(defaultPassword, salt);
 
     // //Create role
+    const adminRole = await connection
+      .createQueryBuilder()
+      .insert()
+      .into(RoleEntity)
+      .values({
+        roleName: 'Administrator',
+      })
+      .execute();
     const managerRole = await connection
       .createQueryBuilder()
       .insert()
@@ -101,7 +109,7 @@ export class DataSeed implements Seeder {
       })
       .execute();
 
-    const manager2 = await connection
+    const admin = await connection
       .createQueryBuilder()
       .insert()
       .into(UserEntity)
@@ -109,7 +117,7 @@ export class DataSeed implements Seeder {
         email: 'tungnt16092001@gmail.com',
         password: hashPassword,
         role: {
-          id: managerRole['identifiers'][0]['id'],
+          id: adminRole['identifiers'][0]['id'],
         },
       })
       .execute();
@@ -119,7 +127,7 @@ export class DataSeed implements Seeder {
       .into(ProfileEntity)
       .values({
         fullName: 'Nguyen Thanh Tung',
-        profileId: manager2['identifiers'][0]['id'],
+        profileId: admin['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
@@ -249,29 +257,31 @@ export class DataSeed implements Seeder {
     // }
     // const mailTextId1 =
     //   '<p>Welcome to the HREA System, your account is: </p><strong>Email: </strong> ${email} <br><strong>Password: </strong> ${password}';
-    // const mailTitleId1 = 'Chào mừng tới hệ thống HREA';
-    // const mailTextId2 =
-    //   '<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;"> <h2>Xác Nhận Mã</h2> <p>Xin chào,</p> <p>Dưới đây là mã xác nhận của tên đăng nhập ${email}:</p> <h3 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">${code}</h3> <p>Vui lòng sử dụng mã này để hoàn tất quá trình xác thực.</p> <p>Lưu ý mã này chỉ có thời hạn 10 phút.</p> <p>Trân trọng,</p> <p>Đội ngũ hỗ trợ của chúng tôi( HREA System)</p> </div>';
-    // const mailTitleId2 = 'Yêu cầu Đặt Lại Mật Khẩu';
-    // await connection
-    //   .createQueryBuilder()
-    //   .insert()
-    //   .into(Mail)
-    //   .values({
-    //     id: 1,
-    //     mailTitle: mailTitleId1,
-    //     mailText: mailTextId1,
-    //   })
-    //   .execute();
-    // await connection
-    //   .createQueryBuilder()
-    //   .insert()
-    //   .into(Mail)
-    //   .values({
-    //     id: 2,
-    //     mailTitle: mailTitleId2,
-    //     mailText: mailTextId2,
-    //   })
-    //   .execute();
+    const mailTextId1 =
+      '<p>Ch&agrave;o mừng bạn đến với hệ thống EMA, dưới đ&acirc;y l&agrave; t&agrave;i khoản đăng nhập v&agrave;o hệ thống.</p>\n<table border="1" cellpadding="1" cellspacing="1" style="width:378px">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Username/Email</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${email}</strong></span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Password</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${password}</strong></span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n<p><strong>Lưu &yacute;:&nbsp;</strong>Khi đăng nhập lần đầu ti&ecirc;n v&agrave;o hệ thống, xin vui l&ograve;ng đổi mật khẩu.</p>\n<p>Đội ngũ hỗ trợ của ch&uacute;ng t&ocirc;i (EMA System).</p>\n<p>&nbsp;</p>';
+    const mailTitleId1 = 'EMA - Tài khoản đăng nhập hệ thống';
+    const mailTextId2 =
+      '<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;"> <h2>Xác Nhận Mã</h2> <p>Xin chào,</p> <p>Dưới đây là mã xác nhận của tên đăng nhập ${email}:</p> <h3 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">${code}</h3> <p>Vui lòng sử dụng mã này để hoàn tất quá trình xác thực.</p> <p>Lưu ý mã này chỉ có thời hạn 10 phút.</p> <p>Trân trọng,</p> <p>Đội ngũ hỗ trợ của chúng tôi( HREA System)</p> </div>';
+    const mailTitleId2 = 'Yêu cầu Đặt Lại Mật Khẩu';
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(Mail)
+      .values({
+        id: 1,
+        mailTitle: mailTitleId1,
+        mailText: mailTextId1,
+      })
+      .execute();
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(Mail)
+      .values({
+        id: 2,
+        mailTitle: mailTitleId2,
+        mailText: mailTextId2,
+      })
+      .execute();
   }
 }
