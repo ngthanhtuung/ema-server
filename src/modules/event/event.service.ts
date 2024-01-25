@@ -253,9 +253,9 @@ export class EventService extends BaseService<EventEntity> {
             coverUrl: event.coverUrl,
             estBudget: event.estBudget,
             updatedBy: user.id,
-            // updatedAt: moment()
-            //   .tz('Asia/Ho_Chi_Minh')
-            //   .format('YYYY-MM-DD HH:mm:ss'),
+            updatedAt: moment()
+              .tz('Asia/Ho_Chi_Minh')
+              .format('YYYY-MM-DD HH:mm:ss'),
           },
         );
         const dataEditDivision: EventAssignRequest = {
