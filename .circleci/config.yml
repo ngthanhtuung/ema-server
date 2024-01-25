@@ -42,7 +42,6 @@ jobs:
           color: '438476'
           mentions: everyone
           message: Mới build xong, mấy anh iu chờ xíu nữa là nó lên tới server
-          sound: 'alarm'
           webhook: $WEB_HOOK
   deploy:
     executor: docker/docker
