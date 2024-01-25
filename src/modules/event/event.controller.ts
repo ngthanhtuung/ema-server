@@ -103,8 +103,9 @@ export class EventController {
   @Roles(ERole.MANAGER)
   async createEvent(
     @Body() data: EventCreateRequest,
+    @GetUser() user: string,
   ): Promise<string | undefined> {
-    return await this.eventService.createEvent(data);
+    return await this.eventService.createEvent(data, JSON.parse(user));
   }
 
   /**
@@ -127,8 +128,9 @@ export class EventController {
   async updateEvent(
     @Param('eventId') eventId: string,
     @Body() data: EventUpdateRequest,
+    @GetUser() user: string,
   ): Promise<string | undefined> {
-    return await this.eventService.updateEvent(eventId, data);
+    return await this.eventService.updateEvent(eventId, data, JSON.parse(user));
   }
 
   @Put('/:eventId/:status')
@@ -139,26 +141,5 @@ export class EventController {
     @Param('status') status: EEventStatus,
   ): Promise<string> {
     return await this.eventService.updateEventStatus(eventId, status);
-  }
-
-  @Get('/check-in/qr/:eventId')
-  async getQRCheckIn(@Param('eventId') eventId: string): Promise<string> {
-    return await this.eventService.getQrCheckIn(eventId);
-  }
-
-  @Post('/check-in/qr/:eventId')
-  @Roles(ERole.MANAGER, ERole.STAFF)
-  async generateCheckInQrCode(
-    @Param('eventId') eventId: string,
-  ): Promise<string> {
-    return await this.eventService.generateQRCode(eventId, 'CHECK-IN');
-  }
-
-  @Post('/check-out/qr/:eventId')
-  @Roles(ERole.MANAGER, ERole.STAFF)
-  async generateCheckoutQrCode(
-    @Param('eventId') eventId: string,
-  ): Promise<string> {
-    return await this.eventService.generateQRCode(eventId, 'CHECK-OUT');
   }
 }

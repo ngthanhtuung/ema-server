@@ -1,5 +1,12 @@
 import { TaskEntity } from './../task/task.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  UpdateDateColumn,
+} from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
@@ -7,6 +14,8 @@ import { FeedbackEntity } from '../feedbacks/feedbacks.entity';
 import { ContractEntity } from '../contracts/contracts.entity';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { ItemEntity } from '../items/items.entity';
+import { Transform } from 'class-transformer';
+import moment from 'moment';
 
 @Entity({ name: 'events' })
 export class EventEntity extends BaseEntity {
@@ -25,6 +34,9 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   location: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  meetingUrl: string;
+
   @Column({ type: 'varchar', length: 15000 })
   description: string;
 
@@ -33,12 +45,6 @@ export class EventEntity extends BaseEntity {
 
   @Column({ type: 'float' })
   estBudget: number;
-
-  @Column({ type: 'text', nullable: true })
-  checkInQRCode: string;
-
-  @Column({ type: 'text', nullable: true })
-  checkOutQRCode: string;
 
   @Column({ type: 'boolean', default: false })
   isTemplate: boolean;
@@ -49,6 +55,24 @@ export class EventEntity extends BaseEntity {
     default: EEventStatus.PENDING,
   })
   status: EEventStatus;
+
+  @CreateDateColumn()
+  @Transform(({ value }) => {
+    return moment(value).format('YYYY-MM-DD HH:mm:ss');
+  })
+  public createdAt: Date;
+
+  @Column({ type: 'varchar', nullable: false })
+  createdBy: string;
+
+  @UpdateDateColumn()
+  @Transform(({ value }) => {
+    return moment(value).format('YYYY-MM-DD HH:mm:ss');
+  })
+  updatedAt: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  updatedBy: string;
 
   // @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
   // tasks: TaskEntity[];
