@@ -35,6 +35,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { UserNotificationsModule } from './modules/user_notifications/user_notifications.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { CustomerContactsModule } from './modules/customer_contacts/customer_contacts.module';
+import { EventTypesModule } from './modules/event_types/event_types.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -56,9 +57,11 @@ import { CustomerContactsModule } from './modules/customer_contacts/customer_con
     AuthenticationModule,
     SettingsModule,
     CustomerContactsModule,
-    ProfileModule,
     UserModule,
+    ProfileModule,
+    RolesModule,
     DivisionModule,
+    EventTypesModule,
     EventModule,
     AssignEventModule,
     TaskModule,

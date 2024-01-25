@@ -105,3 +105,13 @@ export enum EContactInformation {
   ACCEPT = 'ACCEPTED',
   REJECT = 'REJECTED',
 }
+
+export enum EFileType {
+  PDF = 'PDF',
+  DOC = 'DOC',
+  DOCX = 'DOCX',
+  XLS = 'XLS',
+  XLSX = 'XLSX',
+  PPT = 'PPT',
+  PPTX = 'PPTX',
+}
