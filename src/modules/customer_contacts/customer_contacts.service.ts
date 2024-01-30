@@ -1,14 +1,12 @@
-import { OmitType } from '@nestjs/swagger';
-import { messaging } from 'firebase-admin';
 import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
 import { CustomerContactEntity } from './customer_contacts.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
   CustomerContactRequest,
   FilterCustomerContact,
@@ -20,6 +18,8 @@ import { EContactInformation, ERole } from 'src/common/enum/enum';
 import { UserEntity } from '../user/user.entity';
 import * as moment from 'moment-timezone';
 import { UserService } from '../user/user.service';
+import { EventTypeEntity } from '../event_types/event_types.entity';
+import { EventTypesService } from '../event_types/event_types.service';
 
 @Injectable()
 export class CustomerContactsService {
@@ -27,12 +27,21 @@ export class CustomerContactsService {
     @InjectRepository(CustomerContactEntity)
     private readonly customerContactRepository: Repository<CustomerContactEntity>,
     private userService: UserService,
+    @InjectDataSource()
+    private dataSource: DataSource,
+    private eventTypeService: EventTypesService,
   ) {}
 
   private generalBuilderContacts(): SelectQueryBuilder<CustomerContactEntity> {
     return this.customerContactRepository.createQueryBuilder('contacts');
   }
 
+  /**
+   * Get all contacts
+   * @param contactPagination
+   * @param filter
+   * @param user
+   */
   async getAllContacts(
     contactPagination: CustomerContactPagination,
     filter: FilterCustomerContact,
@@ -48,7 +57,9 @@ export class CustomerContactsService {
         'contacts.fullName as fullName',
         'contacts.email as email',
         'contacts.phoneNumber as phoneNumber',
+        'contacts.address as address',
         'contacts.note as note',
+        'contacts.eventTypeId as eventType',
         'contacts.processedBy as processedBy',
         'contacts.createdAt as createdAt',
         'contacts.status as status',
@@ -73,6 +84,8 @@ export class CustomerContactsService {
           .execute(),
         query.getCount(),
       ]);
+
+      console.log('Result: ', result);
       const contactsWithUserDetails = await Promise.all(
         result.map(async (contact) => {
           if (contact.processedBy) {
@@ -93,8 +106,25 @@ export class CustomerContactsService {
           return contact;
         }),
       );
+
+      console.log('ContactwithUserDetails: ', contactsWithUserDetails);
+      const contactsWithEventTypes = await Promise.all(
+        contactsWithUserDetails.map(async (contact) => {
+          if (contact.eventType) {
+            const eventTypeDetails = await this.eventTypeService.findById(
+              contact.eventType,
+            );
+            const eventType = {
+              id: eventTypeDetails.id,
+              typeName: eventTypeDetails.typeName,
+            };
+            return { ...contact, eventType };
+          }
+          return contact;
+        }),
+      );
       return paginateResponse<unknown>(
-        [contactsWithUserDetails, total],
+        [contactsWithEventTypes, total],
         currentPage as number,
         sizePage as number,
       );
@@ -102,15 +132,29 @@ export class CustomerContactsService {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  /**
+   * @param contact
+   * @returns
+   */
   async leaveMessage(
     contact: CustomerContactRequest,
   ): Promise<string | undefined> {
     try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
+        where: { id: contact.eventTypeId },
+      });
+      if (!eventType) {
+        throw new NotFoundException('Event type not found, please try again');
+      }
       const data = await this.customerContactRepository.save({
         fullName: contact.fullName,
+        address: contact.address,
         email: contact.email,
         phoneNumber: contact.phoneNumber,
         note: contact.note,
+        eventType: eventType,
       });
       if (data) {
         return 'Leave message successfully';
@@ -121,6 +165,14 @@ export class CustomerContactsService {
     }
   }
 
+  /**
+   *
+   * @param user
+   * @param contactId
+   * @param status
+   * @param rejectNote
+   * @returns
+   */
   async updateStatus(
     user: UserEntity,
     contactId: string,

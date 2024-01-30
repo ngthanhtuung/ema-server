@@ -1,3 +1,4 @@
+import { CustomerContactEntity } from './../customer_contacts/customer_contacts.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { EventEntity } from '../event/event.entity';
@@ -9,4 +10,10 @@ export class EventTypeEntity extends BaseEntity {
 
   @OneToMany(() => EventEntity, (event) => event.eventType)
   events: EventEntity[];
+
+  @OneToMany(
+    () => CustomerContactEntity,
+    (customerContact) => customerContact.eventType,
+  )
+  customerContacts: CustomerContactEntity[];
 }
