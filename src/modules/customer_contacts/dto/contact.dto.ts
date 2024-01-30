@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -15,19 +16,41 @@ import { CustomerContactEntity } from '../customer_contacts.entity';
 
 export class CustomerContactRequest {
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+    default: 'Nguyễn Văn A',
+  })
   fullName: string;
 
+  @IsString()
+  @ApiProperty({
+    required: true,
+    default: 'Nhà Văn Hóa Sinh Viên ĐHQG TPHCM',
+  })
+  address: string;
+
   @IsEmail()
-  @ApiProperty()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: 'nguyenvana@gmail.com',
+  })
   email: string;
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+    default: '0123456789',
+  })
   phoneNumber: string;
 
   @ApiProperty()
   note: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  eventTypeId: string;
 }
 
 export class ProcessBy {

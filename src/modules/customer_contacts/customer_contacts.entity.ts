@@ -1,19 +1,27 @@
-import { Column, CreateDateColumn, Entity, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { Transform } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import { EContactInformation } from 'src/common/enum/enum';
+import { EventTypeEntity } from '../event_types/event_types.entity';
 
 @Entity({ name: 'customer_contacts' })
 export class CustomerContactEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   fullName: string;
+
   @Column({ type: 'varchar', nullable: false })
   email: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  address: string;
+
   @Column({ type: 'varchar', nullable: false })
   phoneNumber: string;
+
   @Column({ type: 'varchar', nullable: true })
   note: string;
+
   @Column({ type: 'varchar', nullable: true })
   processedBy: string;
 
@@ -38,4 +46,7 @@ export class CustomerContactEntity extends BaseEntity {
     default: EContactInformation.PENDING,
   })
   status: EContactInformation;
+
+  @ManyToOne(() => EventTypeEntity, (eventType) => eventType.customerContacts)
+  eventType: EventTypeEntity;
 }

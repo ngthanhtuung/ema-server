@@ -1,10 +1,8 @@
 import { EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
