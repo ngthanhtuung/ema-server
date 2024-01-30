@@ -19,3 +19,11 @@ export class DivisionUpdateRequest extends DivisionCreateRequest {
   })
   status: boolean;
 }
+
+// customerName: string;
+// customerNationalId: string;
+// customerEmail: string;
+// customerPhoneNumber: string;
+// contractValue: number;
+// paymentMethod: string;
+// paymentDate: string;

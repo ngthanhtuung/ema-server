@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Post, Query, Put } from '@nestjs/common';
 import { EventService } from './event.service';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { EventResponse } from './dto/event.response';
-import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import {
   EventAssignRequest,
   EventCreateRequest,
