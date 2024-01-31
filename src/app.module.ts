@@ -78,6 +78,7 @@ import { ContractsModule } from './modules/contracts/contracts.module';
     StatisticModule,
     RolesModule,
     UserNotificationsModule,
+    SharedModule,
   ],
   controllers: [AppController],
   providers: [

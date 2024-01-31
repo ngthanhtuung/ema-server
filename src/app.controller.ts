@@ -14,6 +14,7 @@ import { Public } from './decorators/public.decorator';
 import * as firebaseAdmin from 'firebase-admin';
 import { AuthService } from './auth/auth.service';
 import { LoginGoogleRequest } from './auth/dto/login.dto';
+import { SharedService } from './shared/shared.service';
 
 @Controller()
 @ApiTags('TESTING API')
@@ -22,13 +23,10 @@ export class AppController {
     private readonly appService: AppService,
     private readonly firebaseMessageService: FirebaseMessageService,
     private readonly authService: AuthService,
+    private readonly sharedService: SharedService,
   ) {}
 
   @Post('/test-notification')
-  // @ApiBody({
-  //   type: String,
-  //   isArray: true,
-  // })
   @Public()
   async testNotification(
     @Body() deviceToken: string[],
