@@ -19,7 +19,6 @@ import {
 import { CustomerContactsService } from './customer_contacts.service';
 import {
   CustomerContactRequest,
-  CustomerContactResponse,
   FilterCustomerContact,
   RejectNote,
 } from './dto/contact.dto';

@@ -47,7 +47,6 @@ export class CustomerContactsService {
     filter: FilterCustomerContact,
     user: UserEntity,
   ): Promise<IPaginateResponse<unknown> | undefined> {
-    console.log('User Login: ', user);
     try {
       const { currentPage, sizePage } = contactPagination;
       const { sortProperty, sort, status } = filter;
@@ -84,8 +83,6 @@ export class CustomerContactsService {
           .execute(),
         query.getCount(),
       ]);
-
-      console.log('Result: ', result);
       const contactsWithUserDetails = await Promise.all(
         result.map(async (contact) => {
           if (contact.processedBy) {
@@ -106,8 +103,6 @@ export class CustomerContactsService {
           return contact;
         }),
       );
-
-      console.log('ContactwithUserDetails: ', contactsWithUserDetails);
       const contactsWithEventTypes = await Promise.all(
         contactsWithUserDetails.map(async (contact) => {
           if (contact.eventType) {

@@ -18,6 +18,7 @@ export enum EUserStatus {
 export enum EEventStatus {
   ALL = 'ALL',
   PENDING = 'PENDING',
+  PREPARING = 'PREPARING',
   PROCESSING = 'PROCESSING',
   DONE = 'DONE',
   CANCEL = 'CANCEL',
@@ -114,4 +115,9 @@ export enum EFileType {
   XLSX = 'XLSX',
   PPT = 'PPT',
   PPTX = 'PPTX',
+}
+
+export enum EContractPaymentMethod {
+  CASH = 'Tiền Mặt',
+  TRANSFER = 'Chuyển Khoản',
 }

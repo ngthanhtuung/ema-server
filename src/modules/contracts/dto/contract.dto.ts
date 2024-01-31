@@ -23,6 +23,14 @@ export class ContractCreateRequest {
   @IsNotEmpty()
   @ApiProperty({
     required: true,
+    default: 'Thành Phố Thủ Dầu Một, Bình Dương',
+  })
+  customerAddress: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
     default: 'nguyenvana@gmail.com',
   })
   customerEmail: string;
@@ -35,12 +43,13 @@ export class ContractCreateRequest {
   })
   customerPhoneNumber: string;
 
-  @IsNumberString()
+  @IsString()
+  @IsNotEmpty()
   @ApiProperty({
     required: true,
-    default: 10000000,
+    default: '10000000',
   })
-  contractValue: number;
+  contractValue: string;
 
   @IsString()
   @IsNotEmpty()

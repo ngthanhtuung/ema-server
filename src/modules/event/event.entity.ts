@@ -15,7 +15,7 @@ import { ContractEntity } from '../contracts/contracts.entity';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { ItemEntity } from '../items/items.entity';
 import { Transform } from 'class-transformer';
-import moment from 'moment';
+import * as moment from 'moment-timezone';
 
 @Entity({ name: 'events' })
 export class EventEntity extends BaseEntity {
@@ -58,7 +58,7 @@ export class EventEntity extends BaseEntity {
 
   @CreateDateColumn()
   @Transform(({ value }) => {
-    return moment(value).format('YYYY-MM-DD HH:mm:ss');
+    return moment(value).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
   })
   public createdAt: Date;
 
@@ -67,7 +67,7 @@ export class EventEntity extends BaseEntity {
 
   @UpdateDateColumn()
   @Transform(({ value }) => {
-    return moment(value).format('YYYY-MM-DD HH:mm:ss');
+    return moment(value).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
   })
   updatedAt: Date;
 

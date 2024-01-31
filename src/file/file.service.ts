@@ -9,15 +9,23 @@ import { FileRequest } from './dto/file.request';
 
 @Injectable()
 export class FileService {
-  async uploadFile(data: FileRequest, folderName: string): Promise<object> {
+  async uploadFile(
+    data: FileRequest,
+    folderName: string,
+    customizeFileName?: string,
+  ): Promise<object> {
     try {
-      if (parseInt(data.fileSize) > 10 * 1024 * 1024) {
-        throw new BadRequestException('File is less than 10MB');
+      const errorMessage = await this.checkFileSize(10, data);
+      if (errorMessage) {
+        throw new BadRequestException(errorMessage);
       }
       const bucket = firebaseAdmin.storage().bucket();
-      const uniqueFileName = uuidv4();
+      let uniqueFileName;
+      if (!customizeFileName) {
+        uniqueFileName = uuidv4();
+      }
+      uniqueFileName = customizeFileName;
       const filePath = `${folderName}/${uniqueFileName}`;
-      console.log('FilePath: ', filePath);
       const file = bucket.file(filePath);
       await file.save(data.fileBuffer, {
         metadata: {
@@ -28,9 +36,8 @@ export class FileService {
         action: 'read',
         expires: '2030-01-01',
       });
-      console.log('Code is running here');
       const fileDownload = {
-        fileName: data.fileName,
+        fileName: uniqueFileName,
         fileType: data.fileType,
         fileSize: data.fileSize,
         downloadUrl: downloadUrl[0],
@@ -38,6 +45,19 @@ export class FileService {
       return fileDownload;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async checkFileSize(
+    limitFileSize: number,
+    fileCheck: FileRequest,
+  ): Promise<string | boolean> {
+    try {
+      if (parseInt(fileCheck.fileSize) > limitFileSize * 1024 * 1024) {
+        return `File size is too large, please try again with file size less than ${limitFileSize} MB`;
+      }
+    } catch (err) {
+      return undefined;
     }
   }
 }

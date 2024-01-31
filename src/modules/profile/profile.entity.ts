@@ -7,9 +7,6 @@ export class ProfileEntity {
   @PrimaryColumn()
   profileId: string;
 
-  @Column({ enum: ERole, type: 'enum' })
-  role: ERole;
-
   @Column({ type: 'varchar', length: 255 })
   fullName: string;
 
@@ -34,7 +31,6 @@ export class ProfileEntity {
   @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  // @JoinColumn({ name: 'id' })
   @JoinColumn({ name: 'profileId' })
   user: UserEntity;
 }

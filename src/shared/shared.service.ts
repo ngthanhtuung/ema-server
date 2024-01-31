@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/modules/mail/mail.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class SharedService {
@@ -118,6 +119,128 @@ export class SharedService {
       return false;
     } catch (err) {
       return false;
+    }
+  }
+
+  private convertGroupToWords(group: number): string {
+    const digits: string[] = [
+      'không',
+      'một',
+      'hai',
+      'ba',
+      'bốn',
+      'năm',
+      'sáu',
+      'bảy',
+      'tám',
+      'chín',
+    ];
+    const words: string[] = [];
+
+    const hundreds = Math.floor(group / 100);
+    if (hundreds > 0) {
+      words.push(digits[hundreds] + ' trăm');
+    }
+
+    const tens = group % 100;
+    if (tens > 0) {
+      if (tens < 10) {
+        words.push(digits[tens]);
+      } else if (tens < 20) {
+        words.push('mười ' + digits[tens % 10]);
+      } else {
+        words.push(digits[Math.floor(tens / 10)] + ' mươi');
+        if (tens % 10 > 0) {
+          words.push(digits[tens % 10]);
+        }
+      }
+    }
+    const result = words.join(' ');
+    return result.charAt(0).toUpperCase();
+  }
+
+  public async moneyToWord(amount: number): Promise<string | undefined> {
+    const units: string[] = ['', 'nghìn', 'triệu', 'tỷ'];
+    try {
+      if (amount === 0) {
+        return 'Không đồng';
+      }
+
+      const words: string[] = [];
+      let unitIndex = 0;
+
+      while (amount > 0) {
+        const group = amount % 1000;
+        if (group > 0) {
+          words.unshift(
+            this.convertGroupToWords(group) + ' ' + units[unitIndex],
+          );
+        }
+
+        amount = Math.floor(amount / 1000);
+        unitIndex++;
+      }
+
+      return words.join(' ').trim() + ' đồng';
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  public async formattedCurrency(amount: number): Promise<string | undefined> {
+    try {
+      const formattedAmount = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+      }).format(amount);
+      return formattedAmount;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  public async calculateDuration(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<string | undefined> {
+    try {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      // Calculate the difference in milliseconds
+      const durationInMs = end.getTime() - start.getTime();
+
+      // Convert milliseconds to days, hours, minutes, and seconds
+      const days = Math.floor(durationInMs / (24 * 60 * 60 * 1000));
+      // Format the result
+      const durationString = `${days} ngày`;
+      return durationString;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  public async formatDateToString(
+    date: Date,
+    format: string,
+  ): Promise<string | undefined> {
+    try {
+      return moment(date).format(format);
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  public async generateContractCode(): Promise<string | undefined> {
+    try {
+      const randomPart = Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+      const contractCode = `#C-${randomPart}`;
+
+      return contractCode;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }
