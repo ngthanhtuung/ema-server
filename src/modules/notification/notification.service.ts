@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -7,14 +8,17 @@ import { NotificationEntity } from './notification.entity';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { QueryNotificationDto } from './dto/query-notification.dto';
-import { NotificationResponse } from './dto/notification.response';
-import { plainToInstance } from 'class-transformer';
-import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
+import { IPaginateResponse } from '../base/filter.pagination';
 import { BaseService } from '../base/base.service';
 import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
 import * as firebaseAdmin from 'firebase-admin';
+import { FirebaseMessageService } from 'src/providers/firebase/message/firebase-message.service';
+import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
+import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/firebase-notification.dto';
+import { DeviceService } from '../device/device.service';
+import { UserNotificationsService } from '../user_notifications/user_notifications.service';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
@@ -23,6 +27,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
     protected readonly userService: UserService,
     @InjectDataSource()
     private dataSource: DataSource,
+    private readonly firebaseCustomService: FirebaseMessageService,
+    private readonly deviceService: DeviceService,
+    private readonly userNotificationService: UserNotificationsService,
   ) {
     super(notificationRepository);
   }
@@ -31,207 +38,202 @@ export class NotificationService extends BaseService<NotificationEntity> {
     return this.notificationRepository.createQueryBuilder('notifications');
   }
 
-  // async getMyNotifications(
-  //   userId: string,
-  //   pagination: QueryNotificationDto,
-  // ): Promise<IPaginateResponse<NotificationResponse[]>> {
-  //   try {
-  //     const { currentPage, sizePage } = pagination;
-  //     const query = this.generalBuilderNotification();
-  //     query.select([
-  //       'notifications.id as id',
-  //       'notifications.title as title',
-  //       'notifications.content as content',
-  //       'notifications.type as type',
-  //       'notifications.sender as sender',
-  //       'notifications.readFlag as readFlag',
-  //       'notifications.createdAt as createdAt',
-  //       'notifications.commonId as commonId',
-  //       'notifications.parentTaskId as parentTaskId',
-  //       'notifications.eventId as eventId',
-  //     ]);
-  //     query.where('notifications.userId = :userId', { userId: userId });
-  //     const [result, total] = await Promise.all([
-  //       query
-  //         .offset((sizePage as number) * ((currentPage as number) - 1))
-  //         .limit(sizePage as number)
-  //         .orderBy('notifications.createdAt', 'DESC')
-  //         .execute(),
-  //       query.getCount(),
-  //     ]);
-  //     const finalRes: NotificationResponse[] = [];
-  //     for (const item of result) {
-  //       const avatar = (await this.userService.findByIdV2(item?.sender))
-  //         ?.avatar;
-  //       item.createdAt = moment(item.createdAt)
-  //         .add(7, 'hours')
-  //         .format('YYYY-MM-DD HH:mm:ss');
-  //       const dataUserNotification = {
-  //         ...item,
-  //         avatarSender: avatar,
-  //       };
-  //       finalRes.push(dataUserNotification);
-  //     }
-  //     const data = plainToInstance(NotificationResponse, finalRes);
-  //     return paginateResponse<NotificationResponse[]>(
-  //       [data, total],
-  //       currentPage as number,
-  //       sizePage as number,
-  //     );
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  async getMyNotifications(
+    userId: string,
+    pagination: QueryNotificationDto,
+  ): Promise<IPaginateResponse<unknown>> {
+    try {
+      return await this.userNotificationService.getMyNotifications(
+        userId,
+        pagination,
+      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // /**
-  //  * seenNotification
-  //  * @param notificationId
-  //  * @returns
-  //  */
-  // async seenNotification(notificationId: string): Promise<string> {
-  //   try {
-  //     const notification = await this.findOne({
-  //       where: {
-  //         id: notificationId,
-  //       },
-  //     });
-  //     if (notification !== undefined) {
-  //       const result = await this.notificationRepository.update(
-  //         { id: notificationId },
-  //         { readFlag: true },
-  //       );
-  //       if (result.affected === 0) {
-  //         throw new InternalServerErrorException('Update failed');
-  //       }
-  //       return 'Notification read!';
-  //     }
-  //     throw new NotFoundException('Notification not found');
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  /**
+   * seenNotification
+   * @param notificationId
+   * @returns
+   */
+  async seenNotification(
+    notificationId: string,
+    userId: string,
+  ): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const notification = await queryRunner.manager.findOne(
+        UserNotificationsEntity,
+        {
+          where: { id: notificationId },
+          relations: ['user'],
+        },
+      );
+      if (notification.user.id !== userId) {
+        throw new BadRequestException('Your are not allowed to do this action');
+      }
+      const readNotification = await queryRunner.manager.update(
+        UserNotificationsEntity,
+        {
+          id: notificationId,
+        },
+        {
+          isRead: true,
+          readAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      );
+      if (readNotification.affected > 0) {
+        return 'Notification read!';
+      }
+      throw new NotFoundException('Notification not found');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // /**
-  //  * seenAllNotification
-  //  * @param userId
-  //  * @returns
-  //  */
-  // async seenAllNotification(userId: string): Promise<string> {
-  //   try {
-  //     const listNotification = await this.notificationRepository.find({
-  //       where: {
-  //         user: {
-  //           id: userId,
-  //         },
-  //       },
-  //     });
-  //     if (listNotification.length !== 0) {
-  //       const dataSeenAll = listNotification?.map((item) => {
-  //         return this.notificationRepository.update(
-  //           { id: item?.id },
-  //           { readFlag: true },
-  //         );
-  //       });
-  //       await Promise.all(dataSeenAll);
-  //     }
-  //     return 'Notification read!';
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  /**
+   * seenAllNotification
+   * @param userId
+   * @returns
+   */
+  async seenAllNotification(userId: string): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const readNotification = await queryRunner.manager.update(
+        UserNotificationsEntity,
+        {
+          user: { id: userId },
+        },
+        {
+          isRead: true,
+          readAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      );
+      if (readNotification.affected > 0) {
+        return 'Notification read all';
+      }
+      throw new NotFoundException('Notification not found');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // /**
-  //  * createNotification
-  //  * @param event
-  //  * @returns
-  //  */
-  // async createNotification(
-  //   notification: NotificationCreateRequest,
-  // ): Promise<unknown> {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   try {
-  //     await queryRunner.startTransaction();
-  //     const newNoti = await queryRunner.manager.insert(NotificationEntity, {
-  //       title: notification.title,
-  //       content: notification.content,
-  //       readFlag: false,
-  //       type: notification.type,
-  //       sender: notification.sender,
-  //       commonId: notification.commonId,
-  //       parentTaskId: notification.parentTaskId,
-  //       eventId: notification.eventId,
-  //       user: {
-  //         id: notification.userId,
-  //       },
-  //     });
-  //     await queryRunner.commitTransaction();
-  //     return newNoti;
-  //   } catch (err) {
-  //     await queryRunner.rollbackTransaction();
-  //     throw new InternalServerErrorException(err);
-  //   }
-  // }
+  /**
+   * createNotification
+   * @returns
+   */
+  async createNotification(
+    notification: NotificationCreateRequest,
+  ): Promise<unknown> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      await queryRunner.startTransaction();
+      const newNoti = await queryRunner.manager.insert(NotificationEntity, {
+        title: notification.title,
+        content: notification.content,
+        type: notification.type,
+      });
+      notification.userId?.map(async (user) => {
+        await queryRunner.manager.insert(UserNotificationsEntity, {
+          user: { id: user },
+          notification: { id: newNoti.identifiers[0].id },
+          createdAt: moment
+            .tz('Asia/Ho_Chi_Minh')
+            .format('YYYY-MM-DD HH:mm:ss'),
+        });
+      });
+      //Using firebase to push notification
+      const listDeviceTokens = await this.deviceService.getListDeviceTokens(
+        notification.userId,
+      );
+      const firebaseNotificationPayload: FirebaseNotificationRequest = {
+        title: notification.title,
+        body: notification.content,
+        deviceToken: listDeviceTokens,
+      };
+      await this.firebaseCustomService.sendCustomNotificationFirebase(
+        firebaseNotificationPayload,
+      );
+      await queryRunner.commitTransaction();
+      if (newNoti.raw.affectedRows > 0) {
+        return 'Create notification successfully!';
+      }
+      throw new InternalServerErrorException('Create notification failed!');
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(err);
+    }
+  }
 
-  // /**
-  //  *
-  //  * @param notificationId
-  //  * @param userId
-  //  * @returns
-  //  */
+  /**
+   *
+   * @param notificationId
+   * @param userId
+   * @returns
+   */
 
-  // async deleteNotificationById(
-  //   notificationId: string,
-  //   userId: string,
-  // ): Promise<string> {
-  //   try {
-  //     const notification = await this.findOne({
-  //       where: {
-  //         id: notificationId,
-  //         user: {
-  //           id: userId,
-  //         },
-  //       },
-  //     });
-  //     if (notification !== undefined) {
-  //       await this.notificationRepository.delete({
-  //         id: notificationId,
-  //       });
-  //       return 'Notification deleted!';
-  //     }
-  //     throw new NotFoundException('Notification not found');
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  async deleteNotificationById(
+    notificationId: string,
+    userId: string,
+  ): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const notification = await queryRunner.manager.findOne(
+        UserNotificationsEntity,
+        {
+          where: { id: notificationId },
+          relations: ['user'],
+        },
+      );
+      if (notification.user.id !== userId) {
+        throw new BadRequestException('Your are not allowed to do this action');
+      }
+      const deleteNotification = await queryRunner.manager.update(
+        UserNotificationsEntity,
+        {
+          id: notificationId,
+        },
+        {
+          isDelete: true,
+          deleteAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      );
+      if (deleteNotification.affected > 0) {
+        return 'Notification deleted!';
+      }
+      throw new NotFoundException('Notification not found');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // /**
-  //  * deleteAllNotification
-  //  * @param userId
-  //  * @returns
-  //  */
-  // async deleteAllNotification(userId: string): Promise<string> {
-  //   try {
-  //     const notification = await this.notificationRepository.find({
-  //       where: {
-  //         user: {
-  //           id: userId,
-  //         },
-  //       },
-  //     });
-  //     if (notification.length !== 0) {
-  //       const mapData = notification?.map((item) =>
-  //         this.notificationRepository.delete({
-  //           id: item?.id,
-  //         }),
-  //       );
-  //       await Promise.all(mapData);
-  //       return 'Notification deleted!';
-  //     }
-  //     throw new NotFoundException('Notification not found');
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  /**
+   * deleteAllNotification
+   * @param userId
+   * @returns
+   */
+  async deleteAllNotification(userId: string): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const deleteNotification = await queryRunner.manager.update(
+        UserNotificationsEntity,
+        {
+          user: { id: userId },
+        },
+        {
+          isDelete: true,
+          deleteAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      );
+      if (deleteNotification.affected > 0) {
+        return 'Notification deleted all';
+      }
+      throw new NotFoundException('Notification not found');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
   // /**
   //  *
