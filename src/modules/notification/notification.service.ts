@@ -13,12 +13,11 @@ import { BaseService } from '../base/base.service';
 import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
-import * as firebaseAdmin from 'firebase-admin';
 import { FirebaseMessageService } from 'src/providers/firebase/message/firebase-message.service';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
-import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/firebase-notification.dto';
 import { DeviceService } from '../device/device.service';
 import { UserNotificationsService } from '../user_notifications/user_notifications.service';
+import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/firebase-notification.dto';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
@@ -234,32 +233,4 @@ export class NotificationService extends BaseService<NotificationEntity> {
       throw new InternalServerErrorException(err.message);
     }
   }
-
-  // /**
-  //  *
-  //  * @param listDeviceToke
-  //  * @param title
-  //  * @param body
-  //  * @returns
-  //  */
-
-  // async pushNotificationFirebase(
-  //   listDeviceToken: string[],
-  //   title: string,
-  //   body: string,
-  // ): Promise<boolean> {
-  //   try {
-  //     const deviceTokenArray = listDeviceToken;
-  //     const result = firebaseAdmin.messaging().sendEachForMulticast({
-  //       tokens: deviceTokenArray,
-  //       notification: {
-  //         title: title,
-  //         body: body,
-  //       },
-  //     });
-  //     return true;
-  //   } catch (err) {
-  //     return false;
-  //   }
-  // }
 }
