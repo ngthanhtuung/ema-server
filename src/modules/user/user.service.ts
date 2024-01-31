@@ -580,9 +580,6 @@ export class UserService extends BaseService<UserEntity> {
               endDate: LessThanOrEqual(filter.endDate),
             },
           },
-          profile: {
-            role: ERole.EMPLOYEE,
-          },
         },
       });
       const listEmployee = await this.userRepository.find({
@@ -595,9 +592,6 @@ export class UserService extends BaseService<UserEntity> {
             divisionName: true,
             description: true,
           },
-        },
-        where: {
-          profile: { role: ERole.EMPLOYEE },
         },
         relations: {
           profile: true,

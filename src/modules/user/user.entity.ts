@@ -70,8 +70,7 @@ export class UserEntity extends BaseEntity {
   assignee: AssignTaskEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user)
-  @JoinColumn({ name: 'profileId' })
-  // @JoinColumn()
+  // @JoinColumn({ name: 'profileId' })
   profile: ProfileEntity;
 
   @ManyToOne(() => RoleEntity, (role) => role.users, {

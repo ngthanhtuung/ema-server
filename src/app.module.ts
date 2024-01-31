@@ -36,6 +36,7 @@ import { UserNotificationsModule } from './modules/user_notifications/user_notif
 import { SettingsModule } from './modules/settings/settings.module';
 import { CustomerContactsModule } from './modules/customer_contacts/customer_contacts.module';
 import { EventTypesModule } from './modules/event_types/event_types.module';
+import { ContractsModule } from './modules/contracts/contracts.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -63,6 +64,7 @@ import { EventTypesModule } from './modules/event_types/event_types.module';
     DivisionModule,
     EventTypesModule,
     EventModule,
+    ContractsModule,
     AssignEventModule,
     TaskModule,
     AssignTaskModule,

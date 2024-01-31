@@ -1,3 +1,4 @@
+import { messaging } from 'firebase-admin';
 import {
   Injectable,
   InternalServerErrorException,
@@ -20,7 +21,7 @@ import {
   FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { EEventStatus, ERole } from 'src/common/enum/enum';
+import { EEventStatus } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { FileService } from 'src/file/file.service';
 import { ConfigService } from '@nestjs/config';
@@ -191,7 +192,6 @@ export class EventService extends BaseService<EventEntity> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
       await queryRunner.startTransaction();
-
       const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
         where: { id: event.eventTypeId },
       });
@@ -210,15 +210,15 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
-      const arrayPromise = event.divisionId.map((id) =>
-        queryRunner.manager.insert(AssignEventEntity, {
-          event: { id: createEvent.generatedMaps[0]['id'] },
-          division: { id: id },
-        }),
-      );
-      await Promise.all(arrayPromise);
+      // const arrayPromise = event.divisionId.map((id) =>
+      //   queryRunner.manager.insert(AssignEventEntity, {
+      //     event: { id: createEvent.generatedMaps[0]['id'] },
+      //     division: { id: id },
+      //   }),
+      // );
+      // await Promise.all(arrayPromise);
       await queryRunner.commitTransaction();
-      return `${createEvent.generatedMaps[0]['id']}`;
+      return `${createEvent.generatedMaps[0]['id']} created successfully1`;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
@@ -304,7 +304,6 @@ export class EventService extends BaseService<EventEntity> {
       .into(AssignEventEntity)
       .values(dataInsert)
       .execute();
-
     return `Update division into event successfully!!!`;
   }
 

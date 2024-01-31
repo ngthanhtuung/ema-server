@@ -45,10 +45,6 @@ export class EventCreateRequest {
   @ApiProperty({ default: '120000000' })
   estBudget: number;
 
-  @IsArray()
-  @ApiProperty({ default: [] })
-  divisionId: Array<string>;
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
@@ -68,7 +64,11 @@ export class EventAssignRequest {
   divisionId: Array<string>;
 }
 
-export class EventUpdateRequest extends EventCreateRequest {}
+export class EventUpdateRequest extends EventCreateRequest {
+  @IsArray()
+  @ApiProperty({ default: [] })
+  divisionId: Array<string>;
+}
 
 export class FilterEvent {
   @ApiProperty({ required: false, default: 'test' })
