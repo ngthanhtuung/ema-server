@@ -25,6 +25,9 @@ export class NotificationEntity extends BaseEntity {
   @OneToMany(
     () => UserNotificationsEntity,
     (userNotification) => userNotification.notification,
+    {
+      onDelete: 'CASCADE',
+    },
   )
   userNotifications: UserNotificationsEntity[];
 }

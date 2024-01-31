@@ -40,7 +40,7 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 15000 })
   description: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   coverUrl: string;
 
   @Column({ type: 'float' })

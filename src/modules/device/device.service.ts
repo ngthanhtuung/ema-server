@@ -54,9 +54,10 @@ export class DeviceService extends BaseService<DeviceEntity> {
         .select('device.deviceToken')
         .where('device.user IN (:...listUserId)', { listUserId })
         .getMany();
-      return listDeviceTokens.map((device) => device.deviceToken);
+      const result = listDeviceTokens.map((device) => device.deviceToken);
+      return result.flat();
     } catch (err) {
-      throw new InternalServerErrorException(err.messaging);
+      throw new InternalServerErrorException(err.message);
     }
   }
 }
