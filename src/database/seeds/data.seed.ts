@@ -98,7 +98,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
-        fullName: 'Doan Vu Quang Huy',
+        fullName: 'Đoàn Vũ Quang Huy',
         profileId: manager1['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
@@ -126,7 +126,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
-        fullName: 'Nguyen Thanh Tung',
+        fullName: 'Nguyễn Thanh Tùng',
         profileId: admin['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
@@ -187,7 +187,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
-        fullName: 'Nhan vien',
+        fullName: 'Nhân Viên',
         profileId: employee['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
@@ -234,29 +234,27 @@ export class DataSeed implements Seeder {
       })
       .execute();
 
-    // for (let index = 0; index < 10; index++) {
-    //   await connection
-    //     .createQueryBuilder()
-    //     .insert()
-    //     .into(EventEntity)
-    //     .values({
-    //       eventName: `Test name event ${index + 1}`,
-    //       startDate: faker.date.anytime(),
-    //       endDate: faker.date.anytime(),
-    //       location: 'Quan 12',
-    //       description: faker.lorem.paragraph(),
-    //       coverUrl: faker.image.avatar(),
-    //       estBudget: Number(
-    //         faker.commerce.price({ min: 1000000, max: 200000000 }),
-    //       ),
-    //       status: EEventStatus.PROCESSING,
-    //       // createdAt: faker.date.anytime(),
-    //       // updatedAt: faker.date.anytime(),
-    //     })
-    //     .execute();
-    // }
-    // const mailTextId1 =
-    //   '<p>Welcome to the HREA System, your account is: </p><strong>Email: </strong> ${email} <br><strong>Password: </strong> ${password}';
+    const event1 = await connection
+      .createQueryBuilder()
+      .insert()
+      .into(EventEntity)
+      .values({
+        eventName:
+          'Sự kiện ra mắt và quảng bá ngành Công Nghệ Ô Tô, Đại Học FPT',
+        startDate: '2023-12-31',
+        endDate: '2024-02-28',
+        processingDate: '2024-02-27',
+        coverUrl: 'string',
+        location: 'Đại học FPT, Cơ sở Thành Phố Hồ Chí Minh',
+        description: 'hahahahaha',
+        estBudget: 100000000,
+        createdBy: manager1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType2['identifiers'][0]['id'],
+        },
+      })
+      .execute();
+
     const mailTextId1 =
       '<p>Ch&agrave;o mừng bạn đến với hệ thống EMA, dưới đ&acirc;y l&agrave; t&agrave;i khoản đăng nhập v&agrave;o hệ thống.</p>\n<table border="1" cellpadding="1" cellspacing="1" style="width:378px">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Username/Email</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${email}</strong></span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Password</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${password}</strong></span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n<p><strong>Lưu &yacute;:&nbsp;</strong>Khi đăng nhập lần đầu ti&ecirc;n v&agrave;o hệ thống, xin vui l&ograve;ng đổi mật khẩu.</p>\n<p>Đội ngũ hỗ trợ của ch&uacute;ng t&ocirc;i (EMA System).</p>\n<p>&nbsp;</p>';
     const mailTitleId1 = 'EMA - Tài khoản đăng nhập hệ thống';

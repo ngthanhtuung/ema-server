@@ -13,11 +13,9 @@ import { BaseService } from '../base/base.service';
 import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
-import { FirebaseMessageService } from '../../providers/firebase/message/firebase-message.service';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
 import { DeviceService } from '../device/device.service';
-import { UserNotificationsService } from '../user_notifications/user_notifications.service';
-import { FirebaseNotificationRequest } from '../../providers/firebase/message/dto/firebase-notification.dto';
+import { UserNotificationsService } from '../user_notifications/user_notifications.service'
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(

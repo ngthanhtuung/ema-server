@@ -1,35 +1,25 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { messaging } from 'firebase-admin';
-import { Messaging } from 'firebase-admin/lib/messaging/messaging';
-import {
-  BatchResponse,
-  MulticastMessage,
-} from 'firebase-admin/lib/messaging/messaging-api';
+import { FirebaseNotificationRequest } from './dto/firebase-notification.dto';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class FirebaseMessageService {
-  async sendCustomNotification(
-    registrationTokenOrTokens: string[],
-    title: string,
-    body: string,
-    data: { [key: string]: string },
-  ): Promise<BatchResponse> {
+  async sendCustomNotificationFirebase(
+    notification: FirebaseNotificationRequest,
+  ): Promise<unknown | undefined> {
     try {
-      const message: MulticastMessage = {
-        tokens: registrationTokenOrTokens,
-        data: data,
+      const deviceTokenArray = notification.deviceToken;
+      let result = null;
+      result = admin.messaging().sendEachForMulticast({
+        tokens: deviceTokenArray,
         notification: {
-          title: title,
-          body: body,
+          title: notification.title,
+          body: notification.body,
         },
-      };
-      return this.getMessaging().sendMulticast(message, true);
+      });
+      return result;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
-  }
-
-  getMessaging(): Messaging {
-    return messaging();
   }
 }

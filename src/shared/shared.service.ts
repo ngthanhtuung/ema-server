@@ -3,6 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/modules/mail/mail.service';
 import * as moment from 'moment';
+import {
+  InvalidFormatError,
+  InvalidNumberError,
+  NotEnoughUnitError,
+  ReadingConfig,
+  doReadNumber,
+} from 'read-vietnamese-number';
 
 @Injectable()
 export class SharedService {
@@ -160,28 +167,11 @@ export class SharedService {
   }
 
   public async moneyToWord(amount: number): Promise<string | undefined> {
-    const units: string[] = ['', 'nghìn', 'triệu', 'tỷ'];
+    const config = new ReadingConfig();
+    config.unit = ['đồng'];
     try {
-      if (amount === 0) {
-        return 'Không đồng';
-      }
-
-      const words: string[] = [];
-      let unitIndex = 0;
-
-      while (amount > 0) {
-        const group = amount % 1000;
-        if (group > 0) {
-          words.unshift(
-            this.convertGroupToWords(group) + ' ' + units[unitIndex],
-          );
-        }
-
-        amount = Math.floor(amount / 1000);
-        unitIndex++;
-      }
-
-      return words.join(' ').trim() + ' đồng';
+      const result = doReadNumber(config, amount.toString());
+      return result.charAt(0).toUpperCase() + result.slice(1);
     } catch (err) {
       return undefined;
     }
