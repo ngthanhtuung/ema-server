@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/modules/mail/mail.service';
 import * as moment from 'moment';
-import {
-  InvalidFormatError,
-  InvalidNumberError,
-  NotEnoughUnitError,
-  ReadingConfig,
-  doReadNumber,
-} from 'read-vietnamese-number';
+// import {
+//   InvalidFormatError,
+//   InvalidNumberError,
+//   NotEnoughUnitError,
+//   ReadingConfig,
+//   doReadNumber,
+// } from 'read-vietnamese-number';
 
 @Injectable()
 export class SharedService {
@@ -129,49 +129,14 @@ export class SharedService {
     }
   }
 
-  private convertGroupToWords(group: number): string {
-    const digits: string[] = [
-      'không',
-      'một',
-      'hai',
-      'ba',
-      'bốn',
-      'năm',
-      'sáu',
-      'bảy',
-      'tám',
-      'chín',
-    ];
-    const words: string[] = [];
-
-    const hundreds = Math.floor(group / 100);
-    if (hundreds > 0) {
-      words.push(digits[hundreds] + ' trăm');
-    }
-
-    const tens = group % 100;
-    if (tens > 0) {
-      if (tens < 10) {
-        words.push(digits[tens]);
-      } else if (tens < 20) {
-        words.push('mười ' + digits[tens % 10]);
-      } else {
-        words.push(digits[Math.floor(tens / 10)] + ' mươi');
-        if (tens % 10 > 0) {
-          words.push(digits[tens % 10]);
-        }
-      }
-    }
-    const result = words.join(' ');
-    return result.charAt(0).toUpperCase();
-  }
 
   public async moneyToWord(amount: number): Promise<string | undefined> {
-    const config = new ReadingConfig();
-    config.unit = ['đồng'];
+    // const config = new ReadingConfig();
+    // config.unit = ['đồng'];
     try {
-      const result = doReadNumber(config, amount.toString());
-      return result.charAt(0).toUpperCase() + result.slice(1);
+      // const result = doReadNumber(config, amount.toString());
+      // return result.charAt(0).toUpperCase() + result.slice(1);
+      return 'Đang fix lỗi này'
     } catch (err) {
       return undefined;
     }
