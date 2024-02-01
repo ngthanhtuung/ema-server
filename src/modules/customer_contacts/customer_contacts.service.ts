@@ -58,6 +58,9 @@ export class CustomerContactsService {
         'contacts.phoneNumber as phoneNumber',
         'contacts.address as address',
         'contacts.note as note',
+        'contacts.startDate as startDate',
+        'contacts.endDate as endDate',
+        'contacts.budget as budget',
         'contacts.eventTypeId as eventType',
         'contacts.processedBy as processedBy',
         'contacts.createdAt as createdAt',
@@ -149,6 +152,9 @@ export class CustomerContactsService {
         email: contact.email,
         phoneNumber: contact.phoneNumber,
         note: contact.note,
+        startDate: contact.startDate,
+        endDate: contact.endDate,
+        budget: contact.budget,
         eventType: eventType,
       });
       if (data) {

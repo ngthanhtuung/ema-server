@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -43,6 +44,21 @@ export class CustomerContactRequest {
     default: '0123456789',
   })
   phoneNumber: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2023-10-10' })
+  startDate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2023-11-10' })
+  endDate: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({ default: 1000000 })
+  budget: number;
 
   @ApiProperty()
   note: string;

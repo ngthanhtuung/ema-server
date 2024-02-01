@@ -4,6 +4,6 @@ import { FeedbacksController } from './feedbacks.controller';
 
 @Module({
   providers: [FeedbacksService],
-  controllers: [FeedbacksController]
+  controllers: [FeedbacksController],
 })
 export class FeedbacksModule {}

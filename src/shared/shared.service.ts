@@ -129,14 +129,13 @@ export class SharedService {
     }
   }
 
-
   public async moneyToWord(amount: number): Promise<string | undefined> {
     // const config = new ReadingConfig();
     // config.unit = ['đồng'];
     try {
       // const result = doReadNumber(config, amount.toString());
       // return result.charAt(0).toUpperCase() + result.slice(1);
-      return 'Đang fix lỗi này'
+      return 'Đang fix lỗi này';
     } catch (err) {
       return undefined;
     }

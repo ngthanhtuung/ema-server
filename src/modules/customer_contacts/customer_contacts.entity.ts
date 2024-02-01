@@ -22,6 +22,15 @@ export class CustomerContactEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   note: string;
 
+  @Column({ type: 'date', nullable: true })
+  startDate: Date;
+
+  @Column({ type: 'date', nullable: true })
+  endDate: Date;
+
+  @Column({ type: 'float', nullable: true })
+  budget: number;
+
   @Column({ type: 'varchar', nullable: true })
   processedBy: string;
 

@@ -70,7 +70,7 @@ export class UserEntity extends BaseEntity {
   assignee: AssignTaskEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user, {
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'profileId' })
   profile: ProfileEntity;
