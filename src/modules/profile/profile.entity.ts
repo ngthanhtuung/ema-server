@@ -8,6 +8,9 @@ export class ProfileEntity {
   profileId: string;
 
   @Column({ type: 'varchar', length: 255 })
+  code: string;
+
+  @Column({ type: 'varchar', length: 255 })
   fullName: string;
 
   @Column({ type: 'datetime' })

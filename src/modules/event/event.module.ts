@@ -9,8 +9,8 @@ import { TaskModule } from '../task/task.module';
 
 @Module({
   imports: [
-    AssignEventModule,
     TypeOrmModule.forFeature([EventEntity]),
+    AssignEventModule,
     FileModule,
     TaskModule,
   ],
