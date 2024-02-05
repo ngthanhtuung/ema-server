@@ -1,16 +1,19 @@
-import { messaging } from 'firebase-admin';
 import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, QueryRunner, SelectQueryBuilder } from 'typeorm';
+import {
+  DataSource,
+  QueryRunner,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { BaseService } from '../base/base.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { EventEntity } from './event.entity';
-import EventRepository from './event.repository';
 import { EventPagination } from './dto/event.pagination';
 import { EventResponse } from './dto/event.response';
 import * as moment from 'moment-timezone';
@@ -28,11 +31,12 @@ import { ConfigService } from '@nestjs/config';
 import { TaskService } from '../task/task.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
+
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
   constructor(
     @InjectRepository(EventEntity)
-    private readonly eventRepository: EventRepository,
+    private readonly eventRepository: Repository<EventEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
     private readonly fileService: FileService,
@@ -383,20 +387,20 @@ export class EventService extends BaseService<EventEntity> {
 
   async getUserInEvent(eventId: string): Promise<unknown> {
     try {
-      const query = `SELECT p.profileId as 'id',
-                            p.role ,
-                            p.fullName ,
+      const query = `SELECT p.profileId as 'id', p.role,
+                            p.fullName,
                             p.dob,
-                            p.nationalId ,
+                            p.nationalId,
                             p.gender,
                             p.address,
                             p.phoneNumber,
-                            p.avatar 
-      FROM events e inner join assign_events ae ON e.id = ae.eventId 
-              inner join divisions d on ae.divisionId = d.id 
-              inner join users u on d.id = u.divisionId 
-              inner join profiles p on u.id = p.profileId 
-      where e.id = '${eventId}';`;
+                            p.avatar
+                     FROM events e
+                              inner join assign_events ae ON e.id = ae.eventId
+                              inner join divisions d on ae.divisionId = d.id
+                              inner join users u on d.id = u.divisionId
+                              inner join profiles p on u.id = p.profileId
+                     where e.id = '${eventId}';`;
       const data = await this.eventRepository.query(query);
       return data;
     } catch (err) {
@@ -407,18 +411,14 @@ export class EventService extends BaseService<EventEntity> {
   async getListEventByTask(userIdLogin: string): Promise<undefined> {
     try {
       const events = await this.eventRepository.query(`
-      SELECT
-      e.*
-    FROM
-      events e
-    inner join tasks t ON
-      e.id = t.eventID
-    inner join assign_tasks at2 ON
-      t.id = at2.taskID 
-    WHERE
-      t.startDate >= '${moment().format(
-        'YYYY-MM-DD HH:mm:ss',
-      )}' AND at2.assignee = '${userIdLogin}';
+          SELECT e.*
+          FROM events e
+                   inner join tasks t ON
+              e.id = t.eventID
+                   inner join assign_tasks at2 ON
+              t.id = at2.taskID
+          WHERE t.startDate >= '${moment().format('YYYY-MM-DD HH:mm:ss')}'
+            AND at2.assignee = '${userIdLogin}';
       `);
       return events;
     } catch (err) {

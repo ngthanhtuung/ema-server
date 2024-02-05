@@ -15,6 +15,7 @@ import * as firebaseAdmin from 'firebase-admin';
 import { AuthService } from './auth/auth.service';
 import { LoginGoogleRequest } from './auth/dto/login.dto';
 import { SharedService } from './shared/shared.service';
+import { ETypeEmployee } from './common/enum/enum';
 
 @Controller()
 @ApiTags('TESTING API')
@@ -59,4 +60,18 @@ export class AppController {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  // @Get('/test-generate-employee-code')
+  // @Public()
+  // @ApiQuery({
+  //   name: 'typeEmployee',
+  //   required: true,
+  //   type: 'enum',
+  //   enum: ETypeEmployee,
+  // })
+  // async testGenerateEmployeeCode(
+  //   @Query('typeEmployee') typeEmployee: string,
+  // ): Promise<unknown | undefined> {
+  //   return await this.sharedService.generateUserCode(typeEmployee);
+  // }
 }

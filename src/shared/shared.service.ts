@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/modules/mail/mail.service';
 import * as moment from 'moment';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { ETypeEmployee } from '../common/enum/enum';
+import { ProfileEntity } from '../modules/profile/profile.entity';
+import { UserEntity } from '../modules/user/user.entity';
 // import {
 //   InvalidFormatError,
 //   InvalidNumberError,
@@ -13,9 +18,15 @@ import * as moment from 'moment';
 
 @Injectable()
 export class SharedService {
-  constructor(
+  /**
+   * shuffleArray
+   * @param array
+   * @returns
+   */ constructor(
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -27,21 +38,6 @@ export class SharedService {
     const salt: string = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
   }
-
-  /**
-   * shuffleArray
-   * @param array
-   * @returns
-   */
-  private shuffleArray = (array: Array<string>): string[] => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = array[i];
-      array[i] = array[i];
-      array[j] = temp;
-    }
-    return array;
-  };
 
   /**
    * generatePassword
@@ -184,6 +180,29 @@ export class SharedService {
     }
   }
 
+  // public async generateUserCode(
+  //   typeEmployee: string,
+  // ): Promise<unknown | undefined> {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   try {
+  //     const prefix = typeEmployee === ETypeEmployee.FULL_TIME ? 'NVCT' : 'NVPT';
+  //     const latestProfileCodes = await queryRunner.manager
+  //       .createQueryBuilder(ProfileEntity, 'profile')
+  //       .innerJoinAndSelect('profile.user', 'user')
+  //       .where('user.typeEmployee = :typeEmployee', {
+  //         typeEmployee: ETypeEmployee[typeEmployee],
+  //       })
+  //       .orderBy('profile.code', 'DESC')
+  //       .getMany();
+  //
+  //     console.log('Code of profile: ', latestProfileCodes);
+  //     return latestProfileCodes;
+  //   } catch (err) {
+  //     console.log(err);
+  //     throw new InternalServerErrorException(err);
+  //   }
+  // }
+
   public async generateContractCode(): Promise<string | undefined> {
     try {
       const randomPart = Math.random()
@@ -197,4 +216,14 @@ export class SharedService {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  private shuffleArray = (array: Array<string>): string[] => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = array[i];
+      array[i] = array[i];
+      array[j] = temp;
+    }
+    return array;
+  };
 }

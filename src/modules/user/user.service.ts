@@ -43,6 +43,7 @@ import * as moment from 'moment-timezone';
 import { TaskService } from '../task/task.service';
 import * as _ from 'lodash';
 import { RoleEntity } from '../roles/roles.entity';
+
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
   constructor(
@@ -172,16 +173,17 @@ export class UserService extends BaseService<UserEntity> {
       const { currentPage, sizePage } = userPagination;
       const query = this.generalBuilderUser();
       query
+        .leftJoin('roles', 'roles', 'users.roleId = roles.id')
         .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
-        .where('profiles.role != :excludedRole', {
+        .where('roles. roleName != :excludedRole', {
           excludedRole: ERole.MANAGER,
         });
       if (divisionId !== undefined) {
         query.where('users.divisionId = :divisionId', { divisionId });
       }
       if (roleFilter !== undefined) {
-        query.andWhere('profiles.role = :role', {
+        query.andWhere('roles.roleName = :role', {
           role: roleFilter,
         });
       }
@@ -191,7 +193,7 @@ export class UserService extends BaseService<UserEntity> {
         });
       }
       query
-        .select('profiles.role as role')
+        .select('roles.roleName as role')
         .addSelect([
           'users.id as id',
           'profiles.fullName as fullName',
@@ -497,10 +499,11 @@ export class UserService extends BaseService<UserEntity> {
       );
 
       const query = await queryRunner.manager.query(`
-      SELECT COUNT(*) as count
-      FROM tasks
-      INNER JOIN assign_tasks ON tasks.id = assign_tasks.taskId
-      WHERE assign_tasks.assignee = '${userIdUpdate}' AND (tasks.status IN ('PENDING', 'PROCESSING')) 
+          SELECT COUNT(*) as count
+          FROM tasks
+              INNER JOIN assign_tasks
+          ON tasks.id = assign_tasks.taskId
+          WHERE assign_tasks.assignee = '${userIdUpdate}' AND (tasks.status IN ('PENDING', 'PROCESSING'))
       `);
       const result = query[0].count;
       if (result === 0) {
