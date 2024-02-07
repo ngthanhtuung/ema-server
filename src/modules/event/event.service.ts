@@ -64,7 +64,16 @@ export class EventService extends BaseService<EventEntity> {
       const { eventName, monthYear, nameSort, sort, status } = filter;
       const { currentPage, sizePage } = eventPagination;
       const query = this.generalBuilderEvent();
-      query.leftJoin('tasks', 'tasks', 'tasks.eventID = events.id');
+      query.leftJoin(
+        'assign_events',
+        'assign_events',
+        'assign_events.eventID = events.id',
+      );
+      query.leftJoin(
+        'tasks',
+        'tasks',
+        'tasks.eventDivision = assign_events.id',
+      );
       query.select([
         'events.id as id',
         'events.eventName as eventName',

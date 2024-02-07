@@ -59,7 +59,7 @@ export class EventController {
    * @param filter
    * @returns
    */
-  @Get('/filterEventByCondition')
+  @Get('/filter')
   async filterEventByCondition(
     @Query() filter: FilterEvent,
     @Query() eventPagination: EventPagination,

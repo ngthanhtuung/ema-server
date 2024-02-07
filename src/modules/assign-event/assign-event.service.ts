@@ -77,7 +77,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'profiles.fullName as fullName',
         'profiles.avatar as avatar',
       ]);
-      query.where('profiles.role = :role', {
+      query.where('users.role = :role', {
         role: ERole.STAFF,
       });
       query.andWhere('assign_events.eventId = :eventId', {
@@ -112,7 +112,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'profiles.fullName as fullName',
         'profiles.avatar as avatar',
       ]);
-      query.where('profiles.role = :role', {
+      query.where('users.roleId = :role', {
         role: ERole.STAFF,
       });
       const data = await query.execute();

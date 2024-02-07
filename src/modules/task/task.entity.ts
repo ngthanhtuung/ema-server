@@ -10,12 +10,10 @@ import {
 } from 'typeorm';
 import { CommentEntity } from '../comment/comment.entity';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
-import { EventEntity } from '../event/event.entity';
 import { TaskFileEntity } from '../taskfile/taskfile.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { Transform } from 'class-transformer';
 import moment from 'moment';
-import { Max, Min } from 'class-validator';
 
 @Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
