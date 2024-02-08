@@ -30,6 +30,7 @@ import { NotificationService } from '../notification/notification.service';
 import { AppGateway } from 'src/sockets/app.gateway';
 import { DeviceService } from '../device/device.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { AssignEventService } from '../assign-event/assign-event.service';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -38,13 +39,10 @@ export class TaskService extends BaseService<TaskEntity> {
     @InjectDataSource()
     private dataSource: DataSource,
     private assignTaskService: AssignTaskService,
-    private notificationService: NotificationService,
+    private assignEventService: AssignEventService,
     private userService: UserService,
-    @Inject(forwardRef(() => AppGateway))
-    private readonly appGateWay: AppGateway,
     @Inject(forwardRef(() => TaskfileService))
     private readonly taskFileService: TaskfileService,
-    private readonly deviceService: DeviceService,
   ) {
     super(taskRepository);
   }
@@ -63,200 +61,41 @@ export class TaskService extends BaseService<TaskEntity> {
     if (!condition['conValue']) {
       throw new BadRequestException('Undefined condition to get information!');
     }
-    const fieldName = condition['fieldName'];
+    let fieldName = condition['fieldName'];
     const conValue = condition['conValue'];
     const { sizePage, currentPage } = userPagination;
-    const whereCondition = {
-      [fieldName]: conValue,
-      // isTemplate: false,
-    };
+    let listConditions = [
+      {
+        [fieldName]: conValue,
+      },
+    ];
+    if (fieldName === 'eventID') {
+      fieldName = 'eventDivision';
+      const listIdEventDivison: any =
+        await this.assignEventService.getListIdEventDivision(conValue);
+      console.log('listIdEventDivison:', listIdEventDivison);
+      listConditions = listIdEventDivison.map((item) => {
+        return {
+          [fieldName]: {
+            id: item?.id,
+          },
+        };
+      });
+    }
     let results;
     const offset = sizePage * (currentPage - 1);
     try {
-      results = await this.taskRepository.find({
-        where: whereCondition,
-        skip: offset,
-        take: sizePage,
-        order: {
-          assignTasks: { isLeader: 'DESC' },
-        },
-        select: {
-          // event: {
-          //   id: true,
-          //   eventName: true,
-          // },
-          assignTasks: {
-            id: true,
-            isLeader: true,
-            user: {
-              id: true,
-              email: true,
-              profile: {
-                profileId: true,
-                avatar: true,
-                fullName: true,
-              },
-            },
-          },
-          subTask: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
-            assignTasks: {
-              id: true,
-              isLeader: true,
-              user: {
-                id: true,
-                email: true,
-                profile: {
-                  profileId: true,
-                  avatar: true,
-                  fullName: true,
-                },
-              },
-            },
-          },
-          parent: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
-            assignTasks: {
-              id: true,
-              isLeader: true,
-              user: {
-                id: true,
-                email: true,
-                profile: {
-                  profileId: true,
-                  avatar: true,
-                  fullName: true,
-                },
-              },
-            },
-          },
-        },
-        relations: {
-          // event: true,
-          taskFiles: true,
-          assignTasks: {
-            user: {
-              profile: true,
-            },
-          },
-          subTask: {
-            assignTasks: {
-              user: {
-                profile: true,
-              },
-            },
-            taskFiles: true,
-          },
-          parent: {
-            assignTasks: {
-              user: {
-                profile: true,
-              },
-            },
-            taskFiles: true,
-          },
-        },
-      });
-      if ((!results || results.length == 0) && fieldName !== 'eventID') {
-        throw new BadRequestException('No tasks found');
-      }
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
-    return results;
-  }
+      const arrayPromise = listConditions.map((whereCondition) => {
+        console.log('id:', whereCondition);
 
-  /**
-   * getTemplateTaskInfo
-   * @param condition
-   * @param userPagination
-   * @returns
-   */
-  async getTemplateTaskInfo(
-    condition: object,
-    userPagination: UserPagination,
-  ): Promise<TaskEntity> {
-    if (!condition['fieldName']) {
-      throw new BadRequestException('Undefined field name!');
-    }
-    if (!condition['conValue']) {
-      throw new BadRequestException('Undefined condition to get information!');
-    }
-    const fieldName = condition['fieldName'];
-    const conValue = condition['conValue'];
-    const { sizePage, currentPage } = userPagination;
-    const whereCondition = {
-      [fieldName]: conValue,
-    };
-    let results;
-    const offset = sizePage * (currentPage - 1);
-    try {
-      results = await this.taskRepository.find({
-        where: whereCondition,
-        skip: offset,
-        take: sizePage,
-        order: {
-          assignTasks: { isLeader: 'DESC' },
-        },
-        select: {
-          // event: {
-          //   id: true,
-          //   eventName: true,
-          // },
-          assignTasks: {
-            id: true,
-            isLeader: true,
-            user: {
-              id: true,
-              email: true,
-              profile: {
-                profileId: true,
-                avatar: true,
-                fullName: true,
-              },
-            },
+        return this.taskRepository.find({
+          where: whereCondition,
+          skip: offset,
+          take: sizePage,
+          order: {
+            assignTasks: { isLeader: 'DESC' },
           },
-          subTask: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
+          select: {
             assignTasks: {
               id: true,
               isLeader: true,
@@ -270,66 +109,98 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
             },
-          },
-          parent: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
-            assignTasks: {
+            subTask: {
               id: true,
-              isLeader: true,
-              user: {
+              // createdAt: true,
+              createdBy: true,
+              // updatedAt: true,
+              title: true,
+              startDate: true,
+              endDate: true,
+              description: true,
+              priority: true,
+              status: true,
+              estimationTime: true,
+              effort: true,
+              modifiedBy: true,
+              approvedBy: true,
+              assignTasks: {
                 id: true,
-                email: true,
-                profile: {
-                  profileId: true,
-                  avatar: true,
-                  fullName: true,
+                isLeader: true,
+                user: {
+                  id: true,
+                  email: true,
+                  profile: {
+                    profileId: true,
+                    avatar: true,
+                    fullName: true,
+                  },
+                },
+              },
+            },
+            parent: {
+              id: true,
+              // createdAt: true,
+              createdBy: true,
+              // updatedAt: true,
+              title: true,
+              startDate: true,
+              endDate: true,
+              description: true,
+              priority: true,
+              status: true,
+              estimationTime: true,
+              effort: true,
+              modifiedBy: true,
+              approvedBy: true,
+              assignTasks: {
+                id: true,
+                isLeader: true,
+                user: {
+                  id: true,
+                  email: true,
+                  profile: {
+                    profileId: true,
+                    avatar: true,
+                    fullName: true,
+                  },
                 },
               },
             },
           },
-        },
-        relations: {
-          // event: true,
-          taskFiles: true,
-          assignTasks: {
-            user: {
-              profile: true,
-            },
-          },
-          subTask: {
+          relations: {
+            // event: true,
+            taskFiles: true,
             assignTasks: {
               user: {
                 profile: true,
               },
             },
-            taskFiles: true,
-          },
-          parent: {
-            assignTasks: {
-              user: {
-                profile: true,
+            subTask: {
+              assignTasks: {
+                user: {
+                  profile: true,
+                },
               },
+              taskFiles: true,
             },
-            taskFiles: true,
+            parent: {
+              assignTasks: {
+                user: {
+                  profile: true,
+                },
+              },
+              taskFiles: true,
+            },
           },
-        },
+        });
       });
-      if ((!results || results.length == 0) && fieldName !== 'eventID') {
-        throw new BadRequestException('No tasks found');
-      }
+      console.log('arrayPromise:', arrayPromise);
+      results = await Promise.all(arrayPromise);
+      results = results.flatMap((arr) => arr);
+      // if ((!results || results.length == 0) && fieldName !== 'eventID') {
+      //   throw new BadRequestException('No tasks found');
+      // }
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -342,67 +213,80 @@ export class TaskService extends BaseService<TaskEntity> {
    * @param user
    * @returns
    */
-  // async createTask(task: TaskCreateReq, user: string): Promise<string> {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   const {
-  //     title,
-  //     eventID,
-  //     startDate,
-  //     endDate,
-  //     desc,
-  //     priority,
-  //     parentTask,
-  //     estimationTime,
-  //     assignee,
-  //     file,
-  //     leader,
-  //   } = task;
-  //   const oUser = JSON.parse(user);
-  //   const createBy = oUser.id;
-  //   const callback = async (queryRunner: QueryRunner): Promise<void> => {
-  //     const eventExisted = await queryRunner.manager.findOne(EventEntity, {
-  //       where: { id: eventID },
-  //     });
+  async createTask(task: TaskCreateReq, user: string): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    const {
+      title,
+      eventID,
+      startDate,
+      endDate,
+      desc,
+      priority,
+      parentTask,
+      estimationTime,
+      assignee,
+      file,
+      leader,
+    } = task;
+    const oUser = JSON.parse(user);
+    const createBy = oUser.id;
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
+      const eventExisted = await queryRunner.manager.findOne(EventEntity, {
+        where: { id: eventID },
+      });
 
-  //     if (!eventExisted) {
-  //       throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
-  //     }
+      if (!eventExisted) {
+        throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
+      }
 
-  //     const createTask = await queryRunner.manager.insert(TaskEntity, {
-  //       title: title,
-  //       createdBy: createBy,
-  //       eventID: eventID,
-  //       startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
-  //       endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
-  //       description: desc,
-  //       estimationTime: estimationTime,
-  //       priority: priority,
-  //       parent: {
-  //         id: parentTask,
-  //       },
-  //     });
+      const divisionId = (await this.userService.findById(assignee[0]))
+        ?.divisionId;
+      console.log('divisionId:', divisionId);
 
-  //     if (assignee?.length > 0) {
-  //       const oAssignTask = {
-  //         assignee,
-  //         taskID: createTask.generatedMaps[0]['id'],
-  //         leader,
-  //       };
-  //       this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
-  //     }
-  //     if (file) {
-  //       for (let i = 0; i < file?.length; i++) {
-  //         this.taskFileService.insertTaskFile({
-  //           taskID: createTask.generatedMaps[0]['id'],
-  //           fileName: file[0].fileName,
-  //           fileUrl: file[0].fileUrl,
-  //         });
-  //       }
-  //     }
-  //   };
-  //   await this.transaction(callback, queryRunner);
-  //   return 'create task success';
-  // }
+      const listIdEventDivison =
+        await this.assignEventService.getListIdEventDivision(
+          eventID,
+          divisionId,
+        );
+      console.log('listIdEventDivison:', listIdEventDivison);
+
+      const createTask = await queryRunner.manager.insert(TaskEntity, {
+        title: title,
+        createdBy: createBy,
+        eventDivision: {
+          id: listIdEventDivison?.[0]?.id,
+        },
+        startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
+        endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
+        description: desc,
+        estimationTime: estimationTime,
+        priority: priority,
+        parent: {
+          id: parentTask,
+        },
+      });
+
+      if (assignee?.length > 0) {
+        const oAssignTask = {
+          assignee,
+          taskID: createTask?.generatedMaps?.[0]?.['id'],
+          leader,
+        };
+        this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
+      }
+      if (file) {
+        for (let i = 0; i < file?.length; i++) {
+          this.taskFileService.insertTaskFile({
+            taskID: createTask?.generatedMaps?.[0]?.['id'],
+            fileName: file?.[0]?.fileName,
+            fileUrl: file?.[0]?.fileUrl,
+          });
+        }
+      }
+    };
+    await this.transaction(callback, queryRunner);
+    return 'create task success';
+  }
 
   // /**
   //  * updateTask

@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { JwtService } from '@nestjs/jwt';
-import { HttpException, HttpStatus, Logger, UseGuards } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Logger,
+  UseGuards,
+  forwardRef,
+} from '@nestjs/common';
 import {
   ConnectedSocket,
   OnGatewayConnection,
@@ -33,6 +40,7 @@ export class AppGateway
   constructor(
     protected readonly jwtService: JwtService,
     protected readonly userService: UserService,
+    @Inject(forwardRef(() => NotificationService))
     protected readonly notificationService: NotificationService,
   ) {}
 

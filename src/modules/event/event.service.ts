@@ -26,9 +26,6 @@ import {
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
-import { FileService } from 'src/file/file.service';
-import { ConfigService } from '@nestjs/config';
-import { TaskService } from '../task/task.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
 
@@ -39,10 +36,7 @@ export class EventService extends BaseService<EventEntity> {
     private readonly eventRepository: Repository<EventEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
-    private readonly fileService: FileService,
     private readonly assignEventService: AssignEventService,
-    private configService: ConfigService,
-    private readonly taskService: TaskService,
   ) {
     super(eventRepository);
   }
@@ -296,27 +290,45 @@ export class EventService extends BaseService<EventEntity> {
     if (!queryRunner) {
       queryRunner = this.dataSource.createQueryRunner();
     }
-    const dataInsert = data.divisionId.map((item) => {
-      return {
-        event: { id: data.eventId },
-        division: { id: item },
-      };
-    });
-    const assignedExisted = await queryRunner.manager.find(AssignEventEntity, {
-      where: { event: { id: data.eventId } },
-    });
-    const deleteAssignDivision = assignedExisted?.map((item) => {
-      queryRunner.manager.delete(AssignEventEntity, { id: item.id });
-    });
-    if (deleteAssignDivision.length !== 0) {
-      await Promise.all(deleteAssignDivision);
+    // Get Divison By Event
+    const divisionEventExisted = await queryRunner.manager.find(
+      AssignEventEntity,
+      {
+        where: { event: { id: data.eventId } },
+        select: {
+          division: {
+            id: true,
+          },
+        },
+        relations: {
+          // event: true,
+          division: true,
+        },
+      },
+    );
+    console.log('assignedExisted:', divisionEventExisted);
+
+    const dataInsert = data.divisionId.reduce((dataInsert, item) => {
+      const checkExistDivision = divisionEventExisted.find(
+        (division) => division.division.id === item,
+      );
+      if (!checkExistDivision) {
+        dataInsert.push({
+          event: { id: data.eventId },
+          division: { id: item },
+        });
+      }
+      return dataInsert;
+    }, []);
+    console.log('dataInsert:', dataInsert);
+    if (dataInsert.length > 0) {
+      await queryRunner.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AssignEventEntity)
+        .values(dataInsert)
+        .execute();
     }
-    await queryRunner.manager
-      .createQueryBuilder()
-      .insert()
-      .into(AssignEventEntity)
-      .values(dataInsert)
-      .execute();
     return `Update division into event successfully!!!`;
   }
 
@@ -422,8 +434,10 @@ export class EventService extends BaseService<EventEntity> {
       const events = await this.eventRepository.query(`
           SELECT e.*
           FROM events e
-                   inner join tasks t ON
-              e.id = t.eventID
+                   inner join assign_events ae ON
+              e.id = ae.eventID
+              inner join tasks t ON
+              ae.id = t.eventDivisionId
                    inner join assign_tasks at2 ON
               t.id = at2.taskID
           WHERE t.startDate >= '${moment().format('YYYY-MM-DD HH:mm:ss')}'

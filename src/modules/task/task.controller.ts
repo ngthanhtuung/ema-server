@@ -29,17 +29,6 @@ export class TaskController {
     return await this.taskService.getTaskInfo(condition, userPagination);
   }
 
-  @Get('/template-task')
-  async getTemplateTaskInfo(
-    @Query() condition: TaskConditonFind,
-    @Query() userPagination: UserPagination,
-  ): Promise<TaskEntity> {
-    return await this.taskService.getTemplateTaskInfo(
-      condition,
-      userPagination,
-    );
-  }
-
   @Get('/filterByAssignee')
   async filterTaskByCondition(
     @Query() filter: FilterTask,
@@ -47,14 +36,14 @@ export class TaskController {
     return await this.taskService.filterTaskByAssignee(filter);
   }
 
-  // @Post('createTask')
-  // @Roles(ERole.MANAGER, ERole.STAFF)
-  // async createTask(
-  //   @GetUser() user: string,
-  //   @Body() req: TaskCreateReq,
-  // ): Promise<string> {
-  //   return await this.taskService.createTask(req, user);
-  // }
+  @Post('createTask')
+  @Roles(ERole.MANAGER, ERole.STAFF)
+  async createTask(
+    @GetUser() user: string,
+    @Body() req: TaskCreateReq,
+  ): Promise<string> {
+    return await this.taskService.createTask(req, user);
+  }
 
   // @Put('updateTask')
   // @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)

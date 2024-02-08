@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { NotificationEntity } from './notification.entity';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
@@ -18,9 +20,12 @@ import { DeviceService } from '../device/device.service';
 import { UserNotificationsService } from '../user_notifications/user_notifications.service';
 import { FirebaseMessageService } from 'src/providers/firebase/message/firebase-message.service';
 import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/firebase-notification.dto';
+import { AppGateway } from 'src/sockets/app.gateway';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
     protected readonly userService: UserService,
@@ -132,28 +137,57 @@ export class NotificationService extends BaseService<NotificationEntity> {
         title: notification.title,
         content: notification.content,
         type: notification.type,
+        commonId: notification?.commonId,
+        parentTaskId: notification?.parentTaskId,
+        eventID: notification?.eventID,
       });
-      notification.userId?.map(async (user) => {
-        await queryRunner.manager.insert(UserNotificationsEntity, {
-          user: { id: user },
-          notification: { id: newNoti.identifiers[0].id },
-          createdAt: moment
-            .tz('Asia/Ho_Chi_Minh')
-            .format('YYYY-MM-DD HH:mm:ss'),
-        });
-      });
+      const createNotification = [];
+      for (let index = 0; index < notification.userId.length; index++) {
+        const idUser = notification.userId[index];
+        const dataNotification = {
+          title: notification.title,
+          content: notification.content,
+          readFlag: false,
+          type: notification.type,
+          userId: idUser,
+          eventID: notification?.eventID,
+          parentTaskId: notification?.parentTaskId,
+          commonId: notification?.commonId,
+          avatarSender: notification?.avatar,
+        };
+        const socketId = (await this.userService.findById(idUser))?.socketId;
+        const client = this.appGateWay.server;
+        if (socketId !== null) {
+          client
+            .to(socketId)
+            .emit(notification.messageSocket, dataNotification);
+        }
+        createNotification.push(
+          queryRunner.manager.insert(UserNotificationsEntity, {
+            user: { id: idUser },
+            notification: { id: newNoti.identifiers[0].id },
+            createdAt: moment
+              .tz('Asia/Ho_Chi_Minh')
+              .format('YYYY-MM-DD HH:mm:ss'),
+          }),
+        );
+      }
+      // Insert data in UserNotificationsEntity
+      await Promise.all(createNotification);
       //Using firebase to push notification
       const listDeviceTokens = await this.deviceService.getListDeviceTokens(
         notification.userId,
       );
-      const firebaseNotificationPayload: FirebaseNotificationRequest = {
-        title: notification.title,
-        body: notification.content,
-        deviceToken: listDeviceTokens,
-      };
-      await this.firebaseCustomService.sendCustomNotificationFirebase(
-        firebaseNotificationPayload,
-      );
+      if (listDeviceTokens.length > 0) {
+        const firebaseNotificationPayload: FirebaseNotificationRequest = {
+          title: notification.title,
+          body: notification.content,
+          deviceToken: listDeviceTokens,
+        };
+        await this.firebaseCustomService.sendCustomNotificationFirebase(
+          firebaseNotificationPayload,
+        );
+      }
       await queryRunner.commitTransaction();
       if (newNoti.raw.affectedRows > 0) {
         return 'Create notification successfully!';

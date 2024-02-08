@@ -20,7 +20,7 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   title: string;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ type: 'text', nullable: true })
   code: string;
 
   @Column({ type: 'datetime', nullable: true })
@@ -32,8 +32,8 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true, length: 15000 })
   description: string;
 
-  @Column({ type: 'integer', nullable: false })
-  priority: number;
+  @Column({ type: 'enum', enum: EPriority, nullable: true })
+  priority: EPriority;
 
   @Column({ type: 'varchar', nullable: true })
   parentTask: string;

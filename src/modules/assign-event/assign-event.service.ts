@@ -54,6 +54,38 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
   }
 
   /**
+   * getEventByDivisionID
+   * @param id
+   * @returns
+   */
+  async getListIdEventDivision(
+    eventID: string,
+    divisionID?: string,
+  ): Promise<unknown> {
+    try {
+      console.log('eventID:', eventID);
+      console.log('divisionID:', divisionID);
+
+      const idEventDivision = await this.assignEventRepository.find({
+        where: {
+          event: {
+            id: eventID,
+          },
+          division: {
+            id: divisionID,
+          },
+        },
+        select: ['id'],
+      });
+      console.log('idEventDivision:', idEventDivision);
+
+      return idEventDivision;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
    * getListStaffDivisionByEventID
    * @param id
    * @returns

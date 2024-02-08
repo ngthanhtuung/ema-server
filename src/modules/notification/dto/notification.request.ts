@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+  IsBoolean,
+} from 'class-validator';
 import { ETypeNotification } from 'src/common/enum/enum';
 
 export class NotificationCreateRequest {
@@ -12,6 +18,31 @@ export class NotificationCreateRequest {
   @IsNotEmpty()
   @ApiProperty({ default: 'Test desc' })
   content: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  eventID: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  parentTaskId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  commonId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  avatar: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  messageSocket: string;
 
   @IsEnum(ETypeNotification)
   @IsNotEmpty()

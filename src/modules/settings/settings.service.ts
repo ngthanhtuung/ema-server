@@ -25,7 +25,7 @@ export class SettingsService {
         ...settingRequest,
         group,
       };
-      const newSetting = await this.settingRepository.save(payload);
+      await this.settingRepository.save(payload);
       return 'Success';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
