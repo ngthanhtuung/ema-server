@@ -7,9 +7,6 @@ import {
   FilterTask,
   TaskConditonFind,
   TaskCreateReq,
-  TaskIDReq,
-  TaskUpdateReq,
-  TaskUpdateStatusReq,
 } from './dto/task.request';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { TaskEntity } from './task.entity';

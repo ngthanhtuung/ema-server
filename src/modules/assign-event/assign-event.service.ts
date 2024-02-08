@@ -63,22 +63,31 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
     divisionID?: string,
   ): Promise<unknown> {
     try {
-      console.log('eventID:', eventID);
-      console.log('divisionID:', divisionID);
-
-      const idEventDivision = await this.assignEventRepository.find({
-        where: {
-          event: {
-            id: eventID,
+      let idEventDivision = undefined;
+      if (divisionID) {
+        idEventDivision = await this.assignEventRepository.find({
+          where: {
+            event: {
+              id: eventID,
+            },
+            division: {
+              id: divisionID,
+            },
           },
-          division: {
-            id: divisionID,
+          select: ['id'],
+        });
+        return idEventDivision;
+      } else {
+        idEventDivision = await this.assignEventRepository.find({
+          where: {
+            event: {
+              id: eventID,
+            },
           },
-        },
-        select: ['id'],
-      });
+          select: ['id'],
+        });
+      }
       console.log('idEventDivision:', idEventDivision);
-
       return idEventDivision;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
