@@ -103,7 +103,6 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 email: true,
                 profile: {
-                  profileId: true,
                   avatar: true,
                   fullName: true,
                 },
@@ -131,7 +130,6 @@ export class TaskService extends BaseService<TaskEntity> {
                   id: true,
                   email: true,
                   profile: {
-                    profileId: true,
                     avatar: true,
                     fullName: true,
                   },
@@ -160,7 +158,6 @@ export class TaskService extends BaseService<TaskEntity> {
                   id: true,
                   email: true,
                   profile: {
-                    profileId: true,
                     avatar: true,
                     fullName: true,
                   },
@@ -414,48 +411,58 @@ export class TaskService extends BaseService<TaskEntity> {
    */
   async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
     const { assignee, priority, sort, status, eventID } = filter;
+    let listIdEventDivison: any = undefined;
+    if (eventID) {
+      listIdEventDivison = await this.assignEventService.getListIdEventDivision(
+        eventID,
+      );
+    }
+    console.log('listIdEventDivison:', listIdEventDivison);
+
     let result;
     try {
-      result = await this.taskRepository.find({
-        select: {
-          assignTasks: {
-            id: true,
-            isLeader: true,
-            user: {
+      const arrayPromise = listIdEventDivison.map((item) => {
+        return this.taskRepository.find({
+          select: {
+            assignTasks: {
               id: true,
-              email: true,
-              profile: {
-                avatar: true,
-                fullName: true,
+              isLeader: true,
+              user: {
+                id: true,
+                email: true,
+                profile: {
+                  avatar: true,
+                  fullName: true,
+                },
               },
             },
           },
-        },
-        where: {
-          // priority,
-          status,
-          assignTasks: {
-            assignee,
-          },
-          // isTemplate: false,
-          // event: {
-          //   id: eventID,
-          // },
-        },
-        relations: {
-          subTask: true,
-          parent: true,
-          assignTasks: {
-            user: {
-              profile: true,
+          where: {
+            priority,
+            status,
+            assignTasks: {
+              assignee,
+            },
+            eventDivision: {
+              id: item?.id,
             },
           },
-          taskFiles: true,
-        },
-        // order: {
-        //   createdAt: { direction: sort },
-        // },
+          relations: {
+            subTask: true,
+            parent: true,
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+          },
+          order: {
+            createdAt: { direction: sort },
+          },
+        });
       });
+      result = (await Promise.all(arrayPromise)).flatMap((arr) => arr);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

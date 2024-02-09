@@ -1,6 +1,6 @@
 import { EGender, ERole } from 'src/common/enum/enum';
 import { UserEntity } from 'src/modules/user/user.entity';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'profiles' })
 export class ProfileEntity {
@@ -34,6 +34,5 @@ export class ProfileEntity {
   @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  // @JoinColumn({ name: 'profileId' })
   user: UserEntity;
 }
