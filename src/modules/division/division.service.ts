@@ -13,11 +13,10 @@ import {
   DivisionUpdateRequest,
 } from './dto/division.request';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { DivisionResponse } from './dto/division.response';
 import { EUserStatus } from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
-import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 
 @Injectable()
 export class DivisionService extends BaseService<DivisionEntity> {
@@ -71,6 +70,19 @@ export class DivisionService extends BaseService<DivisionEntity> {
     try {
       const division = await this.findOne({
         where: { id: id },
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+          },
+        },
       });
 
       if (!division) {
@@ -123,8 +135,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
   async getAllDivision(
     divisionPagination: DivisionPagination,
     mode: number,
-  ): Promise<DivisionEntity> {
-    let dataDivision;
+  ): Promise<unknown> {
     try {
       const { currentPage, sizePage } = divisionPagination;
       const fieldName = 'staffId';
@@ -135,7 +146,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
             }
           : undefined;
       const offset = sizePage * (currentPage - 1);
-      dataDivision = await this.divisionRepository.find({
+      const res = await this.divisionRepository.find({
         where: whereCondition,
         skip: offset,
         take: sizePage,
@@ -151,18 +162,26 @@ export class DivisionService extends BaseService<DivisionEntity> {
               fullName: true,
             },
           },
+          assignEvents: true,
         },
         relations: {
           users: {
             profile: true,
             role: true,
           },
+          assignEvents: true,
         },
       });
+      const finalData = res.map((item) => {
+        return {
+          ...item,
+          assignEvents: item?.assignEvents?.length || 0,
+        };
+      });
+      return finalData;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
-    return dataDivision;
   }
 
   /**

@@ -27,8 +27,6 @@ import { NotificationCreateRequest } from '../notification/dto/notification.requ
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { UserService } from '../user/user.service';
 import { NotificationService } from '../notification/notification.service';
-import { AppGateway } from 'src/sockets/app.gateway';
-import { DeviceService } from '../device/device.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AssignEventService } from '../assign-event/assign-event.service';
 @Injectable()
@@ -41,6 +39,7 @@ export class TaskService extends BaseService<TaskEntity> {
     private assignTaskService: AssignTaskService,
     private assignEventService: AssignEventService,
     private userService: UserService,
+    private notificationService: NotificationService,
     @Inject(forwardRef(() => TaskfileService))
     private readonly taskFileService: TaskfileService,
   ) {
@@ -283,124 +282,75 @@ export class TaskService extends BaseService<TaskEntity> {
     return 'create task success';
   }
 
-  // /**
-  //  * updateTask
-  //  * @param taskID
-  //  * @param data
-  //  * @returns
-  //  */
-  // // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  // async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   if (!taskID) {
-  //     throw new InternalServerErrorException(`TaskID is empty`);
-  //   }
-  //   try {
-  //     const taskExist = await queryRunner.manager.findOne(TaskEntity, {
-  //       where: { id: taskID },
-  //     });
-  //     if (!taskExist) {
-  //       throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
-  //     }
-  //     await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
-  //     const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
-  //       where: { taskID: taskID },
-  //     });
-  //     const taskExisted: any = await this.taskRepository.findOne({
-  //       where: { id: taskID },
-  //       select: {
-  //         parent: {
-  //           id: true,
-  //         },
-  //       },
-  //       relations: {
-  //         parent: true,
-  //       },
-  //     });
-  //     const createNotification = [];
-  //     const listAssigneeId = [];
-  //     const listTaskMasterId = [];
-  //     for (const item of listUser) {
-  //       if (item?.assignee !== oUser?.id) {
-  //         const dataNotification: NotificationCreateRequest = {
-  //           title: `Công việc đã được cập nhât`,
-  //           content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //           readFlag: false,
-  //           type: ETypeNotification.TASK,
-  //           sender: oUser.id,
-  //           userId: item?.assignee,
-  //           eventId: taskExisted?.eventID,
-  //           parentTaskId: taskExisted?.parent?.id,
-  //           commonId: taskID,
-  //         };
-  //         listAssigneeId.push(item?.assignee);
-  //         const socketId = (await this.userService.findById(item?.assignee))
-  //           ?.socketId;
-  //         const client = this.appGateWay.server;
-  //         if (socketId !== null) {
-  //           client.to(socketId).emit('notification', {
-  //             ...dataNotification,
-  //             avatar: oUser?.avatar,
-  //           });
-  //         }
-  //         createNotification.push(
-  //           this.notificationService.createNotification(dataNotification),
-  //         );
-  //       }
-  //     }
-  //     if (listAssigneeId.length !== 0) {
-  //       const listAssigneeDeviceToken =
-  //         await this.deviceService.getListDeviceTokens(listAssigneeId);
-  //       await this.notificationService.pushNotificationFirebase(
-  //         listAssigneeDeviceToken,
-  //         `Công việc đã được cập nhât`,
-  //         `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //       );
-  //     }
-  //     // Notificaiton task master
-  //     if (listUser?.[0].taskMaster !== oUser?.id) {
-  //       const socketId = (
-  //         await this.userService.findById(listUser?.[0].taskMaster)
-  //       )?.socketId;
-  //       const dataNotification: NotificationCreateRequest = {
-  //         title: `Công việc đã được cập nhât`,
-  //         content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //         readFlag: false,
-  //         type: ETypeNotification.TASK,
-  //         sender: oUser.id,
-  //         userId: listUser?.[0].taskMaster,
-  //         eventId: taskExisted?.eventID,
-  //         parentTaskId: taskExisted?.parent?.id,
-  //         commonId: taskID,
-  //       };
-  //       const client = this.appGateWay.server;
-  //       if (socketId !== null) {
-  //         client.to(socketId).emit('notification', {
-  //           ...dataNotification,
-  //           avatar: oUser?.avatar,
-  //         });
-  //       }
-  //       listTaskMasterId.push(listUser?.[0].taskMaster);
-  //       if (listTaskMasterId?.length !== 0) {
-  //         const listTaskMasterToken =
-  //           await this.deviceService.getListDeviceTokens(listTaskMasterId);
-  //         await this.notificationService.pushNotificationFirebase(
-  //           listTaskMasterToken,
-  //           `Công việc đã được cập nhât`,
-  //           `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //         );
-  //       }
-  //       createNotification.push(
-  //         this.notificationService.createNotification(dataNotification),
-  //       );
-  //     }
-  //     await Promise.all(createNotification);
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(error.message);
-  //   }
+  /**
+   * updateTask
+   * @param taskID
+   * @param data
+   * @returns
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    if (!taskID) {
+      throw new InternalServerErrorException(`TaskID is empty`);
+    }
+    try {
+      const taskExist = await queryRunner.manager.findOne(TaskEntity, {
+        where: { id: taskID },
+        select: {
+          eventDivision: {
+            id: true,
+          },
+        },
+        relations: {
+          eventDivision: true,
+        },
+      });
+      if (!taskExist) {
+        throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
+      }
+      const eventID = (
+        await this.assignEventService.getAssigneeEventById(
+          taskExist?.eventDivision?.id,
+        )
+      ).event.id;
+      await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
+      const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
+        where: { taskID: taskID },
+      });
+      const taskExisted: any = await this.taskRepository.findOne({
+        where: { id: taskID },
+        select: {
+          parent: {
+            id: true,
+          },
+        },
+        relations: {
+          parent: true,
+        },
+      });
+      const dataNotification: NotificationCreateRequest = {
+        title: `Công việc đã được cập nhât`,
+        content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+        type: ETypeNotification.TASK,
+        userIdAssignee: listUser.map((item: any) => item.assignee),
+        userIdTaskMaster: [listUser?.[0].taskMaster],
+        eventID: eventID,
+        parentTaskId: taskExisted?.parent?.id,
+        commonId: taskID,
+        avatar: oUser?.avatar,
+        messageSocket: 'notification',
+      };
+      await this.notificationService.createNotification(
+        dataNotification,
+        oUser?.id,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
 
-  //   return true;
-  // }
+    return true;
+  }
 
   /**
    * filterTaskByAssignee

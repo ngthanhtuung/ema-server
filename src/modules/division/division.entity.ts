@@ -20,8 +20,8 @@ export class DivisionEntity extends BaseEntity {
   @OneToMany(() => UserEntity, (user) => user.division, { onDelete: 'CASCADE' })
   users: UserEntity[];
 
-  @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
+  @OneToMany(() => AssignEventEntity, (assignEvent) => assignEvent.division, {
     onDelete: 'CASCADE',
   })
-  assignEvents: [];
+  assignEvents: AssignEventEntity[];
 }

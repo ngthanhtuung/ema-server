@@ -25,6 +25,32 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
    * @param id
    * @returns
    */
+  async getAssigneeEventById(id: string): Promise<AssignEventEntity> {
+    try {
+      const data = this.assignEventRepository.findOne({
+        where: {
+          id: id,
+        },
+        select: {
+          event: {
+            id: true,
+          },
+        },
+        relations: {
+          event: true,
+        },
+      });
+      return data;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * getEventByDivisionID
+   * @param id
+   * @returns
+   */
   async getEventByDivisionID(id: string): Promise<Array<EventResponse>> {
     try {
       const query = this.generalBuilderAssignEvent();

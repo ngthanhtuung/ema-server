@@ -57,12 +57,6 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'float', nullable: true })
   effort: number;
 
-  @CreateDateColumn()
-  @Transform(({ value }) => {
-    return moment(value).format('YYYY-MM-DD HH:mm:ss');
-  })
-  public createdAt: Date;
-
   @Column({ type: 'varchar' })
   createdBy: string;
 

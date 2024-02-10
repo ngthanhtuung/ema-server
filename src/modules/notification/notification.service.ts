@@ -129,9 +129,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
    */
   async createNotification(
     notification: NotificationCreateRequest,
+    senderUser: string,
   ): Promise<unknown> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
+      const client = this.appGateWay.server;
       await queryRunner.startTransaction();
       const newNoti = await queryRunner.manager.insert(NotificationEntity, {
         title: notification.title,
@@ -142,54 +144,72 @@ export class NotificationService extends BaseService<NotificationEntity> {
         eventID: notification?.eventID,
       });
       const createNotification = [];
-      for (let index = 0; index < notification.userId.length; index++) {
-        const idUser = notification.userId[index];
-        const dataNotification = {
-          title: notification.title,
-          content: notification.content,
-          readFlag: false,
-          type: notification.type,
-          userId: idUser,
-          eventID: notification?.eventID,
-          parentTaskId: notification?.parentTaskId,
-          commonId: notification?.commonId,
-          avatarSender: notification?.avatar,
-        };
-        const socketId = (await this.userService.findById(idUser))?.socketId;
-        const client = this.appGateWay.server;
+      const listUserPushNoti = [];
+      let dataNotification;
+      for (
+        let index = 0;
+        index < notification?.userIdAssignee?.length;
+        index++
+      ) {
+        const idUser = notification?.userIdAssignee[index];
+        if (idUser !== senderUser) {
+          dataNotification = {
+            title: notification.title,
+            content: notification.content,
+            readFlag: false,
+            type: notification.type,
+            userId: idUser,
+            eventID: notification?.eventID,
+            parentTaskId: notification?.parentTaskId,
+            commonId: notification?.commonId,
+            avatarSender: notification?.avatar,
+          };
+          const socketId = (await this.userService.findById(idUser))?.socketId;
+          if (socketId !== null) {
+            client
+              .to(socketId)
+              .emit(notification.messageSocket, dataNotification);
+          }
+          createNotification.push(
+            queryRunner.manager.insert(UserNotificationsEntity, {
+              user: { id: idUser },
+              notification: { id: newNoti.identifiers[0].id },
+            }),
+          );
+          listUserPushNoti.push(idUser);
+        }
+      }
+      // Notificaiton task master
+      if (notification?.userIdTaskMaster?.[0] !== senderUser) {
+        const socketId = (
+          await this.userService.findById(notification?.userIdTaskMaster?.[0])
+        )?.socketId;
+        dataNotification.userId = notification?.userIdTaskMaster?.[0];
         if (socketId !== null) {
           client
             .to(socketId)
-            .emit(notification.messageSocket, dataNotification);
+            .emit(notification?.messageSocket, dataNotification);
         }
         createNotification.push(
           queryRunner.manager.insert(UserNotificationsEntity, {
-            user: { id: idUser },
+            user: { id: notification?.userIdTaskMaster?.[0] },
             notification: { id: newNoti.identifiers[0].id },
-            createdAt: moment
-              .tz('Asia/Ho_Chi_Minh')
-              .format('YYYY-MM-DD HH:mm:ss'),
           }),
         );
+        listUserPushNoti.push(notification?.userIdTaskMaster?.[0]);
       }
       // Insert data in UserNotificationsEntity
       await Promise.all(createNotification);
-      //Using firebase to push notification
-      const listDeviceTokens = await this.deviceService.getListDeviceTokens(
-        notification.userId,
+      const firebaseNotificationPayload: FirebaseNotificationRequest = {
+        title: notification?.title,
+        body: notification?.content,
+        listUser: listUserPushNoti,
+      };
+      await this.firebaseCustomService.sendCustomNotificationFirebase(
+        firebaseNotificationPayload,
       );
-      if (listDeviceTokens.length > 0) {
-        const firebaseNotificationPayload: FirebaseNotificationRequest = {
-          title: notification.title,
-          body: notification.content,
-          deviceToken: listDeviceTokens,
-        };
-        await this.firebaseCustomService.sendCustomNotificationFirebase(
-          firebaseNotificationPayload,
-        );
-      }
       await queryRunner.commitTransaction();
-      if (newNoti.raw.affectedRows > 0) {
+      if (newNoti?.raw?.affectedRows > 0) {
         return 'Create notification successfully!';
       }
       throw new InternalServerErrorException('Create notification failed!');

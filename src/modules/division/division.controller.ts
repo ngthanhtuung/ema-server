@@ -24,7 +24,7 @@ export class DivisionController {
   async getAllDivision(
     @Query() divisionPagination: DivisionPagination,
     @Query('mode') mode: number,
-  ): Promise<DivisionEntity> {
+  ): Promise<unknown> {
     return await this.divisionService.getAllDivision(
       divisionPagination,
       Number(mode),

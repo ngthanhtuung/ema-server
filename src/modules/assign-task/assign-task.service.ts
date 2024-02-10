@@ -73,7 +73,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
             taskID: taskID,
             assignee: assignee,
             isLeader: isLeader,
-            taskMaster: oUser.id,
+            taskMaster: oUser?.id,
           };
 
           return queryRunner.manager.insert(AssignTaskEntity, assignTask);
@@ -86,14 +86,18 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       title: `Công việc được giao`,
       content: `${oUser.fullName} đã giao công việc ${task?.title}`,
       type: ETypeNotification.TASK,
-      userId: assignee,
+      userIdAssignee: assignee,
+      userIdTaskMaster: [oUser?.id],
       eventID: task?.eventID,
       parentTaskId: task?.parentTask || task?.parent?.id,
       commonId: taskID,
       avatar: oUser?.avatar,
       messageSocket: 'notification',
     };
-    await this.notificationService.createNotification(dataNotification);
+    await this.notificationService.createNotification(
+      dataNotification,
+      oUser?.id,
+    );
     return 'Assign member successfully';
   }
 }

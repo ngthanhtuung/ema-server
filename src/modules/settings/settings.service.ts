@@ -47,6 +47,8 @@ export class SettingsService {
           name: result.name,
           group: result.group,
           value: result.value,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
         };
       }
       throw new NotFoundException(`Setting ${code} not found`);

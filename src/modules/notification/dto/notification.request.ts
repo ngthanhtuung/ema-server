@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsString,
   IsBoolean,
+  IsNumber,
 } from 'class-validator';
 import { ETypeNotification } from 'src/common/enum/enum';
 
@@ -53,5 +54,11 @@ export class NotificationCreateRequest {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ApiProperty({ type: [String], default: ['string'] })
-  userId: string[];
+  userIdAssignee: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
+  @ApiProperty({ type: [String], default: ['string'] })
+  userIdTaskMaster: string[];
 }
