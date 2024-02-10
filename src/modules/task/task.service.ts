@@ -86,8 +86,6 @@ export class TaskService extends BaseService<TaskEntity> {
     const offset = sizePage * (currentPage - 1);
     try {
       const arrayPromise = listConditions.map((whereCondition) => {
-        console.log('id:', whereCondition);
-
         return this.taskRepository.find({
           where: whereCondition,
           skip: offset,

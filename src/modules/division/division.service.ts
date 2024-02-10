@@ -123,36 +123,46 @@ export class DivisionService extends BaseService<DivisionEntity> {
   async getAllDivision(
     divisionPagination: DivisionPagination,
     mode: number,
-  ): Promise<IPaginateResponse<DivisionResponse>> {
+  ): Promise<DivisionEntity> {
+    let dataDivision;
     try {
       const { currentPage, sizePage } = divisionPagination;
-      const query = this.generalBuilderDivision();
-      query.select([
-        'divisions.id as id',
-        'divisions.divisionName as divisionName',
-        'divisions.description as description',
-        'divisions.status as status',
-        'divisions.staffId as staffId',
-      ]);
-      if (mode === 2) {
-        query.where('divisions.staffId IS NULL');
-      }
-      const [result, total] = await Promise.all([
-        query
-          .offset((sizePage as number) * ((currentPage as number) - 1))
-          .limit(sizePage as number)
-          .execute(),
-        query.getCount(),
-      ]);
-      const data = plainToInstance(DivisionResponse, result);
-      return paginateResponse<DivisionResponse>(
-        [data, total],
-        currentPage as number,
-        sizePage as number,
-      );
+      const fieldName = 'staffId';
+      const whereCondition =
+        mode === 2
+          ? {
+              [fieldName]: null,
+            }
+          : undefined;
+      const offset = sizePage * (currentPage - 1);
+      dataDivision = await this.divisionRepository.find({
+        where: whereCondition,
+        skip: offset,
+        take: sizePage,
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+          },
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+          },
+        },
+      });
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+    return dataDivision;
   }
 
   /**

@@ -11,6 +11,7 @@ import { DivisionPagination } from './dto/division.pagination';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { DivisionResponse } from './dto/division.response';
 import { Public } from 'src/decorators/public.decorator';
+import { DivisionEntity } from './division.entity';
 
 @Controller('division')
 @ApiBearerAuth()
@@ -23,7 +24,7 @@ export class DivisionController {
   async getAllDivision(
     @Query() divisionPagination: DivisionPagination,
     @Query('mode') mode: number,
-  ): Promise<IPaginateResponse<DivisionResponse>> {
+  ): Promise<DivisionEntity> {
     return await this.divisionService.getAllDivision(
       divisionPagination,
       Number(mode),
