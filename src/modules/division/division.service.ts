@@ -82,13 +82,25 @@ export class DivisionService extends BaseService<DivisionEntity> {
               fullName: true,
             },
           },
+          assignEvents: true,
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+          },
+          assignEvents: true,
         },
       });
 
       if (!division) {
         throw new NotFoundException('Division not found');
       }
-      return plainToClass(DivisionResponse, division);
+      const res = {
+        ...division,
+        assignEvents: division.assignEvents.length || 0,
+      };
+      return res;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
