@@ -137,6 +137,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
       );
       query.leftJoin('users', 'users', 'divisions.id = users.divisionId');
       query.leftJoin('profiles', 'profiles', 'users.id = profiles.profileId');
+      query.leftJoin('roles', 'roles', 'roles.id = users.roleId');
       query.select([
         'divisions.id as divisionId',
         'divisions.divisionName as divisionName',
@@ -144,7 +145,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'profiles.fullName as fullName',
         'profiles.avatar as avatar',
       ]);
-      query.where('users.role = :role', {
+      query.where('roles.roleName = :role', {
         role: ERole.STAFF,
       });
       query.andWhere('assign_events.eventId = :eventId', {
@@ -171,6 +172,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
       );
       query.leftJoin('users', 'users', 'divisions.id = users.divisionId');
       query.leftJoin('profiles', 'profiles', 'users.id = profiles.profileId');
+      query.leftJoin('roles', 'roles', 'roles.id = users.roleId');
       query.select([
         'assign_events.eventId as eventId',
         'divisions.id as divisionId',
@@ -179,7 +181,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'profiles.fullName as fullName',
         'profiles.avatar as avatar',
       ]);
-      query.where('users.roleId = :role', {
+      query.where('roles.roleName = :role', {
         role: ERole.STAFF,
       });
       const data = await query.execute();

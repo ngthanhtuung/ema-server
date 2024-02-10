@@ -144,6 +144,7 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionByEventID(id);
+
       const finalRes = { ...event, listDivision: listStaffOfDivision || [] };
       return plainToClass(EventResponse, finalRes);
     } catch (err) {
@@ -217,13 +218,6 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
-      // const arrayPromise = event.divisionId.map((id) =>
-      //   queryRunner.manager.insert(AssignEventEntity, {
-      //     event: { id: createEvent.generatedMaps[0]['id'] },
-      //     division: { id: id },
-      //   }),
-      // );
-      // await Promise.all(arrayPromise);
       await queryRunner.commitTransaction();
       return `${createEvent.generatedMaps[0]['id']} created successfully1`;
     } catch (err) {
@@ -408,7 +402,7 @@ export class EventService extends BaseService<EventEntity> {
 
   async getUserInEvent(eventId: string): Promise<unknown> {
     try {
-      const query = `SELECT p.profileId as 'id', p.role,
+      const query = `SELECT p.profileId as 'id', u.roleId,
                             p.fullName,
                             p.dob,
                             p.nationalId,
