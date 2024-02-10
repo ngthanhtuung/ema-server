@@ -55,6 +55,11 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
     try {
       const query = this.generalBuilderAssignEvent();
       query.leftJoin('events', 'events', 'assign_events.eventId = events.id');
+      query.leftJoin(
+        'event_types',
+        'event_types',
+        'event_types.id = events.eventTypeId',
+      );
       query.select([
         'events.id as id',
         'events.eventName as eventName',
@@ -66,6 +71,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'events.estBudget as estBudget',
         'events.createdAt as createdAt',
         'events.updatedAt as updatedAt',
+        'event_types.typeName as typeName',
         'events.status as status',
       ]);
       query.where('assign_events.divisionId = :divisionId', {

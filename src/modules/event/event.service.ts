@@ -70,6 +70,11 @@ export class EventService extends BaseService<EventEntity> {
         'tasks',
         'tasks.eventDivision = assign_events.id',
       );
+      query.leftJoin(
+        'event_types',
+        'event_types',
+        'event_types.id = events.eventTypeId',
+      );
       query.select([
         'events.id as id',
         'events.eventName as eventName',
@@ -83,6 +88,7 @@ export class EventService extends BaseService<EventEntity> {
         'events.createdAt as createdAt',
         'events.updatedAt as updatedAt',
         'events.status as status',
+        'event_types.typeName as typeName',
         'COUNT(tasks.id) as taskCount',
       ]);
       query.where('tasks.parentTask IS NULL AND events.isTemplate = 0');
@@ -145,6 +151,14 @@ export class EventService extends BaseService<EventEntity> {
     try {
       const event = await this.findOne({
         where: { id: id },
+        select: {
+          eventType: {
+            typeName: true,
+          },
+        },
+        relations: {
+          eventType: true,
+        },
       });
       if (!event) {
         throw new NotFoundException('Event not found');
