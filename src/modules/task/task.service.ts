@@ -485,6 +485,26 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
+  async countTaskInEvent(eventId: string): Promise<number> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const query = await queryRunner.manager.query(`
+      SELECT COUNT(t.id) AS count
+      FROM ema.tasks t
+      WHERE t.eventDivisionId  IN (
+          SELECT ae.id
+          FROM ema.assign_events ae
+          WHERE ae.eventId = "${eventId}"
+);
+      `);
+      console.log(query[0].count);
+      const result = query[0].count;
+      return Number(result) || 0;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
   // async getTaskStatistic(eventId: string): Promise<unknown> {
   //   try {
   //     const tasks = await this.taskRepository.find({

@@ -28,6 +28,7 @@ import { EEventStatus } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
+import { TaskService } from '../task/task.service';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -37,6 +38,7 @@ export class EventService extends BaseService<EventEntity> {
     @InjectDataSource()
     private dataSource: DataSource,
     private readonly assignEventService: AssignEventService,
+    private readonly taskService: TaskService,
   ) {
     super(eventRepository);
   }
@@ -109,15 +111,20 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      dataPromise[0] = dataPromise[0]?.map((item) => {
-        item.startDate = moment(item.startDate).format('YYYY-MM-DD');
-        item.endDate = moment(item.endDate).format('YYYY-MM-DD');
-        item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
-        item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
-        item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
-        item.taskCount = +item.taskCount;
-        return item;
-      });
+      const finalData = [];
+      for (const item of dataPromise[0]) {
+        const dataMap = {
+          ...item,
+          startDate: moment(item.startDate).format('YYYY-MM-DD'),
+          endDate: moment(item.endDate).format('YYYY-MM-DD'),
+          createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+          updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+          listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
+          taskCount: await this.taskService.countTaskInEvent(item?.id),
+        };
+        finalData.push(dataMap);
+      }
+      dataPromise[0] = finalData;
       const data = plainToInstance(EventResponse, dataPromise[0]);
       return paginateResponse<EventResponse>(
         [data, dataPromise[1]],
@@ -144,8 +151,12 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionByEventID(id);
-
-      const finalRes = { ...event, listDivision: listStaffOfDivision || [] };
+      const taskCount = await this.taskService.countTaskInEvent(id);
+      const finalRes = {
+        ...event,
+        listDivision: listStaffOfDivision || [],
+        taskCount: taskCount,
+      };
       return plainToClass(EventResponse, finalRes);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
