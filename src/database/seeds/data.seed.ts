@@ -252,7 +252,7 @@ export class DataSeed implements Seeder {
         processingDate: '2024-02-27',
         coverUrl: 'string',
         location: 'Đại học FPT, Cơ sở Thành Phố Hồ Chí Minh',
-        description: 'hahahahaha',
+        description: '[{"insert":"123123123123123\n"}]',
         estBudget: 100000000,
         createdBy: manager1['identifiers'][0]['id'],
         eventType: {

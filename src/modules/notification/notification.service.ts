@@ -184,7 +184,17 @@ export class NotificationService extends BaseService<NotificationEntity> {
         const socketId = (
           await this.userService.findById(notification?.userIdTaskMaster?.[0])
         )?.socketId;
-        dataNotification.userId = notification?.userIdTaskMaster?.[0];
+        dataNotification = {
+          title: notification.title,
+          content: notification.content,
+          readFlag: false,
+          type: notification.type,
+          userId: notification?.userIdTaskMaster?.[0],
+          eventID: notification?.eventID,
+          parentTaskId: notification?.parentTaskId,
+          commonId: notification?.commonId,
+          avatarSender: notification?.avatar,
+        };
         if (socketId !== null) {
           client
             .to(socketId)
