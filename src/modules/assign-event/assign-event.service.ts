@@ -142,7 +142,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'assign_events.divisionId = divisions.id',
       );
       query.leftJoin('users', 'users', 'divisions.id = users.divisionId');
-      query.leftJoin('profiles', 'profiles', 'users.id = profiles.profileId');
+      query.leftJoin('profiles', 'profiles', 'users.id = profiles.id');
       query.leftJoin('roles', 'roles', 'roles.id = users.roleId');
       query.select([
         'divisions.id as divisionId',
@@ -177,7 +177,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
         'assign_events.divisionId = divisions.id',
       );
       query.leftJoin('users', 'users', 'divisions.id = users.divisionId');
-      query.leftJoin('profiles', 'profiles', 'users.id = profiles.profileId');
+      query.leftJoin('profiles', 'profiles', 'users.id = profiles.id');
       query.leftJoin('roles', 'roles', 'roles.id = users.roleId');
       query.select([
         'assign_events.eventId as eventId',

@@ -70,10 +70,10 @@ export class TaskService extends BaseService<TaskEntity> {
     ];
     if (fieldName === 'eventID') {
       fieldName = 'eventDivision';
-      const listIdEventDivison: any =
+      const listIdEventDivision: any =
         await this.assignEventService.getListIdEventDivision(conValue);
-      console.log('listIdEventDivison:', listIdEventDivison);
-      listConditions = listIdEventDivison.map((item) => {
+      console.log('listIdEventDivison:', listIdEventDivision);
+      listConditions = listIdEventDivision.map((item) => {
         return {
           [fieldName]: {
             id: item?.id,

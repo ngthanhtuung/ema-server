@@ -73,7 +73,7 @@ export class UserService extends BaseService<UserEntity> {
     const query = this.generalBuilderUser();
 
     query
-      .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+      .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
       .leftJoin('roles', 'roles', 'roles.id = users.roleId')
       .where('users.email = :email', { email });
 
@@ -102,7 +102,7 @@ export class UserService extends BaseService<UserEntity> {
   async findById(id: string): Promise<PayloadUser> {
     const query = this.generalBuilderUser();
     query
-      .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+      .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
       .leftJoin('roles', 'roles', 'users.roleId = roles.id')
       .where('users.id = :id', { id });
 
@@ -134,7 +134,7 @@ export class UserService extends BaseService<UserEntity> {
     try {
       const query = this.generalBuilderUser();
       query
-        .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+        .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
         .leftJoin('roles', 'roles', 'users.roleId = roles.id')
         .where('users.id = :id', { id });
@@ -174,7 +174,7 @@ export class UserService extends BaseService<UserEntity> {
       const query = this.generalBuilderUser();
       query
         .leftJoin('roles', 'roles', 'users.roleId = roles.id')
-        .leftJoin('profiles', 'profiles', 'users.id = profiles.profileId')
+        .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
         .where('roles. roleName != :excludedRole', {
           excludedRole: ERole.MANAGER,
@@ -259,13 +259,21 @@ export class UserService extends BaseService<UserEntity> {
           DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
         );
       }
-
       createUser = await queryRunner.manager.insert(UserEntity, {
-        email,
-        password,
-        division,
-        role,
+        email: userCreateRequest?.email,
+        password: password,
+        division: {
+          id: userCreateRequest?.divisionId,
+        },
+        role: {
+          id: userCreateRequest?.roleId,
+        },
         typeEmployee: typeEmployee,
+      });
+      await queryRunner.manager.insert(ProfileEntity, {
+        ...profile,
+        code: '1234',
+        id: createUser.generatedMaps[0]['id'],
       });
       if (role.roleName === ERole.STAFF) {
         await queryRunner.manager.update(
@@ -278,10 +286,6 @@ export class UserService extends BaseService<UserEntity> {
           },
         );
       }
-      await queryRunner.manager.insert(ProfileEntity, {
-        ...profile,
-        profileId: createUser.generatedMaps[0]['id'],
-      });
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
     await this.transaction(callback, queryRunner);
@@ -438,7 +442,7 @@ export class UserService extends BaseService<UserEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       const result = await queryRunner.manager.update(
         ProfileEntity,
-        { profileId: userId },
+        { id: userId },
         {
           ...data,
         },
@@ -511,7 +515,7 @@ export class UserService extends BaseService<UserEntity> {
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
         await queryRunner.manager.update(
           ProfileEntity,
-          { profileId: userIdUpdate },
+          { id: userIdUpdate },
           {
             phoneNumber: data.phoneNumber,
             fullName: data.fullName,
@@ -654,7 +658,7 @@ export class UserService extends BaseService<UserEntity> {
       }
       await queryRunner.manager.insert(ProfileEntity, {
         ...profile,
-        profileId: createUser.generatedMaps[0]['id'],
+        id: createUser.generatedMaps[0]['id'],
       });
     };
     await this.transaction(callback, queryRunner);

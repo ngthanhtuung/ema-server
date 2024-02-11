@@ -74,10 +74,10 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   updatedBy: string;
 
-  @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
+  @OneToMany(() => AssignEventEntity, (assignEvent) => assignEvent.event, {
     onDelete: 'CASCADE',
   })
-  assignEvents: [];
+  assignEvents: AssignEventEntity[];
 
   @OneToMany(() => FeedbackEntity, (feedback) => feedback.event)
   feedbacks: FeedbackEntity[];

@@ -1,19 +1,10 @@
 import { EPriority, ETaskStatus } from 'src/common/enum/enum';
 import { BaseEntity } from '../base/base.entity';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { CommentEntity } from '../comment/comment.entity';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { TaskFileEntity } from '../taskfile/taskfile.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { Transform } from 'class-transformer';
-import moment from 'moment';
 
 @Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {

@@ -66,13 +66,14 @@ export class UserEntity extends BaseEntity {
   })
   comments: CommentEntity[];
 
-  @OneToMany(() => AssignTaskEntity, (assignee) => assignee.user)
+  @OneToMany(() => AssignTaskEntity, (assignee) => assignee.user, {
+    onDelete: 'CASCADE',
+  })
   assignee: AssignTaskEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'id' })
   profile: ProfileEntity;
 
   @ManyToOne(() => RoleEntity, (role) => role.users, {

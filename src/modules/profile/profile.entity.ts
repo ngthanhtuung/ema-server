@@ -1,11 +1,18 @@
 import { EGender, ERole } from 'src/common/enum/enum';
 import { UserEntity } from 'src/modules/user/user.entity';
-import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 
 @Entity({ name: 'profiles' })
-export class ProfileEntity {
+export class ProfileEntity extends BaseEntity {
   @PrimaryColumn()
-  profileId: string;
+  id: string;
 
   @Column({ type: 'varchar', length: 255 })
   code: string;
@@ -34,5 +41,6 @@ export class ProfileEntity {
   @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'id' })
   user: UserEntity;
 }
