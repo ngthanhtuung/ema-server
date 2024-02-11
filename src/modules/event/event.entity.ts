@@ -74,9 +74,6 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   updatedBy: string;
 
-  // @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
-  // tasks: TaskEntity[];
-
   @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
     onDelete: 'CASCADE',
   })

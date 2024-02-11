@@ -285,14 +285,6 @@ export class UserService extends BaseService<UserEntity> {
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
     await this.transaction(callback, queryRunner);
-    await this.userRepository.update(
-      {
-        id: createUser.generatedMaps[0]['id'],
-      },
-      {
-        profile: createUser.generatedMaps[0]['id'],
-      },
-    );
     return 'Create user success';
   }
 
