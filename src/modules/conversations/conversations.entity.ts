@@ -1,21 +1,39 @@
-import { Column, Entity, OneToMany } from 'typeorm';
-import { ParticipantsEntity } from '../participants/participants.entity';
+import {
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
+import { UserEntity } from '../user/user.entity';
+import { MessageEntity } from '../messages/messages.entity';
+import { Transform } from 'class-transformer';
+import moment from 'moment';
 
 @Entity({ name: 'conversations' })
-export class ConversationEntity extends BaseEntity {
-  @Column({ type: 'varchar', nullable: false })
-  title: string;
+export class ConversationsEntity extends BaseEntity {
+  @OneToOne(() => UserEntity, { createForeignKeyConstraints: false })
+  @JoinColumn()
+  creator: UserEntity;
 
-  @Column({ type: 'varchar', nullable: false })
-  creatorId: string;
+  @OneToOne(() => UserEntity, { createForeignKeyConstraints: false })
+  @JoinColumn()
+  recipient: UserEntity;
 
-  @Column({ type: 'date', nullable: true })
-  deletedAt: Date;
+  @OneToMany(() => MessageEntity, (message) => message.conversation, {
+    cascade: ['insert', 'remove', 'update'],
+  })
+  @JoinColumn()
+  messages: MessageEntity[];
 
-  @OneToMany(
-    () => ParticipantsEntity,
-    (participant) => participant.conversations,
-  )
-  participants: ParticipantsEntity[];
+  @OneToOne(() => MessageEntity)
+  @JoinColumn({ name: 'last_message_sent' })
+  lastMessageSent: MessageEntity;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  @Transform(({ value }) => {
+    return moment(value).tz('Asia/Bangkok').toDate();
+  })
+  lastMessageSentAt: Date;
 }

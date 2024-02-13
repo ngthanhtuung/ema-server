@@ -2,12 +2,11 @@ import { BaseEntity } from 'src/modules/base/base.entity';
 import {
   Column,
   Entity,
-  JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
 } from 'typeorm';
-import { NotificationEntity } from '../notification/notification.entity';
 import { DeviceEntity } from '../device/device.entity';
 import { DivisionEntity } from '../division/division.entity';
 import { CommentEntity } from '../comment/comment.entity';
@@ -17,8 +16,7 @@ import { ProfileEntity } from '../profile/profile.entity';
 import { RoleEntity } from '../roles/roles.entity';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
 import { MessageEntity } from '../messages/messages.entity';
-import { DeletedMessagesEntity } from '../deleted_messages/deleted_messages.entity';
-import { ParticipantsEntity } from '../participants/participants.entity';
+import { GroupsEntity } from '../groups/groups.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -87,18 +85,12 @@ export class UserEntity extends BaseEntity {
   )
   userNotifications: UserNotificationsEntity[];
 
-  @OneToMany(() => MessageEntity, (message) => message.user)
+  @OneToMany(() => MessageEntity, (message) => message.author)
   messages: MessageEntity[];
-
-  @OneToMany(
-    () => DeletedMessagesEntity,
-    (deletedMessages) => deletedMessages.user,
-  )
-  deletedMessages: DeletedMessagesEntity[];
-
-  @OneToMany(() => ParticipantsEntity, (participant) => participant.user)
-  participants: ParticipantsEntity[];
 
   @Column({ type: 'varchar', nullable: true })
   socketId: string;
+
+  @ManyToMany(() => GroupsEntity, (group) => group.users)
+  groups: GroupsEntity[];
 }

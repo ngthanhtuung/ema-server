@@ -24,7 +24,6 @@ import { AssignTaskModule } from './modules/assign-task/assign-task.module';
 import { FileModule } from './file/file.module';
 import { FirebaseProviderModule } from './providers/firebase/provider.module';
 import { NotificationModule } from './modules/notification/notification.module';
-import { GatewayModule } from './sockets/gateway.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { DeviceModule } from './modules/device/device.module';
 import { CommentfileModule } from './modules/commentfile/commentfile.module';
@@ -36,6 +35,14 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { CustomerContactsModule } from './modules/customer_contacts/customer_contacts.module';
 import { EventTypesModule } from './modules/event_types/event_types.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
+import { GatewayModule } from './sockets/gateway.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { ConversationsModule } from './modules/conversations/conversations.module';
+import { GroupsModule } from './modules/groups/groups.module';
+import { GroupsMessagesModule } from './modules/groups_messages/groups_messages.module';
+import { GroupsMessagesAttachmentsModule } from './modules/groups_messages_attachments/groups_messages_attachments.module';
+import { MessagesAttachmentsModule } from './modules/messages_attachments/messages_attachments.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -47,6 +54,7 @@ import { ContractsModule } from './modules/contracts/contracts.module';
       }),
     }),
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
     SharedModule,
     JwtModule.register({
@@ -78,6 +86,12 @@ import { ContractsModule } from './modules/contracts/contracts.module';
     RolesModule,
     UserNotificationsModule,
     SharedModule,
+    MessagesModule,
+    ConversationsModule,
+    GroupsModule,
+    GroupsMessagesModule,
+    GroupsMessagesAttachmentsModule,
+    MessagesAttachmentsModule,
   ],
   controllers: [AppController],
   providers: [

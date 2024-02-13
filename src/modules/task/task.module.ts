@@ -12,7 +12,6 @@ import { UserModule } from '../user/user.module';
 import { GatewayModule } from 'src/sockets/gateway.module';
 import { DeviceModule } from '../device/device.module';
 import { AssignEventModule } from '../assign-event/assign-event.module';
-
 @Module({
   imports: [
     GatewayModule,

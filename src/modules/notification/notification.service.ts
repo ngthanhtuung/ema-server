@@ -16,23 +16,25 @@ import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
-import { DeviceService } from '../device/device.service';
 import { UserNotificationsService } from '../user_notifications/user_notifications.service';
 import { FirebaseMessageService } from 'src/providers/firebase/message/firebase-message.service';
 import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/firebase-notification.dto';
 import { AppGateway } from 'src/sockets/app.gateway';
+import { Services } from 'src/utils/constants';
+import { IGatewaySessionManager } from 'src/sockets/gateway.session';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
     @Inject(forwardRef(() => AppGateway))
     private readonly appGateWay: AppGateway,
+    @Inject(Services.GATEWAY_SESSION_MANAGER)
+    readonly sessions: IGatewaySessionManager,
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
     protected readonly userService: UserService,
     @InjectDataSource()
     private dataSource: DataSource,
     private readonly firebaseCustomService: FirebaseMessageService,
-    private readonly deviceService: DeviceService,
     private readonly userNotificationService: UserNotificationsService,
   ) {
     super(notificationRepository);
@@ -164,10 +166,10 @@ export class NotificationService extends BaseService<NotificationEntity> {
             commonId: notification?.commonId,
             avatarSender: notification?.avatar,
           };
-          const socketId = (await this.userService.findById(idUser))?.socketId;
-          if (socketId !== null) {
+          const socket = this.sessions.getUserSocket(idUser);
+          if (socket !== null) {
             client
-              .to(socketId)
+              .to(socket.id)
               .emit(notification.messageSocket, dataNotification);
           }
           createNotification.push(

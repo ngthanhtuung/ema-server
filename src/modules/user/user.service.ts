@@ -43,6 +43,7 @@ import * as moment from 'moment-timezone';
 import { TaskService } from '../task/task.service';
 import * as _ from 'lodash';
 import { RoleEntity } from '../roles/roles.entity';
+import { FindUserOptions, FindUserParams } from 'src/utils/types';
 
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
@@ -62,6 +63,45 @@ export class UserService extends BaseService<UserEntity> {
    */
   generalBuilderUser(): SelectQueryBuilder<UserEntity> {
     return this.userRepository.createQueryBuilder('users');
+  }
+
+  /**
+   * getAllUser
+   * @param email
+   * @returns
+   */
+  async getAllUser(): Promise<UserEntity[]> {
+    const getAllUser = await this.userRepository.find();
+    return getAllUser;
+  }
+
+  /**
+   * findByEmail
+   * @param email
+   * @returns
+   */
+  async findUser(email: string): Promise<UserEntity> {
+    const query = this.generalBuilderUser();
+
+    query
+      .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
+      .leftJoin('roles', 'roles', 'roles.id = users.roleId')
+      .where('users.email = :email', { email });
+
+    query
+      .select('roles.roleName as role')
+      .addSelect([
+        'users.id as id',
+        'users.status as status',
+        'users.divisionId as divisionId',
+        'users.typeEmployee as typeEmployee',
+        'profiles.avatar as avatar',
+        'profiles.fullName as fullName',
+      ]);
+
+    const data = await query.execute();
+
+    return data;
   }
 
   /**
