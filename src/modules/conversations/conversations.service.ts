@@ -56,6 +56,7 @@ export class ConversationsService implements IConversationsService {
       select: {
         lastMessageSent: {
           id: true,
+          content: true,
         },
         creator: {
           id: true,
@@ -102,6 +103,7 @@ export class ConversationsService implements IConversationsService {
       select: {
         lastMessageSent: {
           id: true,
+          content: true,
         },
         creator: {
           id: true,
