@@ -15,6 +15,7 @@ import {
   Post,
   // UploadedFiles,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 // import {
@@ -22,7 +23,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 //   FilesInterceptor,
 // } from '@nestjs/platform-express';
 // import { Attachment } from 'src/utils/types';
-import { EmptyMessageException } from './exceptions/EmptyMessage';
 import { UserEntity } from '../user/user.entity';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CreateMessageDto } from './dtos/CreateMessage.dto';
@@ -30,6 +30,7 @@ import { EditMessageDto } from './dtos/EditMessage.dto';
 import { MessageEntity } from './messages.entity';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { MessagesPagination } from './dtos/messages.pagination';
 @Controller(Routes.MESSAGES)
 @ApiTags('Message')
 @ApiBearerAuth()
@@ -85,8 +86,14 @@ export class MessageController {
 
   @Get()
   @SkipThrottle()
-  async getMessagesFromConversation(@Param('id') id: string) {
-    const messages = await this.messageService.getMessages(id);
+  async getMessagesFromConversation(
+    @Param('id') id: string,
+    @Query() messagesPagination: MessagesPagination,
+  ) {
+    const messages = await this.messageService.getMessages(
+      id,
+      messagesPagination,
+    );
     return { id, messages };
   }
 

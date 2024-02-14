@@ -17,6 +17,8 @@ import { ConversationNotFoundException } from '../conversations/exceptions/Conve
 import { CannotCreateMessageException } from './exceptions/CannotCreateMessage';
 import { CannotDeleteMessage } from './exceptions/CannotDeleteMessage';
 import { ConversationsEntity } from '../conversations/conversations.entity';
+import { MessagesPagination } from './dtos/messages.pagination';
+import { IPaginateResponse } from '../base/filter.pagination';
 
 @Injectable()
 export class MessageService implements IMessageService {
@@ -59,8 +61,12 @@ export class MessageService implements IMessageService {
    * @param conversationId
    * @returns
    */
-  getMessages(conversationId: string): Promise<MessageEntity[]> {
-    return this.messageRepository.find({
+  async getMessages(
+    conversationId: string,
+    messagesPagination: MessagesPagination,
+  ): Promise<IPaginateResponse<MessageEntity[]>> {
+    const { sizePage, currentPage } = messagesPagination;
+    const data = await this.messageRepository.find({
       relations: ['author', 'attachments', 'author.profile'],
       where: { conversation: { id: conversationId } },
       order: { createdAt: 'DESC' },
@@ -75,6 +81,22 @@ export class MessageService implements IMessageService {
         },
       },
     });
+    const total = await this.messageRepository.count({
+      where: { conversation: { id: conversationId } },
+    });
+    console.log('total:', total);
+    const lastPage: number = Math.ceil(total / sizePage);
+    const nextPage: number =
+      currentPage + 1 > lastPage ? null : currentPage + 1;
+    const prevPage: number = currentPage - 1 < 1 ? null : currentPage - 1;
+    return {
+      currentPage: currentPage,
+      nextPage: nextPage,
+      prevPage: prevPage,
+      lastPage: lastPage,
+      totalItems: total,
+      data: data,
+    };
   }
 
   /**

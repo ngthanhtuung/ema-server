@@ -31,7 +31,7 @@ export type FindUserOptions = Partial<{
 
 export type CreateConversationParams = {
   email: string;
-  message: string;
+  message?: string;
 };
 
 export type ConversationIdentityType = 'author' | 'recipient';

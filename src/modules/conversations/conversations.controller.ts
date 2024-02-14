@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Routes, Services } from 'src/utils/constants';
@@ -9,6 +17,7 @@ import { GetUser } from 'src/decorators/getUser.decorator';
 import { UserEntity } from '../user/user.entity';
 import { CreateConversationDto } from './dtos/CreateConversation.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ConservationsPagination } from './dtos/conversations.pagination';
 
 @ApiTags('Conversations')
 @Controller(Routes.CONVERSATIONS)
@@ -39,9 +48,15 @@ export class ConversationsController {
   }
 
   @Get()
-  async getConversations(@GetUser() user: string) {
+  async getConversations(
+    @GetUser() user: string,
+    @Query() conservationsPagination: ConservationsPagination,
+  ) {
     const idUser = JSON.parse(user).id;
-    return this.conversationsService.getConversations(idUser);
+    return this.conversationsService.getConversations(
+      idUser,
+      conservationsPagination,
+    );
   }
 
   @Get(':id')

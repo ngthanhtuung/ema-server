@@ -18,12 +18,12 @@ import {
   UpdateConversationParams,
 } from 'src/utils/types';
 import { UserEntity } from '../user/user.entity';
-import { UserNotFoundException } from '../user/exceptions/UserNotFound';
-import { CreateConversationException } from './exceptions/CreateConversation';
 import { ConversationExistsException } from './exceptions/ConversationExists';
 import { ConversationNotFoundException } from './exceptions/ConversationNotFound';
 import { ConversationsEntity } from 'src/modules/conversations/conversations.entity';
 import { UserService } from '../user/user.service';
+import { ConservationsPagination } from './dtos/conversations.pagination';
+import { IPaginateResponse } from '../base/filter.pagination';
 
 @Injectable()
 export class ConversationsService implements IConversationsService {
@@ -40,8 +40,13 @@ export class ConversationsService implements IConversationsService {
    * @param id
    * @returns
    */
-  async getConversations(id: string): Promise<ConversationsEntity[]> {
-    return this.conversationRepository.find({
+  async getConversations(
+    id: string,
+    conservationsPagination: ConservationsPagination,
+  ): Promise<IPaginateResponse<ConversationsEntity[]>> {
+    const { sizePage, currentPage } = conservationsPagination;
+    const offset = sizePage * (currentPage - 1);
+    const data = await this.conversationRepository.find({
       where: [
         {
           creator: { id },
@@ -50,6 +55,8 @@ export class ConversationsService implements IConversationsService {
           recipient: { id },
         },
       ],
+      skip: offset,
+      take: sizePage,
       order: {
         lastMessageSentAt: 'DESC',
       },
@@ -85,6 +92,32 @@ export class ConversationsService implements IConversationsService {
         },
       },
     });
+
+    console.log('data:', data);
+
+    const total = await this.conversationRepository.count({
+      where: [
+        {
+          creator: { id },
+        },
+        {
+          recipient: { id },
+        },
+      ],
+    });
+    console.log('total:', total);
+    const lastPage: number = Math.ceil(total / sizePage);
+    const nextPage: number =
+      currentPage + 1 > lastPage ? null : currentPage + 1;
+    const prevPage: number = currentPage - 1 < 1 ? null : currentPage - 1;
+    return {
+      currentPage: currentPage,
+      nextPage: nextPage,
+      prevPage: prevPage,
+      lastPage: lastPage,
+      totalItems: total,
+      data: data,
+    };
   }
 
   /**
@@ -180,12 +213,24 @@ export class ConversationsService implements IConversationsService {
     const conversation = await this.conversationRepository.save(
       newConversation,
     );
-    const newMessage = this.messageRepository.create({
-      content,
-      conversation,
-      author: creator,
-    });
-    await this.messageRepository.save(newMessage);
+    if (content) {
+      const newMessage = this.messageRepository.create({
+        content,
+        conversation,
+        author: creator,
+      });
+      await this.messageRepository.save(newMessage);
+      await this.conversationRepository.update(
+        {
+          id: conversation.id,
+        },
+        {
+          lastMessageSent: {
+            id: newMessage.id,
+          },
+        },
+      );
+    }
     return conversation;
   }
 

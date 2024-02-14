@@ -6,13 +6,18 @@ import {
 } from 'src/utils/types';
 import { ConversationsEntity } from '../conversations.entity';
 import { UserEntity } from 'src/modules/user/user.entity';
+import { ConservationsPagination } from '../dtos/conversations.pagination';
+import { IPaginateResponse } from 'src/modules/base/filter.pagination';
 
 export interface IConversationsService {
   createConversation(
     user: UserEntity,
     conversationParams: CreateConversationParams,
   ): Promise<ConversationsEntity>;
-  getConversations(id: string): Promise<ConversationsEntity[]>;
+  getConversations(
+    id: string,
+    conservationsPagination: ConservationsPagination,
+  ): Promise<IPaginateResponse<ConversationsEntity[]>>;
   findById(id: string): Promise<ConversationsEntity | undefined>;
   hasAccess(params: AccessParams): Promise<boolean>;
   isCreated(

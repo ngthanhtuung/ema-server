@@ -6,7 +6,6 @@ export class CreateConversationDto {
   @ApiProperty({ default: 'huydoanmec@gmail.com' })
   email: string;
 
-  @IsNotEmpty()
   @IsString()
   @ApiProperty({ default: 'test create' })
   message: string;
