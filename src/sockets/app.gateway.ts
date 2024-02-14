@@ -80,9 +80,9 @@ export class AppGateway
   ): Promise<void> {
     this.logger.log(`${socket.id} connect`);
     try {
-      const token: any = await this.getDataUserFromToken(socket);
-      // Save data cliendID in database
-      await this.userService.insertSocketId(token.id, socket.id);
+      // const token: any = await this.getDataUserFromToken(socket);
+      // // Save data cliendID in database
+      // await this.userService.insertSocketId(token.id, socket.id);
       this.sessions.setUserSocket(socket.user.id, socket);
       socket.emit(SocketEnum.CONNECT_SUCCESS, 'Connect success');
     } catch (error) {
