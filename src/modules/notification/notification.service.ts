@@ -183,9 +183,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
       }
       // Notificaiton task master
       if (notification?.userIdTaskMaster?.[0] !== senderUser) {
-        const socketId = (
-          await this.userService.findById(notification?.userIdTaskMaster?.[0])
-        )?.socketId;
+        const socket = this.sessions.getUserSocket(
+          notification?.userIdTaskMaster?.[0],
+        );
         dataNotification = {
           title: notification.title,
           content: notification.content,
@@ -197,9 +197,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
           commonId: notification?.commonId,
           avatarSender: notification?.avatar,
         };
-        if (socketId !== null) {
+        if (socket !== null) {
           client
-            .to(socketId)
+            .to(socket.id)
             .emit(notification?.messageSocket, dataNotification);
         }
         createNotification.push(

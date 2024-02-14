@@ -35,8 +35,11 @@ import { IGroupService } from 'src/modules/groups/interfaces/group';
 @UseGuards(WsGuard)
 @WebSocketGateway(3006, {
   cors: {
-    origin: '*',
+    origin: ['http://localhost:3000'],
+    credentials: true,
   },
+  pingInterval: 10000,
+  pingTimeout: 15000,
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -68,8 +71,7 @@ export class AppGateway
       const decoded = this.jwtService.verify(accessToken, {
         secret: jwtConstants.accessTokenSecret,
       });
-      console.log('decoded:', decoded);
-      return decoded; // response to function
+      return decoded;
     } catch (ex) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     }
@@ -80,10 +82,8 @@ export class AppGateway
   ): Promise<void> {
     this.logger.log(`${socket.id} connect`);
     try {
-      // const token: any = await this.getDataUserFromToken(socket);
-      // // Save data cliendID in database
-      // await this.userService.insertSocketId(token.id, socket.id);
-      this.sessions.setUserSocket(socket.user.id, socket);
+      const token: any = await this.getDataUserFromToken(socket);
+      this.sessions.setUserSocket(token.id, socket);
       socket.emit(SocketEnum.CONNECT_SUCCESS, 'Connect success');
     } catch (error) {
       return error.message;
@@ -94,7 +94,7 @@ export class AppGateway
     this.logger.log(`${socket.id} disconnect`);
     try {
       const token: any = await this.getDataUserFromToken(socket);
-      await this.userService.insertSocketId(token.id, null);
+      this.sessions.removeUserSocket(token.id);
     } catch (error) {
       return error.message;
     }
@@ -178,7 +178,6 @@ export class AppGateway
       author.id === creator.id
         ? this.sessions.getUserSocket(recipient.id)
         : this.sessions.getUserSocket(creator.id);
-
     if (authorSocket) authorSocket.emit('onMessage', payload);
     if (recipientSocket) recipientSocket.emit('onMessage', payload);
     return;
