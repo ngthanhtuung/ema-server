@@ -13,6 +13,7 @@ import {
 } from 'src/common/constants/constants';
 import { UserEntity } from 'src/modules/user/user.entity';
 import {
+  CustomerCreateRequest,
   FilterFreeEmployee,
   UserCreateRequest,
   UserPagination,
@@ -326,6 +327,47 @@ export class UserService extends BaseService<UserEntity> {
           },
         );
       }
+      await this.shareService.sendConfirmEmail(email, generatePassword);
+    };
+    await this.transaction(callback, queryRunner);
+    return 'Create user success';
+  }
+
+  /**
+   * insertCustomer
+   * @param customerRequest
+   * @returns
+   */
+  async insertCustomer(
+    customerRequest: CustomerCreateRequest,
+  ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    const { email, ...profile } = customerRequest;
+    const generatePassword = this.shareService.generatePassword(8);
+    const password = await this.shareService.hashPassword(generatePassword);
+    let createUser = undefined;
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
+      const userExist = await queryRunner.manager.findOne(UserEntity, {
+        where: { email: customerRequest.email },
+      });
+      if (userExist) {
+        throw new BadRequestException(AUTH_ERROR_MESSAGE.EMAIL_EXIST);
+      }
+      const role = await queryRunner.manager.findOne(RoleEntity, {
+        where: { roleName: ERole.Customer },
+      });
+      createUser = await queryRunner.manager.insert(UserEntity, {
+        email: customerRequest?.email,
+        password: password,
+        role: {
+          id: role?.id,
+        },
+      });
+      await queryRunner.manager.insert(ProfileEntity, {
+        ...profile,
+        code: '1234',
+        id: createUser.generatedMaps[0]['id'],
+      });
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
     await this.transaction(callback, queryRunner);

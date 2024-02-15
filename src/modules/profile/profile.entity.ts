@@ -14,28 +14,28 @@ export class ProfileEntity extends BaseEntity {
   @PrimaryColumn()
   id: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, default: null })
   code: string;
 
   @Column({ type: 'varchar', length: 255 })
   fullName: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', default: null })
   dob: Date;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100, unique: true, default: null })
   nationalId: string;
 
   @Column({ enum: EGender, type: 'enum', default: EGender.MALE })
   gender: EGender;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, default: null })
   address: string;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100, unique: true, default: null })
   phoneNumber: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', default: null })
   avatar: string;
 
   @OneToOne(() => UserEntity, (user) => user.profile, {

@@ -28,6 +28,14 @@ export class DataSeed implements Seeder {
         roleName: 'Administrator',
       })
       .execute();
+    const customerRole = await connection
+      .createQueryBuilder()
+      .insert()
+      .into(RoleEntity)
+      .values({
+        roleName: 'Khách Hàng',
+      })
+      .execute();
     const managerRole = await connection
       .createQueryBuilder()
       .insert()

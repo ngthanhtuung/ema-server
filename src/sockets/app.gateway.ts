@@ -167,19 +167,18 @@ export class AppGateway
 
   @OnEvent('message.create')
   handleMessageCreateEvent(payload: CreateMessageResponse): Promise<void> {
-    console.log('Inside message.create');
     const {
-      author,
+      message: { author },
       conversation: { creator, recipient },
-    } = payload.message;
+    } = payload;
 
     const authorSocket = this.sessions.getUserSocket(author.id);
     const recipientSocket =
-      author.id === creator.id
-        ? this.sessions.getUserSocket(recipient.id)
-        : this.sessions.getUserSocket(creator.id);
-    if (authorSocket) authorSocket.emit('onMessage', payload);
-    if (recipientSocket) recipientSocket.emit('onMessage', payload);
+      author?.id === creator?.id
+        ? this.sessions.getUserSocket(recipient?.id)
+        : this.sessions.getUserSocket(creator?.id);
+    if (authorSocket) authorSocket.emit('onMessage', payload.message);
+    if (recipientSocket) recipientSocket.emit('onMessage', payload.message);
     return;
   }
 

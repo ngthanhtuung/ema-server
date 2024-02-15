@@ -9,7 +9,10 @@ import { AUTH_ERROR_MESSAGE } from 'src/common/constants/constants';
 import { EUserStatus } from 'src/common/enum/enum';
 import { jwtConstants } from 'src/config/jwt.config';
 import { UserService } from 'src/modules/user/user.service';
-import { UserCreateRequest } from 'src/modules/user/dto/user.request';
+import {
+  CustomerCreateRequest,
+  UserCreateRequest,
+} from 'src/modules/user/dto/user.request';
 import { SharedService } from 'src/shared/shared.service';
 import ChangePasswordDto from './dto/changePassword.dto';
 import { UserEntity } from 'src/modules/user/user.entity';
@@ -52,13 +55,13 @@ export class AuthService {
       throw new BadRequestException('Sai email hoặc mật khẩu !!!');
     }
     const payload = {
-      id: user.id,
-      role: user.role,
+      id: user?.id || '',
+      role: user?.role || '',
       email: email,
-      divisionID: user.divisionId,
-      avatar: user.avatar,
-      fullName: user.fullName,
-      typeEmployee: user.typeEmployee,
+      divisionID: user?.divisionId || '',
+      avatar: user?.avatar || '',
+      fullName: user?.fullName || '',
+      typeEmployee: user?.typeEmployee || '',
     };
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {
@@ -87,6 +90,17 @@ export class AuthService {
    */
   async signUp(userRequest: UserCreateRequest): Promise<string> {
     return await this.userService.insertUser(userRequest);
+  }
+
+  /**
+   * signUp
+   * @param customerRequest
+   * @returns
+   */
+  async signUpCustomer(
+    customerRequest: CustomerCreateRequest,
+  ): Promise<string> {
+    return await this.userService.insertCustomer(customerRequest);
   }
 
   /**
@@ -217,24 +231,38 @@ export class AuthService {
     token: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
+      const decode1 = await firebaseAdmin
+        .auth()
+        .getUserByEmail('tungnt16092001@gmail.com');
+      console.log('123:', decode1);
       const decode = await firebaseAdmin.auth().verifyIdToken(token);
       const { email } = decode;
-      const user = await this.userService.findByEmail(email);
-      if (!user) {
-        throw new BadRequestException(AUTH_ERROR_MESSAGE.USER_NOT_EXIST);
-      }
+      const userInfo = await firebaseAdmin
+        .auth()
+        .getUserByEmail('tungnt16092001@gmail.com');
 
+      let user = await this.userService.findByEmail(email);
+      if (!user) {
+        const payload: UserCreateRequest = {
+          email: userInfo.email,
+          phoneNumber: userInfo.phoneNumber,
+          fullName: userInfo.displayName,
+          avatar: userInfo.photoURL,
+        };
+        await this.signUp(payload);
+        user = await this.userService.findByEmail(email);
+      }
       if (user.status === EUserStatus.INACTIVE) {
         throw new BadRequestException(AUTH_ERROR_MESSAGE.USER_NOT_VERIFY);
       }
       const payload = {
-        id: user.id,
-        role: user.role,
+        id: user?.id,
+        role: user?.role,
         email: email,
-        divisionID: user.divisionId,
-        avatar: user.avatar,
-        fullName: user.fullName,
-        typeEmployee: user.typeEmployee,
+        divisionID: user?.divisionId || '',
+        avatar: user?.avatar || '',
+        fullName: user?.fullName || '',
+        typeEmployee: user?.typeEmployee || '',
       };
       // Create accessToken
       const accessToken = this.jwtService.sign(payload, {

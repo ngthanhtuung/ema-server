@@ -43,7 +43,7 @@ export class MessageService implements IMessageService {
 
     if (!conversation) throw new ConversationNotFoundException();
     const { creator, recipient } = conversation;
-    if (creator.id !== user.id && recipient.id !== user.id)
+    if (creator?.id !== user?.id && recipient?.id !== user?.id)
       throw new CannotCreateMessageException();
     const message = this.messageRepository.create({
       content,
@@ -52,8 +52,28 @@ export class MessageService implements IMessageService {
     });
     const savedMessage = await this.messageRepository.save(message);
     conversation.lastMessageSent = savedMessage;
+    const mapDataMessage = await this.messageRepository.findOne({
+      where: {
+        id: savedMessage.id,
+      },
+      select: {
+        author: {
+          id: true,
+          email: true,
+          profile: {
+            fullName: true,
+            avatar: true,
+          },
+        },
+      },
+      relations: {
+        author: {
+          profile: true,
+        },
+      },
+    });
     const updated = await this.conversationService.save(conversation);
-    return { message: savedMessage, conversation: updated };
+    return { message: mapDataMessage, conversation: updated };
   }
 
   /**
@@ -66,10 +86,13 @@ export class MessageService implements IMessageService {
     messagesPagination: MessagesPagination,
   ): Promise<IPaginateResponse<MessageEntity[]>> {
     const { sizePage, currentPage } = messagesPagination;
+    const offset = sizePage * (currentPage - 1);
     const data = await this.messageRepository.find({
       relations: ['author', 'attachments', 'author.profile'],
       where: { conversation: { id: conversationId } },
       order: { createdAt: 'DESC' },
+      skip: offset,
+      take: sizePage,
       select: {
         author: {
           id: true,

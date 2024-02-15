@@ -2,6 +2,7 @@ export enum ERole {
   ADMIN = 'Administrator',
   MANAGER = 'Quản Lý',
   STAFF = 'Trưởng Nhóm',
+  Customer = 'Khách Hàng',
   EMPLOYEE = 'Nhân Viên',
 }
 

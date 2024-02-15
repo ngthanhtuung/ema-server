@@ -18,7 +18,10 @@ import { AuthService } from 'src/auth/auth.service';
 import { LoginDto, LoginGoogleRequest } from 'src/auth/dto/login.dto';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { Public } from 'src/decorators/public.decorator';
-import { UserCreateRequest } from 'src/modules/user/dto/user.request';
+import {
+  CustomerCreateRequest,
+  UserCreateRequest,
+} from 'src/modules/user/dto/user.request';
 import { PayloadUser } from 'src/modules/user/dto/user.response';
 import ChangePasswordDto from './dto/changePassword.dto';
 import SendCodeRequest from './dto/sendCode.dto';
@@ -103,6 +106,19 @@ export class AuthenticationController {
   @Post('sign-up')
   async signUp(@Body() userRequest: UserCreateRequest): Promise<string> {
     return await this.authService.signUp(userRequest);
+  }
+
+  /**
+   *  http://localhost:6969/api/v1/auth/customer/sign-up(Post)
+   * @param customerRequest
+   * @returns
+   */
+  @Public()
+  @Post('/customer/sign-up')
+  async signUpCustomer(
+    @Body() customerRequest: CustomerCreateRequest,
+  ): Promise<string> {
+    return await this.authService.signUpCustomer(customerRequest);
   }
 
   @Get('me')
