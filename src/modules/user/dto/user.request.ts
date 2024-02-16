@@ -59,6 +59,10 @@ export class CustomerCreateRequest {
   @IsNotEmpty()
   phoneNumber: string;
 
+  @ApiProperty({ default: '12345678' })
+  @IsNotEmpty()
+  password: string;
+
   @ApiProperty({ default: 'test' })
   @IsNotEmpty()
   fullName: string;

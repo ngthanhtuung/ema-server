@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { EUserStatus } from './../../common/enum/enum';
 import {
   BadRequestException,
@@ -342,9 +343,11 @@ export class UserService extends BaseService<UserEntity> {
     customerRequest: CustomerCreateRequest,
   ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    const { email, ...profile } = customerRequest;
-    const generatePassword = this.shareService.generatePassword(8);
-    const password = await this.shareService.hashPassword(generatePassword);
+    let { email, password, ...profile } = customerRequest;
+    if (!password) {
+      password = this.shareService.generatePassword(8);
+    }
+    const hashPassword = await this.shareService.hashPassword(password);
     let createUser = undefined;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const userExist = await queryRunner.manager.findOne(UserEntity, {
@@ -358,7 +361,7 @@ export class UserService extends BaseService<UserEntity> {
       });
       createUser = await queryRunner.manager.insert(UserEntity, {
         email: customerRequest?.email,
-        password: password,
+        password: hashPassword,
         role: {
           id: role?.id,
         },
@@ -368,7 +371,7 @@ export class UserService extends BaseService<UserEntity> {
         code: '1234',
         id: createUser.generatedMaps[0]['id'],
       });
-      await this.shareService.sendConfirmEmail(email, generatePassword);
+      await this.shareService.sendConfirmEmail(email, password);
     };
     await this.transaction(callback, queryRunner);
     return 'Create user success';
