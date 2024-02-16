@@ -19,10 +19,7 @@ export class WsGuard implements CanActivate {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<boolean | Promise<boolean> | Observable<boolean> | any> {
     const client: Socket = context.switchToWs().getClient<Socket>();
-    const accessToken: string =
-      client.handshake.auth['accessToken'].split(' ')[1];
-    // const { authorization } = client.handshake.headers;
-    // const accessToken = authorization.split(' ')[1];
+    const accessToken: string = client.handshake.auth.access_token;
     try {
       const decoded: PayloadUser = await this.jwtService.verify(accessToken, {
         secret: jwtConstants.accessTokenSecret,
