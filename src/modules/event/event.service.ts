@@ -24,7 +24,7 @@ import {
   FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { EEventStatus } from 'src/common/enum/enum';
+import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
@@ -373,57 +373,57 @@ export class EventService extends BaseService<EventEntity> {
     }
   }
 
-  // async eventStatistics(mode: EEventStatus, user: string): Promise<unknown> {
-  //   try {
-  //     let events;
-  //     if (JSON.parse(user).role === ERole.MANAGER) {
-  //       if (mode === undefined || mode === EEventStatus.ALL) {
-  //         events = await this.eventRepository.find({
-  //           where: { isTemplate: false },
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       } else {
-  //         events = await this.eventRepository.find({
-  //           where: { status: mode, isTemplate: false },
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       }
-  //     } else {
-  //       if (mode === undefined || mode === EEventStatus.ALL) {
-  //         events = await this.eventRepository.find({
-  //           where: {
-  //             isTemplate: false,
-  //           },
+  async eventStatistics(mode: EEventStatus, user: string): Promise<unknown> {
+    try {
+      let events;
+      if (JSON.parse(user).role === ERole.MANAGER) {
+        if (mode === undefined || mode === EEventStatus.ALL) {
+          events = await this.eventRepository.find({
+            where: { isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        } else {
+          events = await this.eventRepository.find({
+            where: { status: mode, isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        }
+      } else {
+        if (mode === undefined || mode === EEventStatus.ALL) {
+          events = await this.eventRepository.find({
+            where: {
+              isTemplate: false,
+            },
 
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       } else {
-  //         events = await this.eventRepository.find({
-  //           where: { status: mode, isTemplate: false },
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       }
-  //     }
-  //     const eventStatisticPromises = events.map(async (event) => {
-  //       const taskStatistic = await this.taskService.getTaskStatistic(event.id);
-  //       const peopleInTaskStatistic =
-  //         await this.taskService.getNumOfPeopleInTaskStatistic(event.id);
-  //       return {
-  //         id: event.id,
-  //         eventName: event.eventName,
-  //         startDate: event.startDate,
-  //         endDate: event.endDate,
-  //         status: event.status,
-  //         tasks: taskStatistic,
-  //         totalMember: peopleInTaskStatistic,
-  //       };
-  //     });
-  //     const eventStatistic = await Promise.all(eventStatisticPromises);
-  //     return eventStatistic;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        } else {
+          events = await this.eventRepository.find({
+            where: { status: mode, isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        }
+      }
+      const eventStatisticPromises = events.map(async (event) => {
+        const taskStatistic = await this.taskService.getTaskStatistic(event.id);
+        const peopleInTaskStatistic =
+          await this.taskService.getNumOfPeopleInTaskStatistic(event.id);
+        return {
+          id: event.id,
+          eventName: event.eventName,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          status: event.status,
+          tasks: taskStatistic,
+          totalMember: peopleInTaskStatistic,
+        };
+      });
+      const eventStatistic = await Promise.all(eventStatisticPromises);
+      return eventStatistic;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
   async getUserInEvent(eventId: string): Promise<unknown> {
     try {

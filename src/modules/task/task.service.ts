@@ -505,127 +505,99 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
-  // async getTaskStatistic(eventId: string): Promise<unknown> {
-  //   try {
-  //     const tasks = await this.taskRepository.find({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //       },
-  //     });
-  //     const taskStatistics = {
-  //       total: tasks.length,
-  //       pending: tasks.filter((task) => task.status === ETaskStatus.PENDING)
-  //         .length,
-  //       done: tasks.filter((task) => task.status === ETaskStatus.DONE).length,
-  //       cancel: tasks.filter((task) => task.status === ETaskStatus.CANCEL)
-  //         .length,
-  //       overdue: tasks.filter((task) => task.status === ETaskStatus.OVERDUE)
-  //         .length,
-  //     };
-  //     return taskStatistics;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  async getTaskStatistic(eventId: string): Promise<unknown> {
+    try {
+      const listIdEventDivison: any =
+        await this.assignEventService.getListIdEventDivision(eventId);
+      console.log('listIdEventDivison:', listIdEventDivison);
+      const arrayPromise = listIdEventDivison?.map((item) => {
+        return this.taskRepository.find({
+          where: {
+            eventDivision: {
+              id: item?.id,
+            },
+          },
+        });
+      });
+      const result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+      const taskStatistics = {
+        total: result.length,
+        pending: result.filter((task) => task.status === ETaskStatus.PENDING)
+          .length,
+        done: result.filter((task) => task.status === ETaskStatus.DONE).length,
+        cancel: result.filter((task) => task.status === ETaskStatus.CANCEL)
+          .length,
+        overdue: result.filter((task) => task.status === ETaskStatus.OVERDUE)
+          .length,
+      };
+      return taskStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
-  //   try {
-  //     const tasks = await this.taskRepository.find({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //       },
-  //       relations: ['assignTasks'],
-  //     });
-  //     const uniqueTaskMasters = new Set();
-  //     const uniqueLeaders = new Set();
-  //     const uniqueMembers = new Set();
-  //     const peopleStatistics = {
-  //       leader: tasks.filter((task) =>
-  //         task.assignTasks.some((assignTask) => assignTask.isLeader === true),
-  //       ).length,
-  //       member: tasks.filter((task) =>
-  //         task.assignTasks.some((assignTask) => assignTask.isLeader === false),
-  //       ).length,
-  //       taskMaster: tasks.filter((task) =>
-  //         task.assignTasks.some((assignTask) => {
-  //           if (assignTask.taskMaster) {
-  //             // Check if the taskMaster is not already counted
-  //             if (!uniqueTaskMasters.has(assignTask.taskMaster)) {
-  //               uniqueTaskMasters.add(assignTask.taskMaster);
-  //               return true; // Include this taskMaster in the count
-  //             }
-  //           }
-  //           return false; // Skip this taskMaster in the count
-  //         }),
-  //       ).length,
-  //     };
-  //     return peopleStatistics;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
+    try {
+      const listIdEventDivison: any =
+        await this.assignEventService.getListIdEventDivision(eventId);
+      console.log('listIdEventDivison:', listIdEventDivison);
+      const arrayPromise = listIdEventDivison?.map((item) => {
+        return this.taskRepository.find({
+          where: {
+            eventDivision: {
+              id: item?.id,
+            },
+          },
+          relations: ['assignTasks'],
+        });
+      });
+      const result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+      const uniquePeople = {
+        leaders: new Set<string>(),
+        members: new Set<string>(),
+        taskMasters: new Set<string>(),
+      };
 
-  // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
-  //   try {
-  //     const tasks = await this.taskRepository.find({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //       },
-  //       relations: ['assignTasks'],
-  //     });
+      const peopleStatistics = result.reduce(
+        (stats, task) => {
+          task.assignTasks.forEach((assignTask) => {
+            if (
+              assignTask.isLeader === true &&
+              !uniquePeople.leaders.has(assignTask.id)
+            ) {
+              uniquePeople.leaders.add(assignTask.id);
+              stats.leader += 1;
+            } else if (
+              assignTask.isLeader === false &&
+              !uniquePeople.members.has(assignTask.id)
+            ) {
+              uniquePeople.members.add(assignTask.id);
+              stats.member += 1;
+            }
 
-  //     const uniquePeople = {
-  //       leaders: new Set<string>(),
-  //       members: new Set<string>(),
-  //       taskMasters: new Set<string>(),
-  //     };
+            if (
+              assignTask.taskMaster &&
+              !uniquePeople.taskMasters.has(assignTask.taskMaster)
+            ) {
+              uniquePeople.taskMasters.add(assignTask.taskMaster);
+              stats.taskMaster += 1;
+            }
+          });
 
-  //     const peopleStatistics = tasks.reduce(
-  //       (stats, task) => {
-  //         task.assignTasks.forEach((assignTask) => {
-  //           if (
-  //             assignTask.isLeader === true &&
-  //             !uniquePeople.leaders.has(assignTask.id)
-  //           ) {
-  //             uniquePeople.leaders.add(assignTask.id);
-  //             stats.leader += 1;
-  //           } else if (
-  //             assignTask.isLeader === false &&
-  //             !uniquePeople.members.has(assignTask.id)
-  //           ) {
-  //             uniquePeople.members.add(assignTask.id);
-  //             stats.member += 1;
-  //           }
+          return stats;
+        },
+        {
+          leader: 0,
+          member: 0,
+          taskMaster: 0,
+        },
+      );
 
-  //           if (
-  //             assignTask.taskMaster &&
-  //             !uniquePeople.taskMasters.has(assignTask.taskMaster)
-  //           ) {
-  //             uniquePeople.taskMasters.add(assignTask.taskMaster);
-  //             stats.taskMaster += 1;
-  //           }
-  //         });
-
-  //         return stats;
-  //       },
-  //       {
-  //         leader: 0,
-  //         member: 0,
-  //         taskMaster: 0,
-  //       },
-  //     );
-
-  //     return peopleStatistics;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+      return peopleStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
   async checkUserInTask(
     userId: string,
