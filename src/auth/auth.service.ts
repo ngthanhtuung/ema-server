@@ -236,13 +236,13 @@ export class AuthService {
       const userInfo = await firebaseAdmin.auth().getUserByEmail(email);
       let user = await this.userService.findByEmail(email);
       if (!user) {
-        const payload: UserCreateRequest = {
+        const payload: CustomerCreateRequest = {
           email: userInfo.email,
           phoneNumber: userInfo.phoneNumber,
           fullName: userInfo.displayName,
           avatar: userInfo.photoURL,
         };
-        await this.signUp(payload);
+        await this.signUpCustomer(payload);
         user = await this.userService.findByEmail(email);
       }
       if (user.status === EUserStatus.INACTIVE) {

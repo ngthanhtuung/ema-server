@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import {
   BadRequestException,
-  Inject,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MessageEntity } from '../messages/messages.entity';
 import { IConversationsService } from './interface/conversations';
-import { Services } from 'src/utils/constants';
 import {
   AccessParams,
   CreateConversationParams,
@@ -18,7 +17,6 @@ import {
   UpdateConversationParams,
 } from 'src/utils/types';
 import { UserEntity } from '../user/user.entity';
-import { ConversationExistsException } from './exceptions/ConversationExists';
 import { ConversationNotFoundException } from './exceptions/ConversationNotFound';
 import { ConversationsEntity } from 'src/modules/conversations/conversations.entity';
 import { UserService } from '../user/user.service';
@@ -205,7 +203,8 @@ export class ConversationsService implements IConversationsService {
       throw new BadRequestException('Cannot create Conversation with yourself');
     }
     const exists = await this.isCreated(creator.id, recipient.id);
-    if (exists) throw new ConversationExistsException();
+
+    if (exists) throw new ConflictException(exists.id, 'Conservations exists');
     const newConversation = this.conversationRepository.create({
       creator,
       recipient,
@@ -233,7 +232,6 @@ export class ConversationsService implements IConversationsService {
     }
     return conversation;
   }
-
   /**
    * hasAccess
    * @param param0

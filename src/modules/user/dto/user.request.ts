@@ -60,8 +60,7 @@ export class CustomerCreateRequest {
   phoneNumber: string;
 
   @ApiProperty({ default: '12345678' })
-  @IsNotEmpty()
-  password: string;
+  password?: string;
 
   @ApiProperty({ default: 'test' })
   @IsNotEmpty()
@@ -69,7 +68,7 @@ export class CustomerCreateRequest {
 
   @ApiProperty({ default: EGender.MALE, enum: EGender })
   @IsEnum(EGender)
-  gender: EGender;
+  gender?: EGender;
 
   @ApiProperty({ default: 'abc test' })
   address?: string;
