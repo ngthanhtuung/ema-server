@@ -26,7 +26,7 @@ export class ProfileEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 100, unique: true, default: null })
   nationalId: string;
 
-  @Column({ enum: EGender, type: 'enum', default: EGender.MALE })
+  @Column({ enum: EGender, type: 'enum', default: null })
   gender: EGender;
 
   @Column({ type: 'varchar', length: 255, default: null })

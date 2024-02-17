@@ -42,7 +42,7 @@ export class UserEntity extends BaseEntity {
   @Column({
     enum: ETypeEmployee,
     type: 'enum',
-    default: ETypeEmployee.FULL_TIME,
+    default: null,
   })
   typeEmployee: ETypeEmployee;
 

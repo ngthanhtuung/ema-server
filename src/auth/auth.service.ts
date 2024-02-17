@@ -231,16 +231,9 @@ export class AuthService {
     token: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
-      const decode1 = await firebaseAdmin
-        .auth()
-        .getUserByEmail('tungnt16092001@gmail.com');
-      console.log('123:', decode1);
       const decode = await firebaseAdmin.auth().verifyIdToken(token);
       const { email } = decode;
-      const userInfo = await firebaseAdmin
-        .auth()
-        .getUserByEmail('tungnt16092001@gmail.com');
-
+      const userInfo = await firebaseAdmin.auth().getUserByEmail(email);
       let user = await this.userService.findByEmail(email);
       if (!user) {
         const payload: UserCreateRequest = {
