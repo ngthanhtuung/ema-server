@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable prefer-const */
 import { EUserStatus } from './../../common/enum/enum';
 import {
@@ -41,11 +43,8 @@ import {
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { ERole } from 'src/common/enum/enum';
 import { DivisionEntity } from '../division/division.entity';
-import * as moment from 'moment-timezone';
-import { TaskService } from '../task/task.service';
 import * as _ from 'lodash';
 import { RoleEntity } from '../roles/roles.entity';
-import { FindUserOptions, FindUserParams } from 'src/utils/types';
 
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
@@ -72,9 +71,26 @@ export class UserService extends BaseService<UserEntity> {
    * @param email
    * @returns
    */
-  async getAllUser(): Promise<UserEntity[]> {
-    const getAllUser = await this.userRepository.find();
-    return getAllUser;
+  async getAllUser() {
+    const query = await this.generalBuilderUser();
+    query
+      .leftJoin('roles', 'roles', 'users.roleId = roles.id')
+      .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
+      .where('roles. roleName != :excludedRole', {
+        excludedRole: ERole.Customer,
+      })
+      .andWhere('users.status = :status', {
+        status: EUserStatus.ACTIVE,
+      })
+      .select([
+        'users.id as id',
+        'profiles.fullName as fullName',
+        'users.email as email',
+        'profiles.avatar as avatar',
+      ]);
+    const res = await query.execute();
+
+    return res;
   }
 
   /**
@@ -558,7 +574,6 @@ export class UserService extends BaseService<UserEntity> {
       const division = await queryRunner.manager.findOne(DivisionEntity, {
         where: { id: data.divisionId },
       });
-
       const role = await queryRunner.manager.findOne(RoleEntity, {
         where: { id: data.roleId },
       });

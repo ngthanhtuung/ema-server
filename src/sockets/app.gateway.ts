@@ -104,7 +104,7 @@ export class AppGateway
   async handleGetOnlineGroupUsers(
     @ConnectedSocket() socket: AuthenticatedSocket,
   ): Promise<void> {
-    const listUser = await this.userService.getAllUser();
+    const listUser: any = await this.userService.getAllUser();
     if (!listUser) return;
     const onlineUsers = [];
     const offlineUsers = [];
