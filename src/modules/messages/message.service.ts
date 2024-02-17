@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { instanceToPlain } from 'class-transformer';
 import { Repository } from 'typeorm';
@@ -19,7 +25,6 @@ import { CannotDeleteMessage } from './exceptions/CannotDeleteMessage';
 import { ConversationsEntity } from '../conversations/conversations.entity';
 import { MessagesPagination } from './dtos/messages.pagination';
 import { IPaginateResponse } from '../base/filter.pagination';
-
 @Injectable()
 export class MessageService implements IMessageService {
   constructor(
@@ -76,23 +81,18 @@ export class MessageService implements IMessageService {
     return { message: mapDataMessage, conversation: updated };
   }
 
-  /**
-   * getMessages
-   * @param conversationId
-   * @returns
-   */
   async getMessages(
     conversationId: string,
     messagesPagination: MessagesPagination,
   ): Promise<IPaginateResponse<MessageEntity[]>> {
-    const { sizePage, currentPage } = messagesPagination;
-    const offset = sizePage * (currentPage - 1);
+    const { sizePage, startKey } = messagesPagination;
+    // Filter messages based on conversation ID and startKey
     const data = await this.messageRepository.find({
       relations: ['author', 'attachments', 'author.profile'],
-      where: { conversation: { id: conversationId } },
+      where: {
+        conversation: { id: conversationId },
+      },
       order: { createdAt: 'DESC' },
-      skip: offset,
-      take: sizePage,
       select: {
         author: {
           id: true,
@@ -104,21 +104,25 @@ export class MessageService implements IMessageService {
         },
       },
     });
+    const indexItemStartKey = data.findIndex((item) => item?.id === startKey);
+    const dataSlice = data.slice(
+      indexItemStartKey + 1,
+      indexItemStartKey + 1 + sizePage,
+    );
+
     const total = await this.messageRepository.count({
       where: { conversation: { id: conversationId } },
     });
-    console.log('total:', total);
-    const lastPage: number = Math.ceil(total / sizePage);
-    const nextPage: number =
-      currentPage + 1 > lastPage ? null : currentPage + 1;
-    const prevPage: number = currentPage - 1 < 1 ? null : currentPage - 1;
+    // Return lastKey based on the last message in the results
+    const lastMessage = dataSlice[dataSlice.length - 1];
+    const checkExistLastKey =
+      dataSlice[dataSlice.length - 1].id === data[data.length - 1].id;
+    const lastKey = checkExistLastKey ? null : lastMessage.id;
+
     return {
-      currentPage: currentPage,
-      nextPage: nextPage,
-      prevPage: prevPage,
-      lastPage: lastPage,
       totalItems: total,
-      data: data,
+      data: dataSlice,
+      lastKey,
     };
   }
 

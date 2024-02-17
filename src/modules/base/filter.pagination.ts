@@ -26,11 +26,12 @@ export class FilterPaginationBase {
 }
 
 export class IPaginateResponse<T> {
-  currentPage: number;
-  nextPage: number;
-  prevPage: number;
-  lastPage: number;
+  currentPage?: number;
+  nextPage?: number;
+  prevPage?: number;
+  lastPage?: number;
   totalItems: number;
+  lastKey?: string;
   data: T;
 }
 

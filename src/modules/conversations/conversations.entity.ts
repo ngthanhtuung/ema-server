@@ -13,11 +13,17 @@ import moment from 'moment';
 
 @Entity({ name: 'conversations' })
 export class ConversationsEntity extends BaseEntity {
-  @OneToOne(() => UserEntity, { createForeignKeyConstraints: false })
+  @OneToOne(() => UserEntity, {
+    createForeignKeyConstraints: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   creator: UserEntity;
 
-  @OneToOne(() => UserEntity, { createForeignKeyConstraints: false })
+  @OneToOne(() => UserEntity, {
+    createForeignKeyConstraints: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   recipient: UserEntity;
 
@@ -27,7 +33,9 @@ export class ConversationsEntity extends BaseEntity {
   @JoinColumn()
   messages: MessageEntity[];
 
-  @OneToOne(() => MessageEntity)
+  @OneToOne(() => MessageEntity, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'last_message_sent' })
   lastMessageSent: MessageEntity;
 

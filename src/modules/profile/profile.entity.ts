@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'profiles' })
-export class ProfileEntity extends BaseEntity {
+export class ProfileEntity {
   @PrimaryColumn()
   id: string;
 
