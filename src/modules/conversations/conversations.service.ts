@@ -40,7 +40,7 @@ export class ConversationsService implements IConversationsService {
    */
   async getConversations(
     id: string,
-    conservationsPagination: ConservationsPagination,
+    conservationsPagination?: ConservationsPagination,
   ): Promise<IPaginateResponse<ConversationsEntity[]>> {
     const { sizePage, currentPage } = conservationsPagination;
     const offset = sizePage * (currentPage - 1);

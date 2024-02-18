@@ -11,14 +11,8 @@ export class BaseEntity {
   public id: string;
 
   @CreateDateColumn()
-  @Transform(({ value }) => {
-    return moment(value).tz('Asia/Bangkok').toDate();
-  })
   public createdAt: Date;
 
   @UpdateDateColumn()
-  @Transform(({ value }) => {
-    return moment(value).tz('Asia/Bangkok').toDate();
-  })
   public updatedAt: Date;
 }

@@ -32,6 +32,7 @@ import { MessageEntity } from 'src/modules/messages/messages.entity';
 import { IConversationsService } from 'src/modules/conversations/interface/conversations';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IGroupService } from 'src/modules/groups/interfaces/group';
+import { ConservationsPagination } from 'src/modules/conversations/dtos/conversations.pagination';
 @UseGuards(WsGuard)
 @WebSocketGateway(3006, {
   cors: {
@@ -187,6 +188,22 @@ export class AppGateway
     console.log('Inside conversation.create');
     const recipientSocket = this.sessions.getUserSocket(payload.recipient.id);
     if (recipientSocket) recipientSocket.emit('onConversation', payload);
+    return;
+  }
+
+  @SubscribeMessage('onConversationUpdate')
+  async handleConversationUpdate(@MessageBody() userId: string): Promise<void> {
+    console.log('onConversationUpdate');
+    const paging: ConservationsPagination = {
+      sizePage: 10,
+      currentPage: 1,
+    };
+    const listConservations = await this.conversationService.getConversations(
+      userId,
+      paging,
+    );
+    const userSocket = this.sessions.getUserSocket(userId);
+    if (userSocket) userSocket.emit('onConversationUpdate', listConservations);
     return;
   }
 
