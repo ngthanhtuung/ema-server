@@ -62,6 +62,14 @@ export class ConversationsService implements IConversationsService {
         lastMessageSent: {
           id: true,
           content: true,
+          author: {
+            email: true,
+            id: true,
+            profile: {
+              fullName: true,
+              avatar: true,
+            },
+          },
         },
         creator: {
           id: true,
@@ -81,7 +89,11 @@ export class ConversationsService implements IConversationsService {
         },
       },
       relations: {
-        lastMessageSent: true,
+        lastMessageSent: {
+          author: {
+            profile: true,
+          },
+        },
         creator: {
           profile: true,
         },
@@ -90,9 +102,6 @@ export class ConversationsService implements IConversationsService {
         },
       },
     });
-
-    console.log('data:', data);
-
     const total = await this.conversationRepository.count({
       where: [
         {
@@ -103,7 +112,6 @@ export class ConversationsService implements IConversationsService {
         },
       ],
     });
-    console.log('total:', total);
     const lastPage: number = Math.ceil(total / sizePage);
     const nextPage: number =
       currentPage + 1 > lastPage ? null : currentPage + 1;
