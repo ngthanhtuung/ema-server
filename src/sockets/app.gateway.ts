@@ -178,19 +178,33 @@ export class AppGateway
   }
 
   @OnEvent('message.create')
-  handleMessageCreateEvent(payload: CreateMessageResponse): Promise<void> {
+  async handleMessageCreateEvent(
+    payload: CreateMessageResponse,
+  ): Promise<void> {
     const {
       message: { author },
       conversation: { creator, recipient },
     } = payload;
-
+    const paging: ConservationsPagination = {
+      sizePage: 10,
+      currentPage: 1,
+    };
+    const recipientId =
+      author?.id === creator?.id ? recipient?.id : creator?.id;
     const authorSocket = this.sessions.getUserSocket(author.id);
-    const recipientSocket =
-      author?.id === creator?.id
-        ? this.sessions.getUserSocket(recipient?.id)
-        : this.sessions.getUserSocket(creator?.id);
-    if (authorSocket) authorSocket.emit('onMessage', payload.message);
-    if (recipientSocket) recipientSocket.emit('onMessage', payload.message);
+    const recipientSocket = this.sessions.getUserSocket(recipientId);
+    const listConservationsAuth =
+      await this.conversationService.getConversations(author.id, paging);
+    const listConservationsRecipient =
+      await this.conversationService.getConversations(recipientId, paging);
+    if (authorSocket) {
+      authorSocket.emit('onConversationUpdate', listConservationsAuth);
+      authorSocket.emit('onMessage', payload.message);
+    }
+    if (recipientSocket) {
+      recipientSocket.emit('onConversationUpdate', listConservationsRecipient);
+      recipientSocket.emit('onMessage', payload.message);
+    }
     return;
   }
 
@@ -199,29 +213,6 @@ export class AppGateway
     console.log('Inside conversation.create');
     const recipientSocket = this.sessions.getUserSocket(payload.recipient.id);
     if (recipientSocket) recipientSocket.emit('onConversation', payload);
-    return;
-  }
-
-  @SubscribeMessage('onConversationUpdate')
-  async handleConversationUpdate(@MessageBody() data: any): Promise<void> {
-    console.log('onConversationUpdate');
-    const { authorId, recipientId } = data;
-    const paging: ConservationsPagination = {
-      sizePage: 10,
-      currentPage: 1,
-    };
-    // List conservations Author
-    const listConservationsAuth =
-      await this.conversationService.getConversations(authorId, paging);
-    const authSocket = this.sessions.getUserSocket(authorId);
-    if (authSocket)
-      authSocket.emit('onConversationUpdate', listConservationsAuth);
-    // List conservations recipient
-    const listConservationsRecipient =
-      await this.conversationService.getConversations(recipientId, paging);
-    const recipientSocket = this.sessions.getUserSocket(authorId);
-    if (recipientSocket)
-      authSocket.emit('onConversationUpdate', listConservationsRecipient);
     return;
   }
 
