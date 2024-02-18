@@ -203,18 +203,25 @@ export class AppGateway
   }
 
   @SubscribeMessage('onConversationUpdate')
-  async handleConversationUpdate(@MessageBody() userId: string): Promise<void> {
+  async handleConversationUpdate(@MessageBody() data: any): Promise<void> {
     console.log('onConversationUpdate');
+    const { authorId, recipientId } = data;
     const paging: ConservationsPagination = {
       sizePage: 10,
       currentPage: 1,
     };
-    const listConservations = await this.conversationService.getConversations(
-      userId,
-      paging,
-    );
-    const userSocket = this.sessions.getUserSocket(userId);
-    if (userSocket) userSocket.emit('onConversationUpdate', listConservations);
+    // List conservations Author
+    const listConservationsAuth =
+      await this.conversationService.getConversations(authorId, paging);
+    const authSocket = this.sessions.getUserSocket(authorId);
+    if (authSocket)
+      authSocket.emit('onConversationUpdate', listConservationsAuth);
+    // List conservations recipient
+    const listConservationsRecipient =
+      await this.conversationService.getConversations(recipientId, paging);
+    const recipientSocket = this.sessions.getUserSocket(authorId);
+    if (recipientSocket)
+      authSocket.emit('onConversationUpdate', listConservationsRecipient);
     return;
   }
 
