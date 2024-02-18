@@ -101,6 +101,17 @@ export class AppGateway
     }
   }
 
+  @SubscribeMessage('closeConnect')
+  async handleDisconnectClose(socket: AuthenticatedSocket): Promise<void> {
+    this.logger.log(`${socket.id} disconnect`);
+    try {
+      const token: any = await this.getDataUserFromToken(socket);
+      this.sessions.removeUserSocket(token.id);
+    } catch (error) {
+      return error.message;
+    }
+  }
+
   @SubscribeMessage('getOnlineGroupUsers')
   async handleGetOnlineGroupUsers(
     @ConnectedSocket() socket: AuthenticatedSocket,
