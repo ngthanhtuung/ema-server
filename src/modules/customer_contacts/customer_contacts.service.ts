@@ -68,13 +68,17 @@ export class CustomerContactsService {
       ]);
       if (
         user.role.toString() !== ERole.ADMIN &&
-        status !== EContactInformation.PENDING
+        user.role.toString() !== ERole.CUSTOMER &&
+        ![EContactInformation.PENDING, EContactInformation.ALL].includes(status)
       ) {
         console.log('Code is running here!');
         query.where('contacts.processedBy = :userId', { userId: user.id });
       }
-      if (status) {
+      if (status !== EContactInformation.ALL) {
         query.andWhere('contacts.status = :status', { status });
+      }
+      if (user.role.toString() === ERole.CUSTOMER) {
+        query.andWhere('contacts.email = :email', { email: user.email });
       }
       if (sortProperty) {
         query.orderBy(`contacts.${sortProperty}`, sort);
@@ -133,10 +137,12 @@ export class CustomerContactsService {
 
   /**
    * @param contact
+   * @param email
    * @returns
    */
   async leaveMessage(
     contact: CustomerContactRequest,
+    email: string,
   ): Promise<string | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -149,7 +155,7 @@ export class CustomerContactsService {
       const data = await this.customerContactRepository.save({
         fullName: contact.fullName,
         address: contact.address,
-        email: contact.email,
+        email: email,
         phoneNumber: contact.phoneNumber,
         note: contact.note,
         startDate: contact.startDate,
@@ -204,7 +210,7 @@ export class CustomerContactsService {
                 status: status,
                 processedBy: user.id,
                 updateAt: moment()
-                  .tz('Asia/Ho_Chi_Minh')
+                  .tz('Asia/Bangkok')
                   .format('YYYY-MM-DD HH:mm:ss'),
                 updatedBy: user.id,
               },
@@ -230,7 +236,7 @@ export class CustomerContactsService {
                 status: status,
                 processedBy: user.id,
                 updateAt: moment()
-                  .tz('Asia/Ho_Chi_Minh')
+                  .tz('Asia/Bangkok')
                   .format('YYYY-MM-DD HH:mm:ss'),
                 updatedBy: user.id,
                 rejectNote: rejectNote.rejectNote,

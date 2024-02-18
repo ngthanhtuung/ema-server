@@ -214,6 +214,31 @@ export class EventService extends BaseService<EventEntity> {
   }
 
   /**
+   * getAllEventByCustomer
+   * @param email
+   * @returns
+   */
+  async getAllEventByCustomer(email: string): Promise<EventEntity[]> {
+    try {
+      const data = await this.eventRepository.find({
+        where: {
+          contracts: {
+            customerEmail: email,
+          },
+        },
+        relations: {
+          eventType: {
+            customerContacts: true,
+          },
+        },
+      });
+      return data;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
    * createEvent
    * @param event
    * @returns
@@ -280,7 +305,7 @@ export class EventService extends BaseService<EventEntity> {
             estBudget: event.estBudget,
             updatedBy: user.id,
             updatedAt: moment()
-              .tz('Asia/Ho_Chi_Minh')
+              .tz('Asia/Bangkok')
               .format('YYYY-MM-DD HH:mm:ss'),
           },
         );

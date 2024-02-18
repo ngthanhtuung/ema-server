@@ -55,17 +55,13 @@ export class TaskUpdateReq {
 
   @ApiProperty({ required: false, default: null })
   @Transform(({ value }) => {
-    return moment(value)
-      .tz('Asia/Ho_Chi_Minh')
-      .format('YYYY-MM-DD HH:mm:ss.SSS');
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss.SSS');
   })
   startDate: Date;
 
   @ApiProperty({ required: false, default: null })
   @Transform(({ value }) => {
-    return moment(value)
-      .tz('Asia/Ho_Chi_Minh')
-      .format('YYYY-MM-DD HH:mm:ss.SSS');
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss.SSS');
   })
   endDate: Date;
 

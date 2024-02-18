@@ -77,7 +77,7 @@ export class UserService extends BaseService<UserEntity> {
       .leftJoin('roles', 'roles', 'users.roleId = roles.id')
       .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
       .where('roles. roleName != :excludedRole', {
-        excludedRole: ERole.Customer,
+        excludedRole: ERole.CUSTOMER,
       })
       .andWhere('users.status = :status', {
         status: EUserStatus.ACTIVE,
@@ -373,7 +373,7 @@ export class UserService extends BaseService<UserEntity> {
         throw new BadRequestException(AUTH_ERROR_MESSAGE.EMAIL_EXIST);
       }
       const role = await queryRunner.manager.findOne(RoleEntity, {
-        where: { roleName: ERole.Customer },
+        where: { roleName: ERole.CUSTOMER },
       });
       createUser = await queryRunner.manager.insert(UserEntity, {
         email: customerRequest?.email,

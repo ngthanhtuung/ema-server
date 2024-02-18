@@ -250,8 +250,8 @@ export class TaskService extends BaseService<TaskEntity> {
         eventDivision: {
           id: listIdEventDivison?.[0]?.id,
         },
-        startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
-        endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
+        startDate: moment(startDate).tz('Asia/Bangkok').toDate(),
+        endDate: moment(endDate).tz('Asia/Bangkok').toDate(),
         description: desc,
         estimationTime: estimationTime,
         priority: priority,

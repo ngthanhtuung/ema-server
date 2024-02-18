@@ -2,7 +2,7 @@ export enum ERole {
   ADMIN = 'Administrator',
   MANAGER = 'Quản Lý',
   STAFF = 'Trưởng Nhóm',
-  Customer = 'Khách Hàng',
+  CUSTOMER = 'Khách Hàng',
   EMPLOYEE = 'Nhân Viên',
 }
 
@@ -104,6 +104,7 @@ export enum EGroupSetting {
 }
 
 export enum EContactInformation {
+  ALL = 'ALL',
   PENDING = 'PENDING',
   ACCEPT = 'ACCEPTED',
   REJECT = 'REJECTED',

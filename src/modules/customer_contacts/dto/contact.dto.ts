@@ -30,14 +30,6 @@ export class CustomerContactRequest {
   })
   address: string;
 
-  @IsEmail()
-  @IsNotEmpty()
-  @ApiProperty({
-    required: true,
-    default: 'nguyenvana@gmail.com',
-  })
-  email: string;
-
   @IsString()
   @ApiProperty({
     required: true,
@@ -120,7 +112,7 @@ export class FilterCustomerContact {
     required: false,
     type: 'enum',
     enum: EContactInformation,
-    default: EContactInformation.PENDING,
+    default: EContactInformation.ALL,
   })
   status: EContactInformation;
 }

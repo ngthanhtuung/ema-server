@@ -126,7 +126,7 @@ export class AuthService {
         throw new BadRequestException('Old password is not match');
       }
       const hashPassword = await this.sharedService.hashPassword(newPassword);
-      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      const currentDate = moment().tz('Asia/Bangkok').toDate();
       await this.userService.updatePassword(
         hashPassword,
         currentDate,
@@ -215,7 +215,7 @@ export class AuthService {
         throw new BadRequestException("Account don't exist");
       }
       const hashPassword = await this.sharedService.hashPassword(password);
-      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      const currentDate = moment().tz('Asia/Bangkok').toDate();
       await this.userService.updatePassword(
         hashPassword,
         currentDate,

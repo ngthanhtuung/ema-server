@@ -13,6 +13,7 @@ import {
 import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
 import { GetUser } from 'src/decorators/getUser.decorator';
+import { EventEntity } from './event.entity';
 
 @Controller('event')
 @ApiBearerAuth()
@@ -42,6 +43,19 @@ export class EventController {
   ): Promise<Array<EventResponse>> {
     return await this.eventService.getAllEventByDivisionID(
       JSON.parse(user).divisionId,
+    );
+  }
+
+  /**
+   * getAllEventByCustomer
+   * @param data
+   */
+
+  @Get('/customer')
+  @Roles(ERole.CUSTOMER)
+  async getAllEventByCustomer(@GetUser() user: string): Promise<EventEntity[]> {
+    return await this.eventService.getAllEventByCustomer(
+      JSON.parse(user).email,
     );
   }
 

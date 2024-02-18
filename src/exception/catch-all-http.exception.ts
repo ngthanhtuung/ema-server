@@ -53,7 +53,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    const currentDate = moment().tz('Asia/Ho_Chi_Minh');
+    const currentDate = moment().tz('Asia/Bangkok');
     const formattedDate = currentDate.format('DD/MM/YYYY, h:mm:ss A');
     const discordWebHookUrl = process.env.ERROR_DISCORD_WEBHOOK_URL;
 

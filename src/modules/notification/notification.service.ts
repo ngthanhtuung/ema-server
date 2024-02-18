@@ -86,7 +86,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isRead: true,
-          readAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          readAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (readNotification.affected > 0) {
@@ -113,7 +113,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isRead: true,
-          readAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          readAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (readNotification.affected > 0) {
@@ -261,7 +261,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isDelete: true,
-          deleteAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          deleteAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (deleteNotification.affected > 0) {
@@ -288,7 +288,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isDelete: true,
-          deleteAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          deleteAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (deleteNotification.affected > 0) {
