@@ -25,6 +25,7 @@ import { CannotDeleteMessage } from './exceptions/CannotDeleteMessage';
 import { ConversationsEntity } from '../conversations/conversations.entity';
 import { MessagesPagination } from './dtos/messages.pagination';
 import { IPaginateResponse } from '../base/filter.pagination';
+import { ConservationsPagination } from '../conversations/dtos/conversations.pagination';
 @Injectable()
 export class MessageService implements IMessageService {
   constructor(
@@ -78,7 +79,13 @@ export class MessageService implements IMessageService {
       },
     });
     const updated = await this.conversationService.save(conversation);
-    return { message: mapDataMessage, conversation: updated };
+    const newConservation: ConversationsEntity =
+      await this.conversationService.findById(id);
+    return {
+      message: mapDataMessage,
+      conversation: updated,
+      newConservation,
+    };
   }
 
   async getMessages(

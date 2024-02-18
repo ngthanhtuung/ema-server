@@ -178,32 +178,30 @@ export class AppGateway
   }
 
   @OnEvent('message.create')
-  async handleMessageCreateEvent(
-    payload: CreateMessageResponse,
-  ): Promise<void> {
+  handleMessageCreateEvent(payload: CreateMessageResponse): Promise<void> {
+    console.log('Create message');
+
     const {
       message: { author },
       conversation: { creator, recipient },
+      newConservation,
     } = payload;
-    const paging: ConservationsPagination = {
-      sizePage: 10,
-      currentPage: 1,
-    };
+
     const recipientId =
       author?.id === creator?.id ? recipient?.id : creator?.id;
     const authorSocket = this.sessions.getUserSocket(author.id);
     const recipientSocket = this.sessions.getUserSocket(recipientId);
-    const listConservationsAuth =
-      await this.conversationService.getConversations(author.id, paging);
-    const listConservationsRecipient =
-      await this.conversationService.getConversations(recipientId, paging);
     if (authorSocket) {
-      authorSocket.emit('onConversationUpdate', listConservationsAuth);
-      authorSocket.emit('onMessage', payload.message);
+      authorSocket.emit('onMessage', {
+        message: payload.message,
+        newConservations: newConservation,
+      });
     }
     if (recipientSocket) {
-      recipientSocket.emit('onConversationUpdate', listConservationsRecipient);
-      recipientSocket.emit('onMessage', payload.message);
+      recipientSocket.emit('onMessage', {
+        message: payload.message,
+        newConservations: newConservation,
+      });
     }
     return;
   }
