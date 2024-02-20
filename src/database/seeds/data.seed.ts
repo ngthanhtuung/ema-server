@@ -108,8 +108,9 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000001',
         fullName: 'Đoàn Vũ Quang Huy',
-        code: 'NCV000000001',
+        // code: 'NCV000000001',
         id: manager1['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
@@ -137,8 +138,9 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000002',
         fullName: 'Nguyễn Thanh Tùng',
-        code: 'NCV000000002',
+        // code: 'NCV000000002',
         id: admin['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
@@ -169,8 +171,9 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000003',
         fullName: `Truong nhom ${divison1['identifiers'][0]['divisionName']}`,
-        code: 'NCV000000003',
+        // code: 'NCV000000003',
         id: staff['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
@@ -200,8 +203,9 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000004',
         fullName: 'Nhân Viên',
-        code: 'NCV000000004',
+        // code: 'NCV000000004',
         id: employee['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),

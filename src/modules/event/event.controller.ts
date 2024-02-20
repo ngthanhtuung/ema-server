@@ -104,7 +104,6 @@ export class EventController {
    */
 
   @Get('/:eventId')
-  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
   async getEventById(@Param('eventId') id: string): Promise<EventResponse> {
     return await this.eventService.getEventById(id);
   }
