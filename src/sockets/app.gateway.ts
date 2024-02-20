@@ -127,24 +127,6 @@ export class AppGateway
     socket.emit('onlineGroupUsersReceived', { onlineUsers, offlineUsers });
   }
 
-  @SubscribeMessage('getOnlineUser')
-  async handleGetUserOnline(
-    @ConnectedSocket() socket: AuthenticatedSocket,
-  ): Promise<void> {
-    const { user } = socket;
-    if (user) {
-      console.log('user is authenticated');
-      console.log(`fetching ${user.email} is online`);
-      const listUser: any = await this.userService.getAllUser();
-      const onlineFriends = listUser.filter((item) =>
-        this.sessions.getUserSocket(
-          user.id === item.receiver.id ? item.sender.id : item.receiver.id,
-        ),
-      );
-      socket.emit('getOnlineUser', onlineFriends);
-    }
-  }
-
   @SubscribeMessage('onConversationJoin')
   onConversationJoin(
     @MessageBody() data: any,
