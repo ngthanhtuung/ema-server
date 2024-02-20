@@ -99,6 +99,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000001',
         fullName: 'Đoàn Vũ Quang Huy',
         profileId: manager1['identifiers'][0]['id'],
         dob: faker.date.anytime(),
@@ -127,6 +128,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000002',
         fullName: 'Nguyễn Thanh Tùng',
         profileId: admin['identifiers'][0]['id'],
         dob: faker.date.anytime(),
@@ -158,6 +160,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000003',
         fullName: `Truong nhom ${divison1['identifiers'][0]['divisionName']}`,
         profileId: staff['identifiers'][0]['id'],
         dob: faker.date.anytime(),
@@ -188,6 +191,7 @@ export class DataSeed implements Seeder {
       .insert()
       .into(ProfileEntity)
       .values({
+        code: 'NVCT000004',
         fullName: 'Nhân Viên',
         profileId: employee['identifiers'][0]['id'],
         dob: faker.date.anytime(),
