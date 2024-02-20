@@ -45,10 +45,8 @@ export class EventCreateRequest {
   @ApiProperty({ default: '120000000' })
   estBudget: number;
 
-  @IsString()
-  @IsNotEmpty()
   @ApiProperty()
-  eventTypeId: string;
+  eventTypeId?: string;
 }
 
 export class EventAssignRequest {
