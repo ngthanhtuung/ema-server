@@ -24,13 +24,11 @@ import {
   FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { EEventStatus } from 'src/common/enum/enum';
+import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
-import { FileService } from 'src/file/file.service';
-import { ConfigService } from '@nestjs/config';
-import { TaskService } from '../task/task.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
+import { TaskService } from '../task/task.service';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -39,9 +37,7 @@ export class EventService extends BaseService<EventEntity> {
     private readonly eventRepository: Repository<EventEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
-    private readonly fileService: FileService,
     private readonly assignEventService: AssignEventService,
-    private configService: ConfigService,
     private readonly taskService: TaskService,
   ) {
     super(eventRepository);
@@ -64,7 +60,21 @@ export class EventService extends BaseService<EventEntity> {
       const { eventName, monthYear, nameSort, sort, status } = filter;
       const { currentPage, sizePage } = eventPagination;
       const query = this.generalBuilderEvent();
-      query.leftJoin('tasks', 'tasks', 'tasks.eventID = events.id');
+      query.leftJoin(
+        'assign_events',
+        'assign_events',
+        'assign_events.eventID = events.id',
+      );
+      query.leftJoin(
+        'tasks',
+        'tasks',
+        'tasks.eventDivision = assign_events.id',
+      );
+      query.leftJoin(
+        'event_types',
+        'event_types',
+        'event_types.id = events.eventTypeId',
+      );
       query.select([
         'events.id as id',
         'events.eventName as eventName',
@@ -78,6 +88,7 @@ export class EventService extends BaseService<EventEntity> {
         'events.createdAt as createdAt',
         'events.updatedAt as updatedAt',
         'events.status as status',
+        'event_types.typeName as typeName',
         'COUNT(tasks.id) as taskCount',
       ]);
       query.where('tasks.parentTask IS NULL AND events.isTemplate = 0');
@@ -106,15 +117,20 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      dataPromise[0] = dataPromise[0]?.map((item) => {
-        item.startDate = moment(item.startDate).format('YYYY-MM-DD');
-        item.endDate = moment(item.endDate).format('YYYY-MM-DD');
-        item.createdAt = moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss');
-        item.updatedAt = moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss');
-        item.listDivision = listStaffOfDivision?.[`${item.id}`] ?? [];
-        item.taskCount = +item.taskCount;
-        return item;
-      });
+      const finalData = [];
+      for (const item of dataPromise[0]) {
+        const dataMap = {
+          ...item,
+          startDate: moment(item.startDate).format('YYYY-MM-DD'),
+          endDate: moment(item.endDate).format('YYYY-MM-DD'),
+          createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+          updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+          listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
+          taskCount: await this.taskService.countTaskInEvent(item?.id),
+        };
+        finalData.push(dataMap);
+      }
+      dataPromise[0] = finalData;
       const data = plainToInstance(EventResponse, dataPromise[0]);
       return paginateResponse<EventResponse>(
         [data, dataPromise[1]],
@@ -135,13 +151,26 @@ export class EventService extends BaseService<EventEntity> {
     try {
       const event = await this.findOne({
         where: { id: id },
+        select: {
+          eventType: {
+            typeName: true,
+          },
+        },
+        relations: {
+          eventType: true,
+        },
       });
       if (!event) {
         throw new NotFoundException('Event not found');
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionByEventID(id);
-      const finalRes = { ...event, listDivision: listStaffOfDivision || [] };
+      const taskCount = await this.taskService.countTaskInEvent(id);
+      const finalRes = {
+        ...event,
+        listDivision: listStaffOfDivision || [],
+        taskCount: taskCount,
+      };
       return plainToClass(EventResponse, finalRes);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -185,6 +214,31 @@ export class EventService extends BaseService<EventEntity> {
   }
 
   /**
+   * getAllEventByCustomer
+   * @param email
+   * @returns
+   */
+  async getAllEventByCustomer(email: string): Promise<EventEntity[]> {
+    try {
+      const data = await this.eventRepository.find({
+        where: {
+          contracts: {
+            customerEmail: email,
+          },
+        },
+        relations: {
+          eventType: {
+            customerContacts: true,
+          },
+        },
+      });
+      return data;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
    * createEvent
    * @param event
    * @returns
@@ -214,13 +268,6 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
-      // const arrayPromise = event.divisionId.map((id) =>
-      //   queryRunner.manager.insert(AssignEventEntity, {
-      //     event: { id: createEvent.generatedMaps[0]['id'] },
-      //     division: { id: id },
-      //   }),
-      // );
-      // await Promise.all(arrayPromise);
       await queryRunner.commitTransaction();
       return `${createEvent.generatedMaps[0]['id']} created successfully`;
     } catch (err) {
@@ -258,7 +305,7 @@ export class EventService extends BaseService<EventEntity> {
             estBudget: event.estBudget,
             updatedBy: user.id,
             updatedAt: moment()
-              .tz('Asia/Ho_Chi_Minh')
+              .tz('Asia/Bangkok')
               .format('YYYY-MM-DD HH:mm:ss'),
           },
         );
@@ -287,27 +334,45 @@ export class EventService extends BaseService<EventEntity> {
     if (!queryRunner) {
       queryRunner = this.dataSource.createQueryRunner();
     }
-    const dataInsert = data.divisionId.map((item) => {
-      return {
-        event: { id: data.eventId },
-        division: { id: item },
-      };
-    });
-    const assignedExisted = await queryRunner.manager.find(AssignEventEntity, {
-      where: { event: { id: data.eventId } },
-    });
-    const deleteAssignDivision = assignedExisted?.map((item) => {
-      queryRunner.manager.delete(AssignEventEntity, { id: item.id });
-    });
-    if (deleteAssignDivision.length !== 0) {
-      await Promise.all(deleteAssignDivision);
+    // Get Divison By Event
+    const divisionEventExisted = await queryRunner.manager.find(
+      AssignEventEntity,
+      {
+        where: { event: { id: data.eventId } },
+        select: {
+          division: {
+            id: true,
+          },
+        },
+        relations: {
+          // event: true,
+          division: true,
+        },
+      },
+    );
+    console.log('assignedExisted:', divisionEventExisted);
+
+    const dataInsert = data.divisionId.reduce((dataInsert, item) => {
+      const checkExistDivision = divisionEventExisted.find(
+        (division) => division.division.id === item,
+      );
+      if (!checkExistDivision) {
+        dataInsert.push({
+          event: { id: data.eventId },
+          division: { id: item },
+        });
+      }
+      return dataInsert;
+    }, []);
+    console.log('dataInsert:', dataInsert);
+    if (dataInsert.length > 0) {
+      await queryRunner.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AssignEventEntity)
+        .values(dataInsert)
+        .execute();
     }
-    await queryRunner.manager
-      .createQueryBuilder()
-      .insert()
-      .into(AssignEventEntity)
-      .values(dataInsert)
-      .execute();
     return `Update division into event successfully!!!`;
   }
 
@@ -333,61 +398,61 @@ export class EventService extends BaseService<EventEntity> {
     }
   }
 
-  // async eventStatistics(mode: EEventStatus, user: string): Promise<unknown> {
-  //   try {
-  //     let events;
-  //     if (JSON.parse(user).role === ERole.MANAGER) {
-  //       if (mode === undefined || mode === EEventStatus.ALL) {
-  //         events = await this.eventRepository.find({
-  //           where: { isTemplate: false },
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       } else {
-  //         events = await this.eventRepository.find({
-  //           where: { status: mode, isTemplate: false },
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       }
-  //     } else {
-  //       if (mode === undefined || mode === EEventStatus.ALL) {
-  //         events = await this.eventRepository.find({
-  //           where: {
-  //             isTemplate: false,
-  //           },
+  async eventStatistics(mode: EEventStatus, user: string): Promise<unknown> {
+    try {
+      let events;
+      if (JSON.parse(user).role === ERole.MANAGER) {
+        if (mode === undefined || mode === EEventStatus.ALL) {
+          events = await this.eventRepository.find({
+            where: { isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        } else {
+          events = await this.eventRepository.find({
+            where: { status: mode, isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        }
+      } else {
+        if (mode === undefined || mode === EEventStatus.ALL) {
+          events = await this.eventRepository.find({
+            where: {
+              isTemplate: false,
+            },
 
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       } else {
-  //         events = await this.eventRepository.find({
-  //           where: { status: mode, isTemplate: false },
-  //           select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
-  //         });
-  //       }
-  //     }
-  //     const eventStatisticPromises = events.map(async (event) => {
-  //       const taskStatistic = await this.taskService.getTaskStatistic(event.id);
-  //       const peopleInTaskStatistic =
-  //         await this.taskService.getNumOfPeopleInTaskStatistic(event.id);
-  //       return {
-  //         id: event.id,
-  //         eventName: event.eventName,
-  //         startDate: event.startDate,
-  //         endDate: event.endDate,
-  //         status: event.status,
-  //         tasks: taskStatistic,
-  //         totalMember: peopleInTaskStatistic,
-  //       };
-  //     });
-  //     const eventStatistic = await Promise.all(eventStatisticPromises);
-  //     return eventStatistic;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        } else {
+          events = await this.eventRepository.find({
+            where: { status: mode, isTemplate: false },
+            select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          });
+        }
+      }
+      const eventStatisticPromises = events.map(async (event) => {
+        const taskStatistic = await this.taskService.getTaskStatistic(event.id);
+        const peopleInTaskStatistic =
+          await this.taskService.getNumOfPeopleInTaskStatistic(event.id);
+        return {
+          id: event.id,
+          eventName: event.eventName,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          status: event.status,
+          tasks: taskStatistic,
+          totalMember: peopleInTaskStatistic,
+        };
+      });
+      const eventStatistic = await Promise.all(eventStatisticPromises);
+      return eventStatistic;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
   async getUserInEvent(eventId: string): Promise<unknown> {
     try {
-      const query = `SELECT p.profileId as 'id', p.role,
+      const query = `SELECT p.id as 'id', u.roleId,
                             p.fullName,
                             p.dob,
                             p.nationalId,
@@ -399,7 +464,7 @@ export class EventService extends BaseService<EventEntity> {
                               inner join assign_events ae ON e.id = ae.eventId
                               inner join divisions d on ae.divisionId = d.id
                               inner join users u on d.id = u.divisionId
-                              inner join profiles p on u.id = p.profileId
+                              inner join profiles p on u.id = p.id
                      where e.id = '${eventId}';`;
       const data = await this.eventRepository.query(query);
       return data;
@@ -413,8 +478,10 @@ export class EventService extends BaseService<EventEntity> {
       const events = await this.eventRepository.query(`
           SELECT e.*
           FROM events e
-                   inner join tasks t ON
-              e.id = t.eventID
+                   inner join assign_events ae ON
+              e.id = ae.eventID
+              inner join tasks t ON
+              ae.id = t.eventDivisionId
                    inner join assign_tasks at2 ON
               t.id = at2.taskID
           WHERE t.startDate >= '${moment().format('YYYY-MM-DD HH:mm:ss')}'

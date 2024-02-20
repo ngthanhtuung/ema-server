@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mysqldb:
     container_name: HREA-DB
-    # platform: linux/x86_64
+    # platform: linux/x86_64 (optional, uncomment if needed)
     image: mysql:8.0.22
     restart: unless-stopped
     env_file:
@@ -30,7 +30,8 @@ services:
     depends_on:
       - mysqldb
     ports:
-      - $PORT:$PORT
+      - $PORT:$PORT  # Replace with the actual environment variable or specific port number
+      - "3006:3006"  # Ensure this matches the previous mapping
     stdin_open: true
     tty: true
 volumes:

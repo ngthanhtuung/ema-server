@@ -388,11 +388,9 @@ export class ContractsService extends BaseService<ContractEntity> {
           },
           {
             dateOfSigning: moment
-              .tz('Asia/Ho_Chi_Minh')
+              .tz('Asia/Bangkok')
               .format('YYYY-MM-DD HH:mm:ss'),
-            updatedAt: moment
-              .tz('Asia/Ho_Chi_Minh')
-              .format('YYYY-MM-DD HH:mm:ss'),
+            updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
             updatedBy: user.id,
           },
         );
@@ -402,9 +400,7 @@ export class ContractsService extends BaseService<ContractEntity> {
             id: contract.event.id,
           },
           {
-            updatedAt: moment
-              .tz('Asia/Ho_Chi_Minh')
-              .format('YYYY-MM-DD HH:mm:ss'),
+            updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
             updatedBy: user.id,
             status: EEventStatus.PREPARING,
           },

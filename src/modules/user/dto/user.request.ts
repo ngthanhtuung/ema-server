@@ -1,19 +1,8 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import {
-  IsBoolean,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsString,
-} from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import * as moment from 'moment';
-import {
-  EGender,
-  ERole,
-  ETypeEmployee,
-  EUserStatus,
-} from 'src/common/enum/enum';
+import { EGender, ETypeEmployee, EUserStatus } from 'src/common/enum/enum';
 import { FilterPaginationBase } from 'src/modules/base/filter.pagination';
 
 export class UserCreateRequest {
@@ -33,35 +22,59 @@ export class UserCreateRequest {
   @Transform(({ value }) => {
     return moment(value).format('YYYY-MM-DD');
   })
-  dob: Date;
+  dob?: Date;
 
   @ApiProperty({ default: '121212' })
-  @IsNotEmpty()
-  nationalId: string;
+  nationalId?: string;
 
   @ApiProperty({ default: EGender.MALE, enum: EGender })
   @IsEnum(EGender)
-  gender: EGender;
+  gender?: EGender;
 
   @ApiProperty({ default: 'abc test' })
-  @IsNotEmpty()
-  address: string;
+  address?: string;
 
   @ApiProperty({ default: 'test' })
-  @IsNotEmpty()
-  avatar: string;
+  avatar?: string;
 
   @IsNotEmpty()
   @ApiProperty({})
-  divisionId: string;
+  divisionId?: string;
 
   @IsString()
   @ApiProperty()
-  roleId: string;
+  roleId?: string;
 
   @ApiProperty({ default: ETypeEmployee.FULL_TIME, enum: ETypeEmployee })
   @IsEnum(ETypeEmployee)
-  typeEmployee: ETypeEmployee;
+  typeEmployee?: ETypeEmployee;
+}
+
+export class CustomerCreateRequest {
+  @ApiProperty({ default: 'bao@gmail.com' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ default: '12345678' })
+  @IsNotEmpty()
+  phoneNumber: string;
+
+  @ApiProperty({ default: '12345678' })
+  password?: string;
+
+  @ApiProperty({ default: 'test' })
+  @IsNotEmpty()
+  fullName: string;
+
+  @ApiProperty({ default: EGender.MALE, enum: EGender })
+  @IsEnum(EGender)
+  gender?: EGender;
+
+  @ApiProperty({ default: 'abc test' })
+  address?: string;
+
+  @ApiProperty({ default: 'test' })
+  avatar?: string;
 }
 
 export class UserPagination extends FilterPaginationBase {}

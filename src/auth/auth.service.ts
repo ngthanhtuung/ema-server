@@ -2,14 +2,16 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AUTH_ERROR_MESSAGE } from 'src/common/constants/constants';
 import { EUserStatus } from 'src/common/enum/enum';
 import { jwtConstants } from 'src/config/jwt.config';
 import { UserService } from 'src/modules/user/user.service';
-import { UserCreateRequest } from 'src/modules/user/dto/user.request';
+import {
+  CustomerCreateRequest,
+  UserCreateRequest,
+} from 'src/modules/user/dto/user.request';
 import { SharedService } from 'src/shared/shared.service';
 import ChangePasswordDto from './dto/changePassword.dto';
 import { UserEntity } from 'src/modules/user/user.entity';
@@ -52,13 +54,13 @@ export class AuthService {
       throw new BadRequestException('Sai email hoặc mật khẩu !!!');
     }
     const payload = {
-      id: user.id,
-      role: user.role,
+      id: user?.id || '',
+      role: user?.role || '',
       email: email,
-      divisionID: user.divisionId,
-      avatar: user.avatar,
-      fullName: user.fullName,
-      typeEmployee: user.typeEmployee,
+      divisionID: user?.divisionId || '',
+      avatar: user?.avatar || '',
+      fullName: user?.fullName || '',
+      typeEmployee: user?.typeEmployee || '',
     };
     // Create accessToken
     const accessToken = this.jwtService.sign(payload, {
@@ -90,6 +92,17 @@ export class AuthService {
   }
 
   /**
+   * signUp
+   * @param customerRequest
+   * @returns
+   */
+  async signUpCustomer(
+    customerRequest: CustomerCreateRequest,
+  ): Promise<string> {
+    return await this.userService.insertCustomer(customerRequest);
+  }
+
+  /**
    * changePassword
    * @param data
    * @param user
@@ -113,7 +126,7 @@ export class AuthService {
         throw new BadRequestException('Old password is not match');
       }
       const hashPassword = await this.sharedService.hashPassword(newPassword);
-      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      const currentDate = moment().tz('Asia/Bangkok').toDate();
       await this.userService.updatePassword(
         hashPassword,
         currentDate,
@@ -202,7 +215,7 @@ export class AuthService {
         throw new BadRequestException("Account don't exist");
       }
       const hashPassword = await this.sharedService.hashPassword(password);
-      const currentDate = moment().tz('Asia/Ho_Chi_Minh').toDate();
+      const currentDate = moment().tz('Asia/Bangkok').toDate();
       await this.userService.updatePassword(
         hashPassword,
         currentDate,
@@ -219,22 +232,29 @@ export class AuthService {
     try {
       const decode = await firebaseAdmin.auth().verifyIdToken(token);
       const { email } = decode;
-      const user = await this.userService.findByEmail(email);
+      const userInfo = await firebaseAdmin.auth().getUserByEmail(email);
+      let user = await this.userService.findByEmail(email);
       if (!user) {
-        throw new BadRequestException(AUTH_ERROR_MESSAGE.USER_NOT_EXIST);
+        const payload: CustomerCreateRequest = {
+          email: userInfo.email,
+          phoneNumber: userInfo.phoneNumber,
+          fullName: userInfo.displayName,
+          avatar: userInfo.photoURL,
+        };
+        await this.signUpCustomer(payload);
+        user = await this.userService.findByEmail(email);
       }
-
       if (user.status === EUserStatus.INACTIVE) {
         throw new BadRequestException(AUTH_ERROR_MESSAGE.USER_NOT_VERIFY);
       }
       const payload = {
-        id: user.id,
-        role: user.role,
+        id: user?.id,
+        role: user?.role,
         email: email,
-        divisionID: user.divisionId,
-        avatar: user.avatar,
-        fullName: user.fullName,
-        typeEmployee: user.typeEmployee,
+        divisionID: user?.divisionId || '',
+        avatar: user?.avatar || '',
+        fullName: user?.fullName || '',
+        typeEmployee: user?.typeEmployee || '',
       };
       // Create accessToken
       const accessToken = this.jwtService.sign(payload, {

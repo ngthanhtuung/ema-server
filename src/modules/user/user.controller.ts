@@ -25,7 +25,7 @@ export class UserController {
   }
 
   @Get('/:userId')
-  @Roles(ERole.MANAGER, ERole.STAFF)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
   async getUserById(@Param('userId') userId: string): Promise<UserProfile> {
     return await this.userService.findByIdV2(userId);
   }
@@ -49,7 +49,7 @@ export class UserController {
   // }
 
   @Get('')
-  @Roles(ERole.MANAGER, ERole.STAFF)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
   @ApiQuery({
     name: 'role',
     enum: [ERole.STAFF, ERole.EMPLOYEE],
@@ -75,7 +75,7 @@ export class UserController {
   }
 
   @Put('/:userId/:status')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.ADMIN)
   @ApiParam({ name: 'status', enum: EUserStatus })
   async updateStatus(
     @Param('userId') userId: string,
@@ -102,7 +102,7 @@ export class UserController {
   }
 
   @Put('/:userId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.ADMIN)
   async UpdateProfileV2(
     @GetUser() user: string,
     @Body() updateProfile: UserProfileUpdateRequestV2,

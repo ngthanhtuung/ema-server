@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Post, Query, Put } from '@nestjs/common';
 import { EventService } from './event.service';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { EventResponse } from './dto/event.response';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   EventAssignRequest,
   EventCreateRequest,
@@ -13,6 +13,7 @@ import {
 import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
 import { GetUser } from 'src/decorators/getUser.decorator';
+import { EventEntity } from './event.entity';
 
 @Controller('event')
 @ApiBearerAuth()
@@ -46,6 +47,19 @@ export class EventController {
   }
 
   /**
+   * getAllEventByCustomer
+   * @param data
+   */
+
+  @Get('/customer')
+  @Roles(ERole.CUSTOMER)
+  async getAllEventByCustomer(@GetUser() user: string): Promise<EventEntity[]> {
+    return await this.eventService.getAllEventByCustomer(
+      JSON.parse(user).email,
+    );
+  }
+
+  /**
    * getEventTemplate
    */
 
@@ -59,7 +73,7 @@ export class EventController {
    * @param filter
    * @returns
    */
-  @Get('/filterEventByCondition')
+  @Get('/filter')
   async filterEventByCondition(
     @Query() filter: FilterEvent,
     @Query() eventPagination: EventPagination,
@@ -70,19 +84,19 @@ export class EventController {
     );
   }
 
-  // @Get('/statistic')
-  // @ApiQuery({
-  //   name: 'mode',
-  //   enum: EEventStatus,
-  //   required: false,
-  // })
-  // async eventStatistic(
-  //   @Query('mode') mode: EEventStatus,
-  //   @GetUser() user: string,
-  // ): Promise<unknown> {
-  //   console.log('Mode: ', mode);
-  //   return await this.eventService.eventStatistics(mode, user);
-  // }
+  @Get('/statistic')
+  @ApiQuery({
+    name: 'mode',
+    enum: EEventStatus,
+    required: false,
+  })
+  async eventStatistic(
+    @Query('mode') mode: EEventStatus,
+    @GetUser() user: string,
+  ): Promise<unknown> {
+    console.log('Mode: ', mode);
+    return await this.eventService.eventStatistics(mode, user);
+  }
 
   /**
    * getEventById
@@ -90,7 +104,6 @@ export class EventController {
    */
 
   @Get('/:eventId')
-  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
   async getEventById(@Param('eventId') id: string): Promise<EventResponse> {
     return await this.eventService.getEventById(id);
   }

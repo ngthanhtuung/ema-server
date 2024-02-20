@@ -58,7 +58,7 @@ export class EventEntity extends BaseEntity {
 
   @CreateDateColumn()
   @Transform(({ value }) => {
-    return moment(value).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
   public createdAt: Date;
 
@@ -67,20 +67,17 @@ export class EventEntity extends BaseEntity {
 
   @UpdateDateColumn()
   @Transform(({ value }) => {
-    return moment(value).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
   updatedAt: Date;
 
   @Column({ type: 'varchar', nullable: true })
   updatedBy: string;
 
-  // @OneToMany(() => TaskEntity, (tasks) => tasks.event, { onDelete: 'CASCADE' })
-  // tasks: TaskEntity[];
-
-  @OneToMany(() => AssignEventEntity, (assginEvent) => assginEvent.event, {
+  @OneToMany(() => AssignEventEntity, (assignEvent) => assignEvent.event, {
     onDelete: 'CASCADE',
   })
-  assignEvents: [];
+  assignEvents: AssignEventEntity[];
 
   @OneToMany(() => FeedbackEntity, (feedback) => feedback.event)
   feedbacks: FeedbackEntity[];

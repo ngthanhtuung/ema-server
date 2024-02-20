@@ -25,7 +25,7 @@ export class SettingsService {
         ...settingRequest,
         group,
       };
-      const newSetting = await this.settingRepository.save(payload);
+      await this.settingRepository.save(payload);
       return 'Success';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -47,6 +47,8 @@ export class SettingsService {
           name: result.name,
           group: result.group,
           value: result.value,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
         };
       }
       throw new NotFoundException(`Setting ${code} not found`);

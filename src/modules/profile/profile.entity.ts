@@ -1,39 +1,46 @@
 import { EGender, ERole } from 'src/common/enum/enum';
 import { UserEntity } from 'src/modules/user/user.entity';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 
 @Entity({ name: 'profiles' })
 export class ProfileEntity {
   @PrimaryColumn()
-  profileId: string;
+  id: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: false })
+  @Column({ type: 'varchar', length: 255, default: null })
   code: string;
 
   @Column({ type: 'varchar', length: 255 })
   fullName: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', default: null })
   dob: Date;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100, unique: true, default: null })
   nationalId: string;
 
-  @Column({ enum: EGender, type: 'enum', default: EGender.MALE })
+  @Column({ enum: EGender, type: 'enum', default: null })
   gender: EGender;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, default: null })
   address: string;
 
-  @Column({ type: 'varchar', length: 100, unique: true })
+  @Column({ type: 'varchar', length: 100, unique: true, default: null })
   phoneNumber: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', default: null })
   avatar: string;
 
   @OneToOne(() => UserEntity, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  // @JoinColumn({ name: 'profileId' })
+  @JoinColumn({ name: 'id' })
   user: UserEntity;
 }

@@ -1,4 +1,3 @@
-import { messaging } from 'firebase-admin';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { DeviceEntity } from './device.entity';

@@ -10,10 +10,10 @@ import { DeviceModule } from '../device/device.module';
 
 @Module({
   imports: [
+    GatewayModule,
     TypeOrmModule.forFeature([AssignTaskEntity]),
     NotificationModule,
     UserModule,
-    GatewayModule,
     DeviceModule,
   ],
   controllers: [AssignTaskController],

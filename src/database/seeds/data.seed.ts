@@ -11,6 +11,7 @@ import { EventEntity } from 'src/modules/event/event.entity';
 import Mail from 'src/modules/mail/mail.entity';
 import { RoleEntity } from 'src/modules/roles/roles.entity';
 import { EventTypeEntity } from 'src/modules/event_types/event_types.entity';
+import { AssignEventEntity } from 'src/modules/assign-event/assign-event.entity';
 
 export class DataSeed implements Seeder {
   async run(factory: Factory, connection: Connection): Promise<void> {
@@ -25,6 +26,14 @@ export class DataSeed implements Seeder {
       .into(RoleEntity)
       .values({
         roleName: 'Administrator',
+      })
+      .execute();
+    const customerRole = await connection
+      .createQueryBuilder()
+      .insert()
+      .into(RoleEntity)
+      .values({
+        roleName: 'Khách Hàng',
       })
       .execute();
     const managerRole = await connection
@@ -101,7 +110,8 @@ export class DataSeed implements Seeder {
       .values({
         code: 'NVCT000001',
         fullName: 'Đoàn Vũ Quang Huy',
-        profileId: manager1['identifiers'][0]['id'],
+        // code: 'NCV000000001',
+        id: manager1['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
@@ -130,7 +140,8 @@ export class DataSeed implements Seeder {
       .values({
         code: 'NVCT000002',
         fullName: 'Nguyễn Thanh Tùng',
-        profileId: admin['identifiers'][0]['id'],
+        // code: 'NCV000000002',
+        id: admin['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
@@ -162,7 +173,8 @@ export class DataSeed implements Seeder {
       .values({
         code: 'NVCT000003',
         fullName: `Truong nhom ${divison1['identifiers'][0]['divisionName']}`,
-        profileId: staff['identifiers'][0]['id'],
+        // code: 'NCV000000003',
+        id: staff['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
@@ -193,7 +205,8 @@ export class DataSeed implements Seeder {
       .values({
         code: 'NVCT000004',
         fullName: 'Nhân Viên',
-        profileId: employee['identifiers'][0]['id'],
+        // code: 'NCV000000004',
+        id: employee['identifiers'][0]['id'],
         dob: faker.date.anytime(),
         nationalId: faker.random.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
@@ -239,27 +252,26 @@ export class DataSeed implements Seeder {
       })
       .execute();
 
-    // const event1 = await connection
-    //   .createQueryBuilder()
-    //   .insert()
-    //   .into(EventEntity)
-    //   .values({
-    //     eventName:
-    //       'Sự kiện ra mắt và quảng bá ngành Công Nghệ Ô Tô, Đại Học FPT',
-    //     startDate: '2023-12-31',
-    //     endDate: '2024-02-28',
-    //     processingDate: '2024-02-27',
-    //     coverUrl: 'string',
-    //     location: 'Đại học FPT, Cơ sở Thành Phố Hồ Chí Minh',
-    //     description: 'hahahahaha',
-    //     estBudget: 100000000,
-    //     createdBy: manager1['identifiers'][0]['id'],
-    //     eventType: {
-    //       id: eventType2['identifiers'][0]['id'],
-    //     },
-    //   })
-    //   .execute();
-
+    const event1 = await connection
+      .createQueryBuilder()
+      .insert()
+      .into(EventEntity)
+      .values({
+        eventName:
+          'Sự kiện ra mắt và quảng bá ngành Công Nghệ Ô Tô, Đại Học FPT',
+        startDate: '2023-12-31',
+        endDate: '2024-02-28',
+        processingDate: '2024-02-27',
+        coverUrl: 'string',
+        location: 'Đại học FPT, Cơ sở Thành Phố Hồ Chí Minh',
+        description: '[{"insert":"123123123123123\n"}]',
+        estBudget: 100000000,
+        createdBy: manager1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType2['identifiers'][0]['id'],
+        },
+      })
+      .execute();
     const mailTextId1 =
       '<p>Ch&agrave;o mừng bạn đến với hệ thống EMA, dưới đ&acirc;y l&agrave; t&agrave;i khoản đăng nhập v&agrave;o hệ thống.</p>\n<table border="1" cellpadding="1" cellspacing="1" style="width:378px">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Username/Email</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${email}</strong></span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Password</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${password}</strong></span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n<p><strong>Lưu &yacute;:&nbsp;</strong>Khi đăng nhập lần đầu ti&ecirc;n v&agrave;o hệ thống, xin vui l&ograve;ng đổi mật khẩu.</p>\n<p>Đội ngũ hỗ trợ của ch&uacute;ng t&ocirc;i (EMA System).</p>\n<p>&nbsp;</p>';
     const mailTitleId1 = 'EMA - Tài khoản đăng nhập hệ thống';

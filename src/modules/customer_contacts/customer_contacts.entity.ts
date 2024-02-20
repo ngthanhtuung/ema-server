@@ -36,7 +36,7 @@ export class CustomerContactEntity extends BaseEntity {
 
   @CreateDateColumn({ type: 'datetime' })
   @Transform(({ value }) => {
-    return moment(value).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss');
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
   public createdAt: Date;
 

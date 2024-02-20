@@ -27,9 +27,8 @@ import { NotificationCreateRequest } from '../notification/dto/notification.requ
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { UserService } from '../user/user.service';
 import { NotificationService } from '../notification/notification.service';
-import { AppGateway } from 'src/sockets/app.gateway';
-import { DeviceService } from '../device/device.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { AssignEventService } from '../assign-event/assign-event.service';
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -38,13 +37,11 @@ export class TaskService extends BaseService<TaskEntity> {
     @InjectDataSource()
     private dataSource: DataSource,
     private assignTaskService: AssignTaskService,
-    private notificationService: NotificationService,
+    private assignEventService: AssignEventService,
     private userService: UserService,
-    @Inject(forwardRef(() => AppGateway))
-    private readonly appGateWay: AppGateway,
+    private notificationService: NotificationService,
     @Inject(forwardRef(() => TaskfileService))
     private readonly taskFileService: TaskfileService,
-    private readonly deviceService: DeviceService,
   ) {
     super(taskRepository);
   }
@@ -63,56 +60,39 @@ export class TaskService extends BaseService<TaskEntity> {
     if (!condition['conValue']) {
       throw new BadRequestException('Undefined condition to get information!');
     }
-    const fieldName = condition['fieldName'];
+    let fieldName = condition['fieldName'];
     const conValue = condition['conValue'];
     const { sizePage, currentPage } = userPagination;
-    const whereCondition = {
-      [fieldName]: conValue,
-      // isTemplate: false,
-    };
+    let listConditions = [
+      {
+        [fieldName]: conValue,
+      },
+    ];
+    if (fieldName === 'eventID') {
+      fieldName = 'eventDivision';
+      const listIdEventDivision: any =
+        await this.assignEventService.getListIdEventDivision(conValue);
+      console.log('listIdEventDivison:', listIdEventDivision);
+      listConditions = listIdEventDivision.map((item) => {
+        return {
+          [fieldName]: {
+            id: item?.id,
+          },
+        };
+      });
+    }
     let results;
     const offset = sizePage * (currentPage - 1);
     try {
-      results = await this.taskRepository.find({
-        where: whereCondition,
-        skip: offset,
-        take: sizePage,
-        order: {
-          assignTasks: { isLeader: 'DESC' },
-        },
-        select: {
-          // event: {
-          //   id: true,
-          //   eventName: true,
-          // },
-          assignTasks: {
-            id: true,
-            isLeader: true,
-            user: {
-              id: true,
-              email: true,
-              profile: {
-                profileId: true,
-                avatar: true,
-                fullName: true,
-              },
-            },
+      const arrayPromise = listConditions.map((whereCondition) => {
+        return this.taskRepository.find({
+          where: whereCondition,
+          skip: offset,
+          take: sizePage,
+          order: {
+            assignTasks: { isLeader: 'DESC' },
           },
-          subTask: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
+          select: {
             assignTasks: {
               id: true,
               isLeader: true,
@@ -120,216 +100,101 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 email: true,
                 profile: {
-                  profileId: true,
                   avatar: true,
                   fullName: true,
                 },
               },
             },
-          },
-          parent: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
-            assignTasks: {
+            subTask: {
               id: true,
-              isLeader: true,
-              user: {
+              // createdAt: true,
+              createdBy: true,
+              // updatedAt: true,
+              title: true,
+              startDate: true,
+              endDate: true,
+              description: true,
+              priority: true,
+              status: true,
+              estimationTime: true,
+              effort: true,
+              modifiedBy: true,
+              approvedBy: true,
+              assignTasks: {
                 id: true,
-                email: true,
-                profile: {
-                  profileId: true,
-                  avatar: true,
-                  fullName: true,
+                isLeader: true,
+                user: {
+                  id: true,
+                  email: true,
+                  profile: {
+                    avatar: true,
+                    fullName: true,
+                  },
+                },
+              },
+            },
+            parent: {
+              id: true,
+              // createdAt: true,
+              createdBy: true,
+              // updatedAt: true,
+              title: true,
+              startDate: true,
+              endDate: true,
+              description: true,
+              priority: true,
+              status: true,
+              estimationTime: true,
+              effort: true,
+              modifiedBy: true,
+              approvedBy: true,
+              assignTasks: {
+                id: true,
+                isLeader: true,
+                user: {
+                  id: true,
+                  email: true,
+                  profile: {
+                    avatar: true,
+                    fullName: true,
+                  },
                 },
               },
             },
           },
-        },
-        relations: {
-          // event: true,
-          taskFiles: true,
-          assignTasks: {
-            user: {
-              profile: true,
-            },
-          },
-          subTask: {
+          relations: {
+            // event: true,
+            taskFiles: true,
             assignTasks: {
               user: {
                 profile: true,
               },
             },
-            taskFiles: true,
-          },
-          parent: {
-            assignTasks: {
-              user: {
-                profile: true,
+            subTask: {
+              assignTasks: {
+                user: {
+                  profile: true,
+                },
               },
+              taskFiles: true,
             },
-            taskFiles: true,
+            parent: {
+              assignTasks: {
+                user: {
+                  profile: true,
+                },
+              },
+              taskFiles: true,
+            },
           },
-        },
+        });
       });
-      if ((!results || results.length == 0) && fieldName !== 'eventID') {
-        throw new BadRequestException('No tasks found');
-      }
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
-    return results;
-  }
-
-  /**
-   * getTemplateTaskInfo
-   * @param condition
-   * @param userPagination
-   * @returns
-   */
-  async getTemplateTaskInfo(
-    condition: object,
-    userPagination: UserPagination,
-  ): Promise<TaskEntity> {
-    if (!condition['fieldName']) {
-      throw new BadRequestException('Undefined field name!');
-    }
-    if (!condition['conValue']) {
-      throw new BadRequestException('Undefined condition to get information!');
-    }
-    const fieldName = condition['fieldName'];
-    const conValue = condition['conValue'];
-    const { sizePage, currentPage } = userPagination;
-    const whereCondition = {
-      [fieldName]: conValue,
-    };
-    let results;
-    const offset = sizePage * (currentPage - 1);
-    try {
-      results = await this.taskRepository.find({
-        where: whereCondition,
-        skip: offset,
-        take: sizePage,
-        order: {
-          assignTasks: { isLeader: 'DESC' },
-        },
-        select: {
-          // event: {
-          //   id: true,
-          //   eventName: true,
-          // },
-          assignTasks: {
-            id: true,
-            isLeader: true,
-            user: {
-              id: true,
-              email: true,
-              profile: {
-                profileId: true,
-                avatar: true,
-                fullName: true,
-              },
-            },
-          },
-          subTask: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
-            assignTasks: {
-              id: true,
-              isLeader: true,
-              user: {
-                id: true,
-                email: true,
-                profile: {
-                  profileId: true,
-                  avatar: true,
-                  fullName: true,
-                },
-              },
-            },
-          },
-          parent: {
-            id: true,
-            // createdAt: true,
-            createdBy: true,
-            // updatedAt: true,
-            title: true,
-            startDate: true,
-            endDate: true,
-            description: true,
-            priority: true,
-            status: true,
-            estimationTime: true,
-            effort: true,
-            modifiedBy: true,
-            approvedBy: true,
-            assignTasks: {
-              id: true,
-              isLeader: true,
-              user: {
-                id: true,
-                email: true,
-                profile: {
-                  profileId: true,
-                  avatar: true,
-                  fullName: true,
-                },
-              },
-            },
-          },
-        },
-        relations: {
-          // event: true,
-          taskFiles: true,
-          assignTasks: {
-            user: {
-              profile: true,
-            },
-          },
-          subTask: {
-            assignTasks: {
-              user: {
-                profile: true,
-              },
-            },
-            taskFiles: true,
-          },
-          parent: {
-            assignTasks: {
-              user: {
-                profile: true,
-              },
-            },
-            taskFiles: true,
-          },
-        },
-      });
-      if ((!results || results.length == 0) && fieldName !== 'eventID') {
-        throw new BadRequestException('No tasks found');
-      }
+      console.log('arrayPromise:', arrayPromise);
+      results = await Promise.all(arrayPromise);
+      results = results.flatMap((arr) => arr);
+      // if ((!results || results.length == 0) && fieldName !== 'eventID') {
+      //   throw new BadRequestException('No tasks found');
+      // }
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -342,186 +207,150 @@ export class TaskService extends BaseService<TaskEntity> {
    * @param user
    * @returns
    */
-  // async createTask(task: TaskCreateReq, user: string): Promise<string> {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   const {
-  //     title,
-  //     eventID,
-  //     startDate,
-  //     endDate,
-  //     desc,
-  //     priority,
-  //     parentTask,
-  //     estimationTime,
-  //     assignee,
-  //     file,
-  //     leader,
-  //   } = task;
-  //   const oUser = JSON.parse(user);
-  //   const createBy = oUser.id;
-  //   const callback = async (queryRunner: QueryRunner): Promise<void> => {
-  //     const eventExisted = await queryRunner.manager.findOne(EventEntity, {
-  //       where: { id: eventID },
-  //     });
+  async createTask(task: TaskCreateReq, user: string): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    const {
+      title,
+      eventID,
+      startDate,
+      endDate,
+      desc,
+      priority,
+      parentTask,
+      estimationTime,
+      assignee,
+      file,
+      leader,
+    } = task;
+    const oUser = JSON.parse(user);
+    const createBy = oUser.id;
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
+      const eventExisted = await queryRunner.manager.findOne(EventEntity, {
+        where: { id: eventID },
+      });
 
-  //     if (!eventExisted) {
-  //       throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
-  //     }
+      if (!eventExisted) {
+        throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
+      }
 
-  //     const createTask = await queryRunner.manager.insert(TaskEntity, {
-  //       title: title,
-  //       createdBy: createBy,
-  //       eventID: eventID,
-  //       startDate: moment(startDate).tz('Asia/Ho_Chi_Minh').toDate(),
-  //       endDate: moment(endDate).tz('Asia/Ho_Chi_Minh').toDate(),
-  //       description: desc,
-  //       estimationTime: estimationTime,
-  //       priority: priority,
-  //       parent: {
-  //         id: parentTask,
-  //       },
-  //     });
+      const divisionId = (await this.userService.findById(assignee[0]))
+        ?.divisionId;
+      console.log('divisionId:', divisionId);
 
-  //     if (assignee?.length > 0) {
-  //       const oAssignTask = {
-  //         assignee,
-  //         taskID: createTask.generatedMaps[0]['id'],
-  //         leader,
-  //       };
-  //       this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
-  //     }
-  //     if (file) {
-  //       for (let i = 0; i < file?.length; i++) {
-  //         this.taskFileService.insertTaskFile({
-  //           taskID: createTask.generatedMaps[0]['id'],
-  //           fileName: file[0].fileName,
-  //           fileUrl: file[0].fileUrl,
-  //         });
-  //       }
-  //     }
-  //   };
-  //   await this.transaction(callback, queryRunner);
-  //   return 'create task success';
-  // }
+      const listIdEventDivison =
+        await this.assignEventService.getListIdEventDivision(
+          eventID,
+          divisionId,
+        );
+      console.log('listIdEventDivison:', listIdEventDivison);
 
-  // /**
-  //  * updateTask
-  //  * @param taskID
-  //  * @param data
-  //  * @returns
-  //  */
-  // // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  // async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   if (!taskID) {
-  //     throw new InternalServerErrorException(`TaskID is empty`);
-  //   }
-  //   try {
-  //     const taskExist = await queryRunner.manager.findOne(TaskEntity, {
-  //       where: { id: taskID },
-  //     });
-  //     if (!taskExist) {
-  //       throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
-  //     }
-  //     await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
-  //     const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
-  //       where: { taskID: taskID },
-  //     });
-  //     const taskExisted: any = await this.taskRepository.findOne({
-  //       where: { id: taskID },
-  //       select: {
-  //         parent: {
-  //           id: true,
-  //         },
-  //       },
-  //       relations: {
-  //         parent: true,
-  //       },
-  //     });
-  //     const createNotification = [];
-  //     const listAssigneeId = [];
-  //     const listTaskMasterId = [];
-  //     for (const item of listUser) {
-  //       if (item?.assignee !== oUser?.id) {
-  //         const dataNotification: NotificationCreateRequest = {
-  //           title: `Công việc đã được cập nhât`,
-  //           content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //           readFlag: false,
-  //           type: ETypeNotification.TASK,
-  //           sender: oUser.id,
-  //           userId: item?.assignee,
-  //           eventId: taskExisted?.eventID,
-  //           parentTaskId: taskExisted?.parent?.id,
-  //           commonId: taskID,
-  //         };
-  //         listAssigneeId.push(item?.assignee);
-  //         const socketId = (await this.userService.findById(item?.assignee))
-  //           ?.socketId;
-  //         const client = this.appGateWay.server;
-  //         if (socketId !== null) {
-  //           client.to(socketId).emit('notification', {
-  //             ...dataNotification,
-  //             avatar: oUser?.avatar,
-  //           });
-  //         }
-  //         createNotification.push(
-  //           this.notificationService.createNotification(dataNotification),
-  //         );
-  //       }
-  //     }
-  //     if (listAssigneeId.length !== 0) {
-  //       const listAssigneeDeviceToken =
-  //         await this.deviceService.getListDeviceTokens(listAssigneeId);
-  //       await this.notificationService.pushNotificationFirebase(
-  //         listAssigneeDeviceToken,
-  //         `Công việc đã được cập nhât`,
-  //         `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //       );
-  //     }
-  //     // Notificaiton task master
-  //     if (listUser?.[0].taskMaster !== oUser?.id) {
-  //       const socketId = (
-  //         await this.userService.findById(listUser?.[0].taskMaster)
-  //       )?.socketId;
-  //       const dataNotification: NotificationCreateRequest = {
-  //         title: `Công việc đã được cập nhât`,
-  //         content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //         readFlag: false,
-  //         type: ETypeNotification.TASK,
-  //         sender: oUser.id,
-  //         userId: listUser?.[0].taskMaster,
-  //         eventId: taskExisted?.eventID,
-  //         parentTaskId: taskExisted?.parent?.id,
-  //         commonId: taskID,
-  //       };
-  //       const client = this.appGateWay.server;
-  //       if (socketId !== null) {
-  //         client.to(socketId).emit('notification', {
-  //           ...dataNotification,
-  //           avatar: oUser?.avatar,
-  //         });
-  //       }
-  //       listTaskMasterId.push(listUser?.[0].taskMaster);
-  //       if (listTaskMasterId?.length !== 0) {
-  //         const listTaskMasterToken =
-  //           await this.deviceService.getListDeviceTokens(listTaskMasterId);
-  //         await this.notificationService.pushNotificationFirebase(
-  //           listTaskMasterToken,
-  //           `Công việc đã được cập nhât`,
-  //           `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
-  //         );
-  //       }
-  //       createNotification.push(
-  //         this.notificationService.createNotification(dataNotification),
-  //       );
-  //     }
-  //     await Promise.all(createNotification);
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(error.message);
-  //   }
+      const createTask = await queryRunner.manager.insert(TaskEntity, {
+        title: title,
+        createdBy: createBy,
+        eventDivision: {
+          id: listIdEventDivison?.[0]?.id,
+        },
+        startDate: moment(startDate).tz('Asia/Bangkok').toDate(),
+        endDate: moment(endDate).tz('Asia/Bangkok').toDate(),
+        description: desc,
+        estimationTime: estimationTime,
+        priority: priority,
+        parent: {
+          id: parentTask,
+        },
+      });
 
-  //   return true;
-  // }
+      if (assignee?.length > 0) {
+        const oAssignTask = {
+          assignee,
+          taskID: createTask?.generatedMaps?.[0]?.['id'],
+          leader,
+        };
+        this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
+      }
+      if (file) {
+        for (let i = 0; i < file?.length; i++) {
+          this.taskFileService.insertTaskFile({
+            taskID: createTask?.generatedMaps?.[0]?.['id'],
+            fileName: file?.[0]?.fileName,
+            fileUrl: file?.[0]?.fileUrl,
+          });
+        }
+      }
+    };
+    await this.transaction(callback, queryRunner);
+    return 'create task success';
+  }
+
+  /**
+   * updateTask
+   * @param taskID
+   * @param data
+   * @returns
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    if (!taskID) {
+      throw new InternalServerErrorException(`TaskID is empty`);
+    }
+    try {
+      const taskExist = await queryRunner.manager.findOne(TaskEntity, {
+        where: { id: taskID },
+        select: {
+          eventDivision: {
+            id: true,
+          },
+        },
+        relations: {
+          eventDivision: true,
+        },
+      });
+      if (!taskExist) {
+        throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
+      }
+      const eventID = (
+        await this.assignEventService.getAssigneeEventById(
+          taskExist?.eventDivision?.id,
+        )
+      ).event.id;
+      await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
+      const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
+        where: { taskID: taskID },
+      });
+      const taskExisted: any = await this.taskRepository.findOne({
+        where: { id: taskID },
+        select: {
+          parent: {
+            id: true,
+          },
+        },
+        relations: {
+          parent: true,
+        },
+      });
+      const dataNotification: NotificationCreateRequest = {
+        title: `Công việc đã được cập nhât`,
+        content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
+        type: ETypeNotification.TASK,
+        userIdAssignee: listUser.map((item: any) => item.assignee),
+        userIdTaskMaster: [listUser?.[0].taskMaster],
+        eventID: eventID,
+        parentTaskId: taskExisted?.parent?.id,
+        commonId: taskID,
+        avatar: oUser?.avatar,
+        messageSocket: 'notification',
+      };
+      await this.notificationService.createNotification(
+        dataNotification,
+        oUser?.id,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+
+    return true;
+  }
 
   /**
    * filterTaskByAssignee
@@ -530,48 +359,94 @@ export class TaskService extends BaseService<TaskEntity> {
    */
   async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
     const { assignee, priority, sort, status, eventID } = filter;
+
     let result;
     try {
-      result = await this.taskRepository.find({
-        select: {
-          assignTasks: {
-            id: true,
-            isLeader: true,
-            user: {
+      let listIdEventDivison: any = undefined;
+      if (eventID) {
+        listIdEventDivison =
+          await this.assignEventService.getListIdEventDivision(eventID);
+        console.log('listIdEventDivison:', listIdEventDivison);
+        const arrayPromise = listIdEventDivison?.map((item) => {
+          return this.taskRepository.find({
+            select: {
+              assignTasks: {
+                id: true,
+                isLeader: true,
+                user: {
+                  id: true,
+                  email: true,
+                  profile: {
+                    avatar: true,
+                    fullName: true,
+                  },
+                },
+              },
+            },
+            where: {
+              priority,
+              status,
+              assignTasks: {
+                assignee,
+              },
+              eventDivision: {
+                id: item?.id,
+              },
+            },
+            relations: {
+              subTask: true,
+              parent: true,
+              assignTasks: {
+                user: {
+                  profile: true,
+                },
+              },
+              taskFiles: true,
+            },
+            order: {
+              createdAt: { direction: sort },
+            },
+          });
+        });
+        result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+      } else {
+        result = await this.taskRepository.find({
+          select: {
+            assignTasks: {
               id: true,
-              email: true,
-              profile: {
-                avatar: true,
-                fullName: true,
+              isLeader: true,
+              user: {
+                id: true,
+                email: true,
+                profile: {
+                  avatar: true,
+                  fullName: true,
+                },
               },
             },
           },
-        },
-        where: {
-          // priority,
-          status,
-          assignTasks: {
-            assignee,
-          },
-          // isTemplate: false,
-          // event: {
-          //   id: eventID,
-          // },
-        },
-        relations: {
-          subTask: true,
-          parent: true,
-          assignTasks: {
-            user: {
-              profile: true,
+          where: {
+            priority,
+            status,
+            assignTasks: {
+              assignee,
             },
           },
-          taskFiles: true,
-        },
-        // order: {
-        //   createdAt: { direction: sort },
-        // },
-      });
+          relations: {
+            subTask: true,
+            parent: true,
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+          },
+          order: {
+            createdAt: { direction: sort },
+          },
+        });
+      }
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -610,127 +485,119 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
-  // async getTaskStatistic(eventId: string): Promise<unknown> {
-  //   try {
-  //     const tasks = await this.taskRepository.find({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //       },
-  //     });
-  //     const taskStatistics = {
-  //       total: tasks.length,
-  //       pending: tasks.filter((task) => task.status === ETaskStatus.PENDING)
-  //         .length,
-  //       done: tasks.filter((task) => task.status === ETaskStatus.DONE).length,
-  //       cancel: tasks.filter((task) => task.status === ETaskStatus.CANCEL)
-  //         .length,
-  //       overdue: tasks.filter((task) => task.status === ETaskStatus.OVERDUE)
-  //         .length,
-  //     };
-  //     return taskStatistics;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  async countTaskInEvent(eventId: string): Promise<number> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const query = await queryRunner.manager.query(`
+      SELECT COUNT(t.id) AS count
+      FROM ema.tasks t
+      WHERE t.eventDivisionId  IN (
+          SELECT ae.id
+          FROM ema.assign_events ae
+          WHERE ae.eventId = "${eventId}"
+);
+      `);
+      console.log(query[0].count);
+      const result = query[0].count;
+      return Number(result) || 0;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
-  //   try {
-  //     const tasks = await this.taskRepository.find({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //       },
-  //       relations: ['assignTasks'],
-  //     });
-  //     const uniqueTaskMasters = new Set();
-  //     const uniqueLeaders = new Set();
-  //     const uniqueMembers = new Set();
-  //     const peopleStatistics = {
-  //       leader: tasks.filter((task) =>
-  //         task.assignTasks.some((assignTask) => assignTask.isLeader === true),
-  //       ).length,
-  //       member: tasks.filter((task) =>
-  //         task.assignTasks.some((assignTask) => assignTask.isLeader === false),
-  //       ).length,
-  //       taskMaster: tasks.filter((task) =>
-  //         task.assignTasks.some((assignTask) => {
-  //           if (assignTask.taskMaster) {
-  //             // Check if the taskMaster is not already counted
-  //             if (!uniqueTaskMasters.has(assignTask.taskMaster)) {
-  //               uniqueTaskMasters.add(assignTask.taskMaster);
-  //               return true; // Include this taskMaster in the count
-  //             }
-  //           }
-  //           return false; // Skip this taskMaster in the count
-  //         }),
-  //       ).length,
-  //     };
-  //     return peopleStatistics;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+  async getTaskStatistic(eventId: string): Promise<unknown> {
+    try {
+      const listIdEventDivison: any =
+        await this.assignEventService.getListIdEventDivision(eventId);
+      console.log('listIdEventDivison:', listIdEventDivison);
+      const arrayPromise = listIdEventDivison?.map((item) => {
+        return this.taskRepository.find({
+          where: {
+            eventDivision: {
+              id: item?.id,
+            },
+          },
+        });
+      });
+      const result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+      const taskStatistics = {
+        total: result.length,
+        pending: result.filter((task) => task.status === ETaskStatus.PENDING)
+          .length,
+        done: result.filter((task) => task.status === ETaskStatus.DONE).length,
+        cancel: result.filter((task) => task.status === ETaskStatus.CANCEL)
+          .length,
+        overdue: result.filter((task) => task.status === ETaskStatus.OVERDUE)
+          .length,
+      };
+      return taskStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
-  // async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
-  //   try {
-  //     const tasks = await this.taskRepository.find({
-  //       where: {
-  //         event: {
-  //           id: eventId,
-  //         },
-  //       },
-  //       relations: ['assignTasks'],
-  //     });
+  async getNumOfPeopleInTaskStatistic(eventId: string): Promise<unknown> {
+    try {
+      const listIdEventDivison: any =
+        await this.assignEventService.getListIdEventDivision(eventId);
+      console.log('listIdEventDivison:', listIdEventDivison);
+      const arrayPromise = listIdEventDivison?.map((item) => {
+        return this.taskRepository.find({
+          where: {
+            eventDivision: {
+              id: item?.id,
+            },
+          },
+          relations: ['assignTasks'],
+        });
+      });
+      const result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+      const uniquePeople = {
+        leaders: new Set<string>(),
+        members: new Set<string>(),
+        taskMasters: new Set<string>(),
+      };
 
-  //     const uniquePeople = {
-  //       leaders: new Set<string>(),
-  //       members: new Set<string>(),
-  //       taskMasters: new Set<string>(),
-  //     };
+      const peopleStatistics = result.reduce(
+        (stats, task) => {
+          task.assignTasks.forEach((assignTask) => {
+            if (
+              assignTask.isLeader === true &&
+              !uniquePeople.leaders.has(assignTask.id)
+            ) {
+              uniquePeople.leaders.add(assignTask.id);
+              stats.leader += 1;
+            } else if (
+              assignTask.isLeader === false &&
+              !uniquePeople.members.has(assignTask.id)
+            ) {
+              uniquePeople.members.add(assignTask.id);
+              stats.member += 1;
+            }
 
-  //     const peopleStatistics = tasks.reduce(
-  //       (stats, task) => {
-  //         task.assignTasks.forEach((assignTask) => {
-  //           if (
-  //             assignTask.isLeader === true &&
-  //             !uniquePeople.leaders.has(assignTask.id)
-  //           ) {
-  //             uniquePeople.leaders.add(assignTask.id);
-  //             stats.leader += 1;
-  //           } else if (
-  //             assignTask.isLeader === false &&
-  //             !uniquePeople.members.has(assignTask.id)
-  //           ) {
-  //             uniquePeople.members.add(assignTask.id);
-  //             stats.member += 1;
-  //           }
+            if (
+              assignTask.taskMaster &&
+              !uniquePeople.taskMasters.has(assignTask.taskMaster)
+            ) {
+              uniquePeople.taskMasters.add(assignTask.taskMaster);
+              stats.taskMaster += 1;
+            }
+          });
 
-  //           if (
-  //             assignTask.taskMaster &&
-  //             !uniquePeople.taskMasters.has(assignTask.taskMaster)
-  //           ) {
-  //             uniquePeople.taskMasters.add(assignTask.taskMaster);
-  //             stats.taskMaster += 1;
-  //           }
-  //         });
+          return stats;
+        },
+        {
+          leader: 0,
+          member: 0,
+          taskMaster: 0,
+        },
+      );
 
-  //         return stats;
-  //       },
-  //       {
-  //         leader: 0,
-  //         member: 0,
-  //         taskMaster: 0,
-  //       },
-  //     );
-
-  //     return peopleStatistics;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(err.message);
-  //   }
-  // }
+      return peopleStatistics;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 
   async checkUserInTask(
     userId: string,

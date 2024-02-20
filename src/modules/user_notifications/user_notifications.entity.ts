@@ -15,9 +15,6 @@ export class UserNotificationsEntity extends BaseEntity {
   isDelete: boolean;
 
   @Column({ type: 'datetime', nullable: true })
-  createdAt: Date;
-
-  @Column({ type: 'datetime', nullable: true })
   readAt: Date;
 
   @Column({ type: 'datetime', nullable: true })

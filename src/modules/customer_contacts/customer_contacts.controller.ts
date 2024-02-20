@@ -38,7 +38,7 @@ export class CustomerContactsController {
 
   @Get('/info')
   @ApiBearerAuth()
-  @Roles(ERole.ADMIN, ERole.MANAGER)
+  @Roles(ERole.ADMIN, ERole.MANAGER, ERole.CUSTOMER)
   async getAllContacts(
     @Query() customerContactPagination: CustomerContactPagination,
     @Query() filter: FilterCustomerContact,
@@ -52,12 +52,17 @@ export class CustomerContactsController {
   }
 
   @Post('/messsage')
-  @Public()
+  @ApiBearerAuth()
+  @Roles(ERole.CUSTOMER)
   async leaveMessage(
+    @GetUser() user: string,
     @Body() contact: CustomerContactRequest,
   ): Promise<string | undefined> {
     try {
-      return await this.customerContactsService.leaveMessage(contact);
+      return await this.customerContactsService.leaveMessage(
+        contact,
+        JSON.parse(user).email,
+      );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

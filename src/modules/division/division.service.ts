@@ -13,11 +13,10 @@ import {
   DivisionUpdateRequest,
 } from './dto/division.request';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { DivisionResponse } from './dto/division.response';
 import { EUserStatus } from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
-import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 
 @Injectable()
 export class DivisionService extends BaseService<DivisionEntity> {
@@ -71,12 +70,37 @@ export class DivisionService extends BaseService<DivisionEntity> {
     try {
       const division = await this.findOne({
         where: { id: id },
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+          },
+          assignEvents: true,
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+          },
+          assignEvents: true,
+        },
       });
 
       if (!division) {
         throw new NotFoundException('Division not found');
       }
-      return plainToClass(DivisionResponse, division);
+      const res = {
+        ...division,
+        assignEvents: division.assignEvents.length || 0,
+      };
+      return res;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -123,33 +147,50 @@ export class DivisionService extends BaseService<DivisionEntity> {
   async getAllDivision(
     divisionPagination: DivisionPagination,
     mode: number,
-  ): Promise<IPaginateResponse<DivisionResponse>> {
+  ): Promise<unknown> {
     try {
       const { currentPage, sizePage } = divisionPagination;
-      const query = this.generalBuilderDivision();
-      query.select([
-        'divisions.id as id',
-        'divisions.divisionName as divisionName',
-        'divisions.description as description',
-        'divisions.status as status',
-        'divisions.staffId as staffId',
-      ]);
-      if (mode === 2) {
-        query.where('divisions.staffId IS NULL');
-      }
-      const [result, total] = await Promise.all([
-        query
-          .offset((sizePage as number) * ((currentPage as number) - 1))
-          .limit(sizePage as number)
-          .execute(),
-        query.getCount(),
-      ]);
-      const data = plainToInstance(DivisionResponse, result);
-      return paginateResponse<DivisionResponse>(
-        [data, total],
-        currentPage as number,
-        sizePage as number,
-      );
+      const fieldName = 'staffId';
+      const whereCondition =
+        mode === 2
+          ? {
+              [fieldName]: null,
+            }
+          : undefined;
+      const offset = sizePage * (currentPage - 1);
+      const res = await this.divisionRepository.find({
+        where: whereCondition,
+        skip: offset,
+        take: sizePage,
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+          },
+          assignEvents: true,
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+          },
+          assignEvents: true,
+        },
+      });
+      const finalData = res.map((item) => {
+        return {
+          ...item,
+          assignEvents: item?.assignEvents?.length || 0,
+        };
+      });
+      return finalData;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

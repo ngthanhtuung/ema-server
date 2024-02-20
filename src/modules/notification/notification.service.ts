@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { NotificationEntity } from './notification.entity';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
@@ -14,20 +16,25 @@ import { NotificationCreateRequest } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
-import { DeviceService } from '../device/device.service';
 import { UserNotificationsService } from '../user_notifications/user_notifications.service';
 import { FirebaseMessageService } from 'src/providers/firebase/message/firebase-message.service';
 import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/firebase-notification.dto';
+import { AppGateway } from 'src/sockets/app.gateway';
+import { Services } from 'src/utils/constants';
+import { IGatewaySessionManager } from 'src/sockets/gateway.session';
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
+    @Inject(forwardRef(() => AppGateway))
+    private readonly appGateWay: AppGateway,
+    @Inject(Services.GATEWAY_SESSION_MANAGER)
+    readonly sessions: IGatewaySessionManager,
     @InjectRepository(NotificationEntity)
     private readonly notificationRepository: Repository<NotificationEntity>,
     protected readonly userService: UserService,
     @InjectDataSource()
     private dataSource: DataSource,
     private readonly firebaseCustomService: FirebaseMessageService,
-    private readonly deviceService: DeviceService,
     private readonly userNotificationService: UserNotificationsService,
   ) {
     super(notificationRepository);
@@ -79,7 +86,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isRead: true,
-          readAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          readAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (readNotification.affected > 0) {
@@ -106,7 +113,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isRead: true,
-          readAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          readAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (readNotification.affected > 0) {
@@ -124,38 +131,97 @@ export class NotificationService extends BaseService<NotificationEntity> {
    */
   async createNotification(
     notification: NotificationCreateRequest,
+    senderUser: string,
   ): Promise<unknown> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
+      const client = this.appGateWay.server;
       await queryRunner.startTransaction();
       const newNoti = await queryRunner.manager.insert(NotificationEntity, {
         title: notification.title,
         content: notification.content,
         type: notification.type,
+        commonId: notification?.commonId,
+        parentTaskId: notification?.parentTaskId,
+        eventID: notification?.eventID,
       });
-      notification.userId?.map(async (user) => {
-        await queryRunner.manager.insert(UserNotificationsEntity, {
-          user: { id: user },
-          notification: { id: newNoti.identifiers[0].id },
-          createdAt: moment
-            .tz('Asia/Ho_Chi_Minh')
-            .format('YYYY-MM-DD HH:mm:ss'),
-        });
-      });
-      //Using firebase to push notification
-      const listDeviceTokens = await this.deviceService.getListDeviceTokens(
-        notification.userId,
-      );
+      const createNotification = [];
+      const listUserPushNoti = [];
+      let dataNotification;
+      for (
+        let index = 0;
+        index < notification?.userIdAssignee?.length;
+        index++
+      ) {
+        const idUser = notification?.userIdAssignee[index];
+        if (idUser !== senderUser) {
+          dataNotification = {
+            title: notification.title,
+            content: notification.content,
+            readFlag: false,
+            type: notification.type,
+            userId: idUser,
+            eventID: notification?.eventID,
+            parentTaskId: notification?.parentTaskId,
+            commonId: notification?.commonId,
+            avatarSender: notification?.avatar,
+          };
+          const socket = this.sessions.getUserSocket(idUser);
+          if (socket !== null) {
+            client
+              .to(socket.id)
+              .emit(notification.messageSocket, dataNotification);
+          }
+          createNotification.push(
+            queryRunner.manager.insert(UserNotificationsEntity, {
+              user: { id: idUser },
+              notification: { id: newNoti.identifiers[0].id },
+            }),
+          );
+          listUserPushNoti.push(idUser);
+        }
+      }
+      // Notificaiton task master
+      if (notification?.userIdTaskMaster?.[0] !== senderUser) {
+        const socket = this.sessions.getUserSocket(
+          notification?.userIdTaskMaster?.[0],
+        );
+        dataNotification = {
+          title: notification.title,
+          content: notification.content,
+          readFlag: false,
+          type: notification.type,
+          userId: notification?.userIdTaskMaster?.[0],
+          eventID: notification?.eventID,
+          parentTaskId: notification?.parentTaskId,
+          commonId: notification?.commonId,
+          avatarSender: notification?.avatar,
+        };
+        if (socket !== null) {
+          client
+            .to(socket.id)
+            .emit(notification?.messageSocket, dataNotification);
+        }
+        createNotification.push(
+          queryRunner.manager.insert(UserNotificationsEntity, {
+            user: { id: notification?.userIdTaskMaster?.[0] },
+            notification: { id: newNoti.identifiers[0].id },
+          }),
+        );
+        listUserPushNoti.push(notification?.userIdTaskMaster?.[0]);
+      }
+      // Insert data in UserNotificationsEntity
+      await Promise.all(createNotification);
       const firebaseNotificationPayload: FirebaseNotificationRequest = {
-        title: notification.title,
-        body: notification.content,
-        deviceToken: listDeviceTokens,
+        title: notification?.title,
+        body: notification?.content,
+        listUser: listUserPushNoti,
       };
       await this.firebaseCustomService.sendCustomNotificationFirebase(
         firebaseNotificationPayload,
       );
       await queryRunner.commitTransaction();
-      if (newNoti.raw.affectedRows > 0) {
+      if (newNoti?.raw?.affectedRows > 0) {
         return 'Create notification successfully!';
       }
       throw new InternalServerErrorException('Create notification failed!');
@@ -195,7 +261,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isDelete: true,
-          deleteAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          deleteAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (deleteNotification.affected > 0) {
@@ -222,7 +288,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         },
         {
           isDelete: true,
-          deleteAt: moment.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss'),
+          deleteAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (deleteNotification.affected > 0) {

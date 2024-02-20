@@ -12,6 +12,15 @@ export class NotificationEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   content: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  eventID: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  commonId: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  parentTaskId: string;
+
   @Column({
     enum: ETypeNotification,
     type: 'enum',

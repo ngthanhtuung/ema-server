@@ -8,7 +8,6 @@ import {
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
-import { IPaginateResponse } from '../base/filter.pagination';
 import { DivisionResponse } from './dto/division.response';
 import { Public } from 'src/decorators/public.decorator';
 
@@ -19,11 +18,11 @@ export class DivisionController {
   constructor(private readonly divisionService: DivisionService) {}
 
   @Get()
-  @Roles(ERole.MANAGER, ERole.STAFF)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
   async getAllDivision(
     @Query() divisionPagination: DivisionPagination,
     @Query('mode') mode: number,
-  ): Promise<IPaginateResponse<DivisionResponse>> {
+  ): Promise<unknown> {
     return await this.divisionService.getAllDivision(
       divisionPagination,
       Number(mode),
@@ -36,7 +35,7 @@ export class DivisionController {
    */
 
   @Get('/:divisionId')
-  @Roles(ERole.MANAGER, ERole.STAFF)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
   async getDivisionById(
     @Param('divisionId') id: string,
   ): Promise<DivisionResponse> {
@@ -62,7 +61,7 @@ export class DivisionController {
    * @body data
    */
   @Put('/:divisionId')
-  @Roles(ERole.MANAGER)
+  @Roles(ERole.MANAGER, ERole.ADMIN)
   async updateDivision(
     @Param('divisionId') id: string,
     @Body() data: DivisionUpdateRequest,

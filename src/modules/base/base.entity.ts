@@ -10,15 +10,9 @@ export class BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  // @CreateDateColumn()
-  // @Transform(({ value }) => {
-  //   return moment(value).format('YYYY-MM-DD HH:mm:ss');
-  // })
-  // public createdAt: Date;
+  @CreateDateColumn()
+  public createdAt: Date;
 
-  // @UpdateDateColumn()
-  // @Transform(({ value }) => {
-  //   return moment(value).format('YYYY-MM-DD HH:mm:ss');
-  // })
-  // public updatedAt: Date;
+  @UpdateDateColumn()
+  public updatedAt: Date;
 }
