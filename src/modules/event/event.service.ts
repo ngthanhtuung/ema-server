@@ -153,6 +153,7 @@ export class EventService extends BaseService<EventEntity> {
         where: { id: id },
         select: {
           eventType: {
+            id: true,
             typeName: true,
           },
         },

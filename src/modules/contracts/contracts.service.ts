@@ -229,8 +229,9 @@ export class ContractsService extends BaseService<ContractEntity> {
       const contract = await this.contractRepository.findOne({
         where: { event: { id: eventId } },
       });
+      let newContract = {};
       if (!contract) {
-        throw new InternalServerErrorException('Contract not found');
+        return newContract;
       }
       const contractWithUserDetails = await this.userService.findByIdV2(
         contract.companyRepresentative,
@@ -249,7 +250,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         avatar: contractWithUserDetails.avatar,
         status: contractWithUserDetails.status,
       };
-      const newContract = { ...contract, companyRepresentative };
+      newContract = { ...contract, companyRepresentative };
       return newContract;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
