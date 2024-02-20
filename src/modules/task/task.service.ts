@@ -290,6 +290,8 @@ export class TaskService extends BaseService<TaskEntity> {
    */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async updateTask(taskID: string, data: object, oUser: any): Promise<boolean> {
+    let eventID = data['eventID'] || undefined;
+    delete data['eventID'];
     const queryRunner = this.dataSource.createQueryRunner();
     if (!taskID) {
       throw new InternalServerErrorException(`TaskID is empty`);
@@ -309,15 +311,18 @@ export class TaskService extends BaseService<TaskEntity> {
       if (!taskExist) {
         throw new BadRequestException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
       }
-      const eventID = (
-        await this.assignEventService.getAssigneeEventById(
-          taskExist?.eventDivision?.id,
-        )
-      ).event.id;
+      if (!eventID) {
+        eventID = (
+          await this.assignEventService.getAssigneeEventById(
+            taskExist?.eventDivision?.id,
+          )
+        )?.event?.id;
+      }
       await queryRunner.manager.update(TaskEntity, { id: taskID }, data);
       const listUser: any = await queryRunner.manager.find(AssignTaskEntity, {
         where: { taskID: taskID },
       });
+
       const taskExisted: any = await this.taskRepository.findOne({
         where: { id: taskID },
         select: {

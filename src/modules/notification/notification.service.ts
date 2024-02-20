@@ -169,13 +169,13 @@ export class NotificationService extends BaseService<NotificationEntity> {
           const socket = this.sessions.getUserSocket(idUser);
           if (socket !== null) {
             client
-              .to(socket.id)
+              .to(socket?.id)
               .emit(notification.messageSocket, dataNotification);
           }
           createNotification.push(
             queryRunner.manager.insert(UserNotificationsEntity, {
               user: { id: idUser },
-              notification: { id: newNoti.identifiers[0].id },
+              notification: { id: newNoti?.identifiers[0]?.id },
             }),
           );
           listUserPushNoti.push(idUser);
