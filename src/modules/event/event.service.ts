@@ -269,7 +269,7 @@ export class EventService extends BaseService<EventEntity> {
         createdBy: user.id,
       });
       await queryRunner.commitTransaction();
-      return `${createEvent.generatedMaps[0]['id']} created successfully1`;
+      return `${createEvent.generatedMaps[0]['id']} created successfully`;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
