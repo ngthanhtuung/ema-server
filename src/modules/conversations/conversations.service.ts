@@ -143,6 +143,14 @@ export class ConversationsService implements IConversationsService {
         lastMessageSent: {
           id: true,
           content: true,
+          author: {
+            id: true,
+            email: true,
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+          },
         },
         creator: {
           id: true,
