@@ -32,11 +32,14 @@ import { MessageEntity } from 'src/modules/messages/messages.entity';
 import { IConversationsService } from 'src/modules/conversations/interface/conversations';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IGroupService } from 'src/modules/groups/interfaces/group';
-import { ConservationsPagination } from 'src/modules/conversations/dtos/conversations.pagination';
 @UseGuards(WsGuard)
 @WebSocketGateway(3006, {
   cors: {
-    origin: ['http://localhost:3000'],
+    origin: [
+      'http://localhost:3000',
+      'https://ema-client.netlify.app',
+      'https://ema-landingpage.netlify.app/dashboard/app',
+    ],
     credentials: true,
   },
   pingInterval: 10000,

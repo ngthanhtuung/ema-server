@@ -117,19 +117,31 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      const finalData = [];
-      for (const item of dataPromise[0]) {
-        const dataMap = {
+      // const finalData = [];
+      // for (const item of dataPromise[0]) {
+      //   const dataMap = {
+      //     ...item,
+      //     startDate: moment(item.startDate).format('YYYY-MM-DD'),
+      //     endDate: moment(item.endDate).format('YYYY-MM-DD'),
+      //     createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+      //     updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+      //     listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
+      //     // taskCount: await this.taskService.countTaskInEvent(item?.id),
+      //   };
+      //   finalData.push(dataMap);
+      // }
+      const finalData = dataPromise[0].map((item) => {
+        return {
           ...item,
           startDate: moment(item.startDate).format('YYYY-MM-DD'),
           endDate: moment(item.endDate).format('YYYY-MM-DD'),
           createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
           updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
           listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
-          taskCount: await this.taskService.countTaskInEvent(item?.id),
+          // taskCount: await this.taskService.countTaskInEvent(item?.id),
+          taskCount: Number(item?.taskCount),
         };
-        finalData.push(dataMap);
-      }
+      });
       dataPromise[0] = finalData;
       const data = plainToInstance(EventResponse, dataPromise[0]);
       return paginateResponse<EventResponse>(
