@@ -170,7 +170,11 @@ export class ConversationsService implements IConversationsService {
         },
       },
       relations: {
-        lastMessageSent: true,
+        lastMessageSent: {
+          author: {
+            profile: true,
+          },
+        },
         creator: {
           profile: true,
         },
