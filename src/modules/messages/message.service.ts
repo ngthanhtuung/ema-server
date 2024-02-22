@@ -60,7 +60,7 @@ export class MessageService implements IMessageService {
     conversation.lastMessageSent = savedMessage;
     const mapDataMessage = await this.messageRepository.findOne({
       where: {
-        id: savedMessage.id,
+        id: savedMessage?.id,
       },
       select: {
         author: {
@@ -121,10 +121,10 @@ export class MessageService implements IMessageService {
       where: { conversation: { id: conversationId } },
     });
     // Return lastKey based on the last message in the results
-    const lastMessage = dataSlice[dataSlice.length - 1];
+    const lastMessage = dataSlice[dataSlice?.length - 1];
     const checkExistLastKey =
-      dataSlice[dataSlice.length - 1].id === data[data.length - 1].id;
-    const lastKey = checkExistLastKey ? null : lastMessage.id;
+      dataSlice[dataSlice.length - 1]?.id === data[data?.length - 1]?.id;
+    const lastKey = checkExistLastKey ? null : lastMessage?.id;
 
     return {
       totalItems: total,
