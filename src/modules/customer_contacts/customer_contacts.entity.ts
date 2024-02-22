@@ -19,7 +19,7 @@ export class CustomerContactEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   phoneNumber: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'text', nullable: true })
   note: string;
 
   @Column({ type: 'date', nullable: true })

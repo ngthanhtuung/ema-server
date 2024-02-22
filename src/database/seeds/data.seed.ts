@@ -461,7 +461,7 @@ export class DataSeed implements Seeder {
         coverUrl: 'https://picsum.photos/1500/1000',
         location: 'Trung tâm Hội nghị Quốc gia, Hà Nội',
         description:
-          "[{'insert':'Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n'}]",
+          '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
         estBudget: 300000000,
         createdBy: user1['identifiers'][0]['id'],
         eventType: {
@@ -476,7 +476,7 @@ export class DataSeed implements Seeder {
         coverUrl: 'https://picsum.photos/1500/1000',
         location: 'Nhà hát Lớn, TP. Hồ Chí Minh',
         description:
-          "[{'insert':'Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n'}]",
+          '[{"insert":"Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n"}]',
         estBudget: 150000000,
         createdBy: user1['identifiers'][0]['id'],
         eventType: {
@@ -491,7 +491,7 @@ export class DataSeed implements Seeder {
         coverUrl: 'https://picsum.photos/1500/1000',
         location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
         description:
-          "[{'insert':'Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n'}]",
+          '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
         estBudget: 50000000,
         createdBy: user1['identifiers'][0]['id'],
         eventType: {
