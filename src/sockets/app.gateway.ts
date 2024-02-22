@@ -38,7 +38,7 @@ import { IGroupService } from 'src/modules/groups/interfaces/group';
     origin: [
       'http://localhost:3000',
       'https://ema-client.netlify.app',
-      'https://ema-landingpage.netlify.app/dashboard/app',
+      'https://ema-landingpage.netlify.app',
     ],
     credentials: true,
   },
