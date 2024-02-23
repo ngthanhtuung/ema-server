@@ -40,6 +40,9 @@ export class CustomerContactEntity extends BaseEntity {
   })
   public createdAt: Date;
 
+  @Column({ type: 'varchar', nullable: false })
+  public createdBy: string;
+
   @Column({ type: 'datetime', nullable: true })
   public updateAt: Date;
 

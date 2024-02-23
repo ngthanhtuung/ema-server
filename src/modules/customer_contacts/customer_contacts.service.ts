@@ -1,3 +1,6 @@
+import { RejectNoteNotFound } from './exceptions/RejectNoteNotFound';
+import { UserEntity } from 'src/modules/user/user.entity';
+import { ContactNotFoundException } from './exceptions/ContactNotFound';
 import {
   BadRequestException,
   Injectable,
@@ -15,7 +18,6 @@ import {
 import { CustomerContactPagination } from './dto/contact.pagination';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { EContactInformation, ERole } from 'src/common/enum/enum';
-import { UserEntity } from '../user/user.entity';
 import * as moment from 'moment-timezone';
 import { UserService } from '../user/user.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
@@ -141,8 +143,8 @@ export class CustomerContactsService {
    * @returns
    */
   async leaveMessage(
+    user: UserEntity,
     contact: CustomerContactRequest,
-    email: string,
   ): Promise<string | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -155,13 +157,14 @@ export class CustomerContactsService {
       const data = await this.customerContactRepository.save({
         fullName: contact.fullName,
         address: contact.address,
-        email: email,
+        email: user.email,
         phoneNumber: contact.phoneNumber,
         note: contact.note,
         startDate: contact.startDate,
         endDate: contact.endDate,
         budget: contact.budget,
         eventType: eventType,
+        createdBy: user.id,
       });
       if (data) {
         return 'Leave message successfully';
@@ -196,12 +199,17 @@ export class CustomerContactsService {
       ) {
         switch (status) {
           case EContactInformation.ACCEPT:
+            if (contactExisted.status !== EContactInformation.PENDING) {
+              throw new BadRequestException(
+                'This contact can not be accepted because contact is already!',
+              );
+            }
             if (
-              contactExisted.status !== EContactInformation.PENDING &&
-              user.role.toString() === ERole.ADMIN
+              user.role.toString() === ERole.ADMIN ||
+              user.role.toString() === ERole.CUSTOMER
             ) {
               throw new BadRequestException(
-                'This contact can not be accepted because you are admin or contact is already!',
+                `This contact can not be accepted because you are ${user.role.toString()}`,
               );
             }
             const acceptedResult = await this.customerContactRepository.update(
@@ -230,6 +238,9 @@ export class CustomerContactsService {
                 `You are not allowed to reject contact [${contactExisted.id}] - ${contactExisted.fullName} - ${contactExisted.phoneNumber}`,
               );
             }
+            if (!rejectNote.rejectNote) {
+              throw new RejectNoteNotFound();
+            }
             const rejectResult = await this.customerContactRepository.update(
               { id: contactId },
               {
@@ -249,11 +260,100 @@ export class CustomerContactsService {
               throw new BadRequestException('Error unknown');
             }
             break;
+          case EContactInformation.DELETED:
+            if (contactExisted.status !== EContactInformation.PENDING) {
+              throw new BadRequestException(
+                'This contact is already processing, you can not delete it',
+              );
+            }
+            if (contactExisted.createdBy !== user.id) {
+              throw new BadRequestException(
+                'You are not allowed to delete this contact',
+              );
+            }
+            if (!rejectNote.rejectNote) {
+              throw new RejectNoteNotFound();
+            }
+            const deletedResult = await this.customerContactRepository.update(
+              { id: contactId },
+              {
+                status: status,
+                updateAt: moment()
+                  .tz('Asia/Bangkok')
+                  .format('YYYY-MM-DD HH:mm:ss'),
+                updatedBy: user.id,
+                rejectNote: rejectNote.rejectNote,
+              },
+            );
+            if (deletedResult) {
+              return `Delete contact of ${contactExisted.fullName} - ${contactExisted.phoneNumber} successfully.\n
+              The reason deleted: ${rejectNote.rejectNote}`;
+            } else {
+              throw new BadRequestException('Error unknown');
+            }
+            break;
         }
       }
       throw new NotFoundException(
-        `Contact ${contactId} not found or process already, try again!`,
+        !contactExisted
+          ? `Contact ${contactId} not found`
+          : `Contact ${contactExisted.id} is being proccesed`,
       );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * Update contact
+   * @param contactId
+   * @param contact
+   * @param user
+   * @returns
+   */
+
+  async updateContact(
+    contactId: string,
+    contact: CustomerContactRequest,
+    user: UserEntity,
+  ): Promise<string> {
+    try {
+      const existedContact = await this.customerContactRepository.findOne({
+        where: { id: contactId },
+      });
+      if (!existedContact) {
+        throw new ContactNotFoundException();
+      }
+      if (
+        existedContact.status !== EContactInformation.PENDING ||
+        existedContact.createdBy !== user.id.toString()
+      ) {
+        throw new BadRequestException(
+          'You are not allowed to update this contact',
+        );
+      }
+      const eventType = await this.dataSource.manager.findOne(EventTypeEntity, {
+        where: { id: contact.eventTypeId },
+      });
+      const updatedData = await this.customerContactRepository.update(
+        { id: contactId },
+        {
+          fullName: contact.fullName,
+          address: contact.address,
+          email: user.email,
+          phoneNumber: contact.phoneNumber,
+          note: contact.note,
+          startDate: contact.startDate,
+          endDate: contact.endDate,
+          budget: contact.budget,
+          eventType: eventType,
+          updatedBy: user.id,
+          updateAt: moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      );
+      if (updatedData.affected > 0) {
+        return 'Update contact successfully';
+      }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

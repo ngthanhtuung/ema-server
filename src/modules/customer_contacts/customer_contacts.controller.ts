@@ -60,21 +60,40 @@ export class CustomerContactsController {
   ): Promise<string | undefined> {
     try {
       return await this.customerContactsService.leaveMessage(
+        JSON.parse(user),
         contact,
-        JSON.parse(user).email,
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
   }
 
+  @Put('/:contactId')
+  @Roles(ERole.CUSTOMER)
+  @ApiBearerAuth()
+  async updateContact(
+    @GetUser() user: string,
+    @Param('contactId') contactId: string,
+    @Body() updateContact: CustomerContactRequest,
+  ): Promise<string> {
+    return await this.customerContactsService.updateContact(
+      contactId,
+      updateContact,
+      JSON.parse(user),
+    );
+  }
+
   @Put('/:contactId/status')
   @ApiBearerAuth()
-  @Roles(ERole.ADMIN, ERole.MANAGER)
+  @Roles(ERole.ADMIN, ERole.MANAGER, ERole.CUSTOMER)
   @ApiQuery({
     name: 'status',
     type: 'enum',
-    enum: [EContactInformation.ACCEPT, EContactInformation.REJECT],
+    enum: [
+      EContactInformation.ACCEPT,
+      EContactInformation.REJECT,
+      EContactInformation.DELETED,
+    ],
   })
   @ApiBody({
     type: RejectNote,
