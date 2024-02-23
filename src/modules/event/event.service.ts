@@ -240,9 +240,7 @@ export class EventService extends BaseService<EventEntity> {
           },
         },
         relations: {
-          eventType: {
-            customerContacts: true,
-          },
+          contracts: true,
         },
       });
       return data;
