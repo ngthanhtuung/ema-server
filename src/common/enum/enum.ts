@@ -108,6 +108,7 @@ export enum EContactInformation {
   PENDING = 'PENDING',
   ACCEPT = 'ACCEPTED',
   REJECT = 'REJECTED',
+  DELETED = 'DELETED',
 }
 
 export enum EFileType {
