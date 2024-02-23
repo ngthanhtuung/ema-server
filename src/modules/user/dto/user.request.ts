@@ -81,12 +81,13 @@ export class UserPagination extends FilterPaginationBase {}
 
 export class UserProfileUpdateRequest extends OmitType(UserCreateRequest, [
   'email',
-  'nationalId',
-  'gender',
   'divisionId',
   'roleId',
   'typeEmployee',
-]) {}
+]) {
+  @ApiProperty({ default: 'test' })
+  nationalIdImage?: string;
+}
 
 export class UserProfileUpdateRequestV2 extends UserCreateRequest {
   @IsNotEmpty()
