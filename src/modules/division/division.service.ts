@@ -85,6 +85,13 @@ export class DivisionService extends BaseService<DivisionEntity> {
         where: {
           id: idDivision,
         },
+        order: {
+          users: {
+            role: {
+              roleName: 'DESC',
+            },
+          },
+        },
         select: {
           users: {
             id: true,
