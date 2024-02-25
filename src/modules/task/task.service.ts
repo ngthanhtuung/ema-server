@@ -108,6 +108,7 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
             eventDivision: {
+              id: true,
               event: {
                 id: true,
               },
@@ -140,6 +141,7 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
               eventDivision: {
+                id: true,
                 event: {
                   id: true,
                 },
@@ -173,6 +175,7 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
               eventDivision: {
+                id: true,
                 event: {
                   id: true,
                 },
@@ -263,6 +266,7 @@ export class TaskService extends BaseService<TaskEntity> {
             },
           },
           eventDivision: {
+            id: true,
             event: {
               id: true,
             },
@@ -295,6 +299,7 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
             eventDivision: {
+              id: true,
               event: {
                 id: true,
               },
@@ -328,6 +333,7 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
             eventDivision: {
+              id: true,
               event: {
                 id: true,
               },
@@ -576,6 +582,12 @@ export class TaskService extends BaseService<TaskEntity> {
                   },
                 },
               },
+              eventDivision: {
+                id: true,
+                event: {
+                  id: true,
+                },
+              },
             },
             where: {
               priority,
@@ -594,6 +606,9 @@ export class TaskService extends BaseService<TaskEntity> {
                 user: {
                   profile: true,
                 },
+              },
+              eventDivision: {
+                event: true,
               },
               taskFiles: true,
             },
@@ -618,6 +633,12 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
             },
+            eventDivision: {
+              id: true,
+              event: {
+                id: true,
+              },
+            },
           },
           where: {
             priority,
@@ -633,6 +654,9 @@ export class TaskService extends BaseService<TaskEntity> {
               user: {
                 profile: true,
               },
+            },
+            eventDivision: {
+              event: true,
             },
             taskFiles: true,
           },
