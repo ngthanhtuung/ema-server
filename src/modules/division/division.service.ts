@@ -128,63 +128,61 @@ export class DivisionService extends BaseService<DivisionEntity> {
           assignEvents: true,
         },
       });
-      division.users = (division?.users || [])
-        ?.map((item: any) => {
-          const listEvent = item?.assignee?.reduce((listEvent, object) => {
-            const startDateFormat = moment(object?.task?.startDate).format(
-              'DD-MM-YYYY',
-            );
-            const endDateFormat = moment(object?.task?.endDate).format(
-              'DD-MM-YYYY',
-            );
-            const checkStartDate =
-              startDate >= startDateFormat && startDate <= endDateFormat;
-            const checkEndDate =
-              endDate >= startDateFormat && endDate <= endDateFormat;
-
-            if (checkStartDate || checkEndDate) {
-              const resTask = {
-                id: object?.task?.id,
-                title: object?.task?.title,
-                startDate: startDateFormat,
-                endDate: endDateFormat,
-                priority: object?.task?.priority,
-                status: object?.task?.status,
-              };
-
-              const eventIndex = listEvent.findIndex(
-                (event) =>
-                  event?.eventID === object?.task?.eventDivision?.event?.id,
-              );
-
-              if (eventIndex === -1) {
-                listEvent.push({
-                  eventID: object?.task.eventDivision?.event.id,
-                  eventName: object?.task?.eventDivision?.event?.eventName,
-                  listTask: [resTask],
-                  totalTaskInEvent: 1,
-                });
-              } else {
-                listEvent[eventIndex].listTask.push(resTask);
-                listEvent[eventIndex].totalTaskInEvent++;
-              }
-            }
-
-            return listEvent;
-          }, []);
-          const totalTask = listEvent.reduce(
-            (total, data) => (total += data?.totalTask),
-            0,
+      division.users = (division?.users || [])?.map((item: any) => {
+        const listEvent = item?.assignee?.reduce((listEvent, object) => {
+          const startDateFormat = moment(object?.task?.startDate).format(
+            'DD-MM-YYYY',
           );
-          delete item?.assignee;
-          return {
-            ...item,
-            listEvent: listEvent,
-            totalTask: totalTask || 0,
-            isFree: totalTask === 0 ? true : false,
-          };
-        })
-        ?.slice(1);
+          const endDateFormat = moment(object?.task?.endDate).format(
+            'DD-MM-YYYY',
+          );
+          const checkStartDate =
+            startDate >= startDateFormat && startDate <= endDateFormat;
+          const checkEndDate =
+            endDate >= startDateFormat && endDate <= endDateFormat;
+
+          if (checkStartDate || checkEndDate) {
+            const resTask = {
+              id: object?.task?.id,
+              title: object?.task?.title,
+              startDate: startDateFormat,
+              endDate: endDateFormat,
+              priority: object?.task?.priority,
+              status: object?.task?.status,
+            };
+
+            const eventIndex = listEvent.findIndex(
+              (event) =>
+                event?.eventID === object?.task?.eventDivision?.event?.id,
+            );
+
+            if (eventIndex === -1) {
+              listEvent.push({
+                eventID: object?.task.eventDivision?.event.id,
+                eventName: object?.task?.eventDivision?.event?.eventName,
+                listTask: [resTask],
+                totalTaskInEvent: 1,
+              });
+            } else {
+              listEvent[eventIndex].listTask.push(resTask);
+              listEvent[eventIndex].totalTaskInEvent++;
+            }
+          }
+
+          return listEvent;
+        }, []);
+        const totalTask = listEvent.reduce(
+          (total, data) => (total += data?.totalTask),
+          0,
+        );
+        delete item?.assignee;
+        return {
+          ...item,
+          listEvent: listEvent,
+          totalTask: totalTask || 0,
+          isFree: totalTask === 0 ? true : false,
+        };
+      });
       if (!division) {
         throw new NotFoundException('Division not found');
       }
