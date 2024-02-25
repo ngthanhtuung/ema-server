@@ -24,7 +24,7 @@ import {
   FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { EEventStatus, ERole } from 'src/common/enum/enum';
+import { EEventStatus, ERole, EEventDate } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
@@ -242,6 +242,55 @@ export class EventService extends BaseService<EventEntity> {
         relations: {
           contracts: true,
         },
+      });
+      return data;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * getAllEventUserDoing
+   * @param userId
+   * @returns
+   */
+  async getAllEventUserDoing(data: object): Promise<EventEntity[]> {
+    const userId = data['userId'];
+    const status = data['status'];
+
+    try {
+      // Case in event today
+      const today = moment().format('YYYY/MM/DD HH:mm:ss.SSS');
+      let data = [];
+
+      data = await this.eventRepository.find({
+        where: {
+          assignEvents: {
+            tasks: {
+              assignTasks: {
+                user: {
+                  id: userId,
+                },
+              },
+            },
+          },
+        },
+      });
+      data = data.filter((item) => {
+        const checkInToday = moment(today).isBetween(
+          moment(item?.startDate),
+          moment(item?.endDate),
+          'dates',
+          '[]',
+        );
+        const checkCondition =
+          status === EEventDate.TODAY
+            ? checkInToday &&
+              ![EEventStatus.DONE, EEventStatus.CANCEL].includes(item?.status)
+            : ![EEventStatus.DONE, EEventStatus.CANCEL].includes(item?.status);
+        if (checkCondition) {
+          return item;
+        }
       });
       return data;
     } catch (err) {

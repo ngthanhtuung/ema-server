@@ -5,6 +5,7 @@ import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
 import {
   FilterTask,
+  GetListTaskByDate,
   TaskConditonFind,
   TaskCreateReq,
   TaskIDReq,
@@ -27,6 +28,13 @@ export class TaskController {
     @Query() userPagination: UserPagination,
   ): Promise<TaskEntity> {
     return await this.taskService.getTaskInfo(condition, userPagination);
+  }
+
+  @Get('/filterByDate')
+  async getListTaskInfoByDateOfUser(
+    @Query() condition: GetListTaskByDate,
+  ): Promise<TaskEntity> {
+    return await this.taskService.getListTaskInfoByDateOfUser(condition);
   }
 
   @Get('/filterByAssignee')

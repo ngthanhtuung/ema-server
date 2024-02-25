@@ -25,6 +25,11 @@ export enum EEventStatus {
   CANCEL = 'CANCEL',
 }
 
+export enum EEventDate {
+  TODAY = 'TODAY',
+  UPCOMMING = 'UPCOMMING',
+}
+
 export enum EPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',

@@ -9,8 +9,9 @@ import {
   EventCreateRequest,
   EventUpdateRequest,
   FilterEvent,
+  GetListEvent,
 } from './dto/event.request';
-import { EEventStatus, ERole } from 'src/common/enum/enum';
+import { EEventDate, EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { EventEntity } from './event.entity';
@@ -26,9 +27,11 @@ export class EventController {
     return await this.eventService.getUserInEvent(eventId);
   }
 
-  @Get('/today')
-  async getListEventToday(@GetUser() user: string): Promise<undefined> {
-    return await this.eventService.getListEventByTask(JSON.parse(user).id);
+  @Get('/user/doing')
+  async getAllEventUserDoing(
+    @Query() data: GetListEvent,
+  ): Promise<EventEntity[]> {
+    return await this.eventService.getAllEventUserDoing(data);
   }
 
   /**

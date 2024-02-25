@@ -21,10 +21,18 @@ export class DivisionUpdateRequest extends DivisionCreateRequest {
 }
 
 export class DivisionConditionFind {
-  @ApiProperty({ required: true })
+  @ApiProperty({
+    description: 'Id: id user, Email: email user',
+    required: true,
+    default: 'id',
+  })
   fieldName: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({
+    description: 'Value of field name',
+    required: true,
+    default: 'value id user',
+  })
   conValue: string;
 }
 // customerName: string;
