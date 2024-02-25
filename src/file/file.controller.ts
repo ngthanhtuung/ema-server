@@ -13,7 +13,6 @@ import { FileRequest } from './dto/file.request';
 
 @Controller('file')
 @ApiTags('File Upload')
-@ApiBearerAuth()
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 

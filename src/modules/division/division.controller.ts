@@ -5,6 +5,7 @@ import {
   DivisionConditionFind,
   DivisionCreateRequest,
   DivisionUpdateRequest,
+  EmployeeFreeFind,
 } from './dto/division.request';
 import { Roles } from 'src/decorators/role.decorator';
 import { ERole } from 'src/common/enum/enum';
@@ -40,6 +41,18 @@ export class DivisionController {
     @Query() condition: DivisionConditionFind,
   ): Promise<DivisionResponse> {
     return await this.divisionService.getListUserDivisionByIdOrEmail(condition);
+  }
+
+  /**
+   *  Get getDivisionById
+   * @param data
+   */
+  @Get('/list/assignee/employee')
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
+  async getListAssigneeEmployee(
+    @Query() condition: EmployeeFreeFind,
+  ): Promise<DivisionResponse> {
+    return await this.divisionService.getListAssigneeEmployee(condition);
   }
 
   /**
