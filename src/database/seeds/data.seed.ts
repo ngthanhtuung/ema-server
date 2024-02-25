@@ -263,6 +263,7 @@ export class DataSeed implements Seeder {
         role: {
           id: (await findIdRole(ERole.STAFF))?.id,
         },
+        isStaff: true,
       };
       dataUser.push(staffUser);
     };
@@ -362,14 +363,6 @@ export class DataSeed implements Seeder {
       .into(ProfileEntity)
       .values(dataProfile)
       .execute();
-    for (let index = 0; index < 8; index++) {
-      await connection
-        .createQueryBuilder()
-        .update(DivisionEntity)
-        .set({ staffId: user['identifiers'][index]['id'] })
-        .where('id = :id', { id: dataDivision['identifiers'][index]['id'] })
-        .execute();
-    }
     const listEventType = [
       {
         typeName: 'Sự kiện ra mắt sản phẩm mới, giới thiệu dịch vụ',

@@ -323,6 +323,7 @@ export class UserService extends BaseService<UserEntity> {
         division: {
           id: userCreateRequest?.divisionId,
         },
+        isStaff: Boolean(role.roleName === ERole.STAFF),
         role: {
           id: userCreateRequest?.roleId,
         },
@@ -333,17 +334,6 @@ export class UserService extends BaseService<UserEntity> {
         code: '1234',
         id: createUser.generatedMaps[0]['id'],
       });
-      if (role.roleName === ERole.STAFF) {
-        await queryRunner.manager.update(
-          DivisionEntity,
-          {
-            id: division.id,
-          },
-          {
-            staffId: createUser.generatedMaps[0]['id'],
-          },
-        );
-      }
       await this.shareService.sendConfirmEmail(email, generatePassword);
     };
     await this.transaction(callback, queryRunner);
@@ -583,7 +573,6 @@ export class UserService extends BaseService<UserEntity> {
           DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
         );
       }
-
       await queryRunner.manager.update(
         UserEntity,
         { id: userIdUpdate },
@@ -591,6 +580,7 @@ export class UserService extends BaseService<UserEntity> {
           email: data.email,
           status: data.status,
           typeEmployee: data.typeEmployee,
+          isStaff: role.roleName === ERole.STAFF,
         },
       );
 
@@ -611,7 +601,6 @@ export class UserService extends BaseService<UserEntity> {
           },
         );
       }
-
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
         await queryRunner.manager.update(
           ProfileEntity,
@@ -626,150 +615,11 @@ export class UserService extends BaseService<UserEntity> {
             avatar: data.avatar,
           },
         );
-        const divisionFilterStaff = await queryRunner.manager.findOne(
-          DivisionEntity,
-          {
-            where: { staffId: userIdUpdate },
-          },
-        );
-        if (divisionFilterStaff) {
-          await queryRunner.manager.update(
-            DivisionEntity,
-            { id: divisionFilterStaff.id },
-            {
-              staffId: null,
-            },
-          );
-        }
-        if (role.roleName === ERole.STAFF) {
-          await queryRunner.manager.update(
-            DivisionEntity,
-            { id: division.id },
-            {
-              staffId: userIdUpdate,
-            },
-          );
-        }
       };
       await this.transaction(callbacks, queryRunner);
       return 'Update profile successfully';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
-  }
-
-  async getFreeEmployee(filter: FilterFreeEmployee): Promise<string> {
-    let listFreeEmployee;
-    try {
-      const listEmployeeBusy = await this.userRepository.find({
-        select: {
-          id: true,
-          email: true,
-          typeEmployee: true,
-          division: {
-            id: true,
-            divisionName: true,
-            description: true,
-          },
-        },
-        where: {
-          assignee: {
-            task: {
-              startDate: MoreThanOrEqual(filter.startDate),
-              endDate: LessThanOrEqual(filter.endDate),
-            },
-          },
-        },
-      });
-      const listEmployee = await this.userRepository.find({
-        select: {
-          id: true,
-          email: true,
-          typeEmployee: true,
-          division: {
-            id: true,
-            divisionName: true,
-            description: true,
-          },
-        },
-        relations: {
-          profile: true,
-          division: true,
-        },
-        order: {
-          division: { divisionName: 'DESC' },
-        },
-      });
-      listFreeEmployee = _.differenceBy(listEmployee, listEmployeeBusy, 'id');
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
-    return listFreeEmployee;
-  }
-
-  async insertUserNoSendEmail(
-    userCreateRequest: UserCreateRequest,
-  ): Promise<string> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    const { email, typeEmployee, ...profile } = userCreateRequest;
-    const generatePassword = this.shareService.generatePassword(8);
-    const password = await this.shareService.hashPassword(generatePassword);
-    let createUser = undefined;
-    const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      const userExist = await queryRunner.manager.findOne(UserEntity, {
-        where: { email: userCreateRequest.email },
-      });
-
-      if (userExist) {
-        throw new BadRequestException(AUTH_ERROR_MESSAGE.EMAIL_EXIST);
-      }
-
-      const division = await queryRunner.manager.findOne(DivisionEntity, {
-        where: { id: userCreateRequest.divisionId },
-      });
-
-      const role = await queryRunner.manager.findOne(RoleEntity, {
-        where: { id: userCreateRequest.roleId },
-      });
-
-      if (!division) {
-        throw new BadRequestException(
-          DIVISION_ERROR_MESSAGE.DIVISION_NOT_EXIST,
-        );
-      }
-
-      createUser = await queryRunner.manager.insert(UserEntity, {
-        email,
-        password,
-        division,
-        typeEmployee: typeEmployee,
-        status: EUserStatus.INACTIVE,
-      });
-      if (role.roleName === ERole.STAFF) {
-        await queryRunner.manager.update(
-          DivisionEntity,
-          {
-            id: division.id,
-          },
-          {
-            staffId: createUser.generatedMaps[0]['id'],
-          },
-        );
-      }
-      await queryRunner.manager.insert(ProfileEntity, {
-        ...profile,
-        id: createUser.generatedMaps[0]['id'],
-      });
-    };
-    await this.transaction(callback, queryRunner);
-    await this.userRepository.update(
-      {
-        id: createUser.generatedMaps[0]['id'],
-      },
-      {
-        profile: createUser.generatedMaps[0]['id'],
-      },
-    );
-    return 'Create user success';
   }
 }

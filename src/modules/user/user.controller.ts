@@ -114,13 +114,4 @@ export class UserController {
       userId,
     );
   }
-
-  @Get('/getFreeEmployee/:startDate/:endDate')
-  async getFreeEmployee(
-    @Param('startDate') startDate: Date,
-    @Param('endDate') endDate: Date,
-  ): Promise<string> {
-    const filter = { startDate, endDate };
-    return await this.userService.getFreeEmployee(filter);
-  }
 }

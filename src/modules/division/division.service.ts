@@ -352,18 +352,17 @@ export class DivisionService extends BaseService<DivisionEntity> {
   ): Promise<unknown> {
     try {
       const { currentPage, sizePage } = divisionPagination;
-      const fieldName = 'staffId';
-      const whereCondition =
-        mode === 2
-          ? {
-              [fieldName]: null,
-            }
-          : undefined;
       const offset = sizePage * (currentPage - 1);
-      const res = await this.divisionRepository.find({
-        where: whereCondition,
+      let getDivsion = await this.divisionRepository.find({
         skip: offset,
         take: sizePage,
+        order: {
+          users: {
+            role: {
+              roleName: 'DESC',
+            },
+          },
+        },
         select: {
           users: {
             id: true,
@@ -386,7 +385,27 @@ export class DivisionService extends BaseService<DivisionEntity> {
           assignEvents: true,
         },
       });
-      const finalData = res.map((item) => {
+      console.log('getDivsion:', getDivsion);
+
+      let listDivisionHaveStaff = [];
+      if (mode === 2) {
+        listDivisionHaveStaff = await this.divisionRepository.find({
+          where: {
+            users: {
+              isStaff: true,
+            },
+          },
+          relations: {
+            users: true,
+          },
+        });
+        console.log('listDivisionHaveStaff:', listDivisionHaveStaff);
+
+        getDivsion = getDivsion?.filter((item) =>
+          listDivisionHaveStaff.find((data) => data.id !== item.id),
+        );
+      }
+      const finalData = getDivsion.map((item) => {
         return {
           ...item,
           assignEvents: item?.assignEvents?.length || 0,

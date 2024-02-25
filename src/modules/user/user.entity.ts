@@ -46,6 +46,12 @@ export class UserEntity extends BaseEntity {
   })
   typeEmployee: ETypeEmployee;
 
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  isStaff: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   refreshToken: string;
 
