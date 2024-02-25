@@ -107,6 +107,11 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
             },
+            eventDivision: {
+              event: {
+                id: true,
+              },
+            },
             subTask: {
               id: true,
               // createdAt: true,
@@ -132,6 +137,11 @@ export class TaskService extends BaseService<TaskEntity> {
                     avatar: true,
                     fullName: true,
                   },
+                },
+              },
+              eventDivision: {
+                event: {
+                  id: true,
                 },
               },
             },
@@ -160,6 +170,11 @@ export class TaskService extends BaseService<TaskEntity> {
                     avatar: true,
                     fullName: true,
                   },
+                },
+              },
+              eventDivision: {
+                event: {
+                  id: true,
                 },
               },
             },
@@ -172,11 +187,17 @@ export class TaskService extends BaseService<TaskEntity> {
                 profile: true,
               },
             },
+            eventDivision: {
+              event: true,
+            },
             subTask: {
               assignTasks: {
                 user: {
                   profile: true,
                 },
+              },
+              eventDivision: {
+                event: true,
               },
               taskFiles: true,
             },
@@ -185,6 +206,9 @@ export class TaskService extends BaseService<TaskEntity> {
                 user: {
                   profile: true,
                 },
+              },
+              eventDivision: {
+                event: true,
               },
               taskFiles: true,
             },
@@ -238,6 +262,11 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
           },
+          eventDivision: {
+            event: {
+              id: true,
+            },
+          },
           subTask: {
             id: true,
             // createdAt: true,
@@ -263,6 +292,11 @@ export class TaskService extends BaseService<TaskEntity> {
                   avatar: true,
                   fullName: true,
                 },
+              },
+            },
+            eventDivision: {
+              event: {
+                id: true,
               },
             },
           },
@@ -291,6 +325,11 @@ export class TaskService extends BaseService<TaskEntity> {
                   avatar: true,
                   fullName: true,
                 },
+              },
+            },
+            eventDivision: {
+              event: {
+                id: true,
               },
             },
           },
@@ -302,6 +341,9 @@ export class TaskService extends BaseService<TaskEntity> {
               profile: true,
             },
           },
+          eventDivision: {
+            event: true,
+          },
           subTask: {
             assignTasks: {
               user: {
@@ -309,6 +351,9 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
             taskFiles: true,
+            eventDivision: {
+              event: true,
+            },
           },
           parent: {
             assignTasks: {
@@ -317,6 +362,9 @@ export class TaskService extends BaseService<TaskEntity> {
               },
             },
             taskFiles: true,
+            eventDivision: {
+              event: true,
+            },
           },
         },
       });
@@ -479,8 +527,8 @@ export class TaskService extends BaseService<TaskEntity> {
         title: `Công việc đã được cập nhât`,
         content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
         type: ETypeNotification.TASK,
-        userIdAssignee: listUser.map((item: any) => item.assignee),
-        userIdTaskMaster: [listUser?.[0].taskMaster],
+        userIdAssignee: listUser.map((item: any) => item?.assignee),
+        userIdTaskMaster: [listUser?.[0]?.taskMaster],
         eventID: eventID,
         parentTaskId: taskExisted?.parent?.id,
         commonId: taskID,
