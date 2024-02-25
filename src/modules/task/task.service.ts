@@ -111,6 +111,7 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               event: {
                 id: true,
+                eventName: true,
               },
             },
             subTask: {
@@ -144,6 +145,7 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 event: {
                   id: true,
+                  eventName: true,
                 },
               },
             },
@@ -178,6 +180,7 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 event: {
                   id: true,
+                  eventName: true,
                 },
               },
             },
@@ -269,6 +272,7 @@ export class TaskService extends BaseService<TaskEntity> {
             id: true,
             event: {
               id: true,
+              eventName: true,
             },
           },
           subTask: {
@@ -302,6 +306,7 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               event: {
                 id: true,
+                eventName: true,
               },
             },
           },
@@ -336,6 +341,7 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               event: {
                 id: true,
+                eventName: true,
               },
             },
           },
@@ -586,6 +592,7 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 event: {
                   id: true,
+                  eventName: true,
                 },
               },
             },
@@ -637,6 +644,7 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               event: {
                 id: true,
+                eventName: true,
               },
             },
           },
