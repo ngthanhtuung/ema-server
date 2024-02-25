@@ -20,6 +20,13 @@ export class DivisionUpdateRequest extends DivisionCreateRequest {
   status: boolean;
 }
 
+export class DivisionConditionFind {
+  @ApiProperty({ required: true })
+  fieldName: string;
+
+  @ApiProperty({ required: true })
+  conValue: string;
+}
 // customerName: string;
 // customerNationalId: string;
 // customerEmail: string;

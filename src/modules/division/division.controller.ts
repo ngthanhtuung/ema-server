@@ -2,6 +2,7 @@ import { DivisionService } from './division.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Body, Param, Get, Put, Controller, Post, Query } from '@nestjs/common';
 import {
+  DivisionConditionFind,
   DivisionCreateRequest,
   DivisionUpdateRequest,
 } from './dto/division.request';
@@ -27,6 +28,18 @@ export class DivisionController {
       divisionPagination,
       Number(mode),
     );
+  }
+
+  /**
+   *  Get getDivisionById
+   * @param data
+   */
+  @Get('/list/user')
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
+  async getListUserDivisionByIdOrEmail(
+    @Query() condition: DivisionConditionFind,
+  ): Promise<DivisionResponse> {
+    return await this.divisionService.getListUserDivisionByIdOrEmail(condition);
   }
 
   /**

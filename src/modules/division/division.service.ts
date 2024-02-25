@@ -62,6 +62,66 @@ export class DivisionService extends BaseService<DivisionEntity> {
   }
 
   /**
+   * getListUserDivisionByIdOrEmail
+   * @param condition
+   * @returns
+   */
+  async getListUserDivisionByIdOrEmail(
+    condition: object,
+  ): Promise<DivisionResponse> {
+    try {
+      const fieldName = condition['fieldName'];
+      const conValue = condition['conValue'];
+      const idDivision = (
+        await this.findOne({
+          where: {
+            users: {
+              [fieldName]: conValue,
+            },
+          },
+        })
+      ).id;
+      const division = await this.findOne({
+        where: {
+          id: idDivision,
+        },
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+          },
+          assignEvents: true,
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+          },
+          assignEvents: true,
+        },
+      });
+
+      if (!division) {
+        throw new NotFoundException('Division not found');
+      }
+      const res = {
+        ...division,
+        assignEvents: division.assignEvents.length || 0,
+      };
+      return res;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
    * getDivisionById
    * @param ids
    * @returns

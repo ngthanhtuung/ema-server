@@ -90,6 +90,7 @@ export class TaskService extends BaseService<TaskEntity> {
           skip: offset,
           take: sizePage,
           order: {
+            createdAt: 'DESC',
             assignTasks: { isLeader: 'DESC' },
           },
           select: {
