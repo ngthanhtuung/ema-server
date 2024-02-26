@@ -52,10 +52,3 @@ export class EmployeeFreeFind extends DivisionConditionFind {
   })
   endDate: string;
 }
-// customerName: string;
-// customerNationalId: string;
-// customerEmail: string;
-// customerPhoneNumber: string;
-// contractValue: number;
-// paymentMethod: string;
-// paymentDate: string;
