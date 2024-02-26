@@ -27,10 +27,3 @@ export class DivisionConditionFind {
   @ApiProperty({ required: true })
   conValue: string;
 }
-// customerName: string;
-// customerNationalId: string;
-// customerEmail: string;
-// customerPhoneNumber: string;
-// contractValue: number;
-// paymentMethod: string;
-// paymentDate: string;
