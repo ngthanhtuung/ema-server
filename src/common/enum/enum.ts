@@ -114,6 +114,7 @@ export enum EContactInformation {
   ACCEPT = 'ACCEPTED',
   REJECT = 'REJECTED',
   DELETED = 'DELETED',
+  SUCCESS = 'SUCCESS',
 }
 
 export enum EFileType {
