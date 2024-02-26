@@ -43,6 +43,8 @@ import { GroupsMessagesModule } from './modules/groups_messages/groups_messages.
 import { GroupsMessagesAttachmentsModule } from './modules/groups_messages_attachments/groups_messages_attachments.module';
 import { MessagesAttachmentsModule } from './modules/messages_attachments/messages_attachments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MapModule } from './modules/map/map.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -92,6 +94,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     GroupsMessagesModule,
     GroupsMessagesAttachmentsModule,
     MessagesAttachmentsModule,
+    MapModule,
   ],
   controllers: [AppController],
   providers: [
