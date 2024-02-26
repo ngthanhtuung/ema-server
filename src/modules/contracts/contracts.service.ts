@@ -28,8 +28,6 @@ import { FileRequest } from 'src/file/dto/file.request';
 import { FileService } from 'src/file/file.service';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
 import * as moment from 'moment-timezone';
-// import * as mammoth from 'mammoth';
-// import * as puppeteer from 'puppeteer';
 import * as libre from 'libreoffice-convert';
 
 @Injectable()
