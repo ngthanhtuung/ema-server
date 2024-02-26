@@ -7,7 +7,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { CustomerContactEntity } from './customer_contacts.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import {
@@ -33,10 +33,6 @@ export class CustomerContactsService {
     private dataSource: DataSource,
     private eventTypeService: EventTypesService,
   ) {}
-
-  private generalBuilderContacts(): SelectQueryBuilder<CustomerContactEntity> {
-    return this.customerContactRepository.createQueryBuilder('contacts');
-  }
 
   /**
    * Get all contacts
@@ -193,10 +189,7 @@ export class CustomerContactsService {
       const contactExisted = await this.customerContactRepository.findOne({
         where: { id: contactId },
       });
-      if (
-        contactExisted &&
-        contactExisted.status === EContactInformation.PENDING
-      ) {
+      if (contactExisted) {
         switch (status) {
           case EContactInformation.ACCEPT:
             if (contactExisted.status !== EContactInformation.PENDING) {
@@ -292,6 +285,33 @@ export class CustomerContactsService {
               throw new BadRequestException('Error unknown');
             }
             break;
+          case EContactInformation.SUCCESS:
+            if (contactExisted.status !== EContactInformation.ACCEPT) {
+              throw new BadRequestException(
+                'This contact is not accepted yet, you can not update to success',
+              );
+            }
+            if (contactExisted.processedBy !== user.id) {
+              throw new BadRequestException(
+                'You are not allowed to update success this contact',
+              );
+            }
+            const updateResult = await this.customerContactRepository.update(
+              { id: contactId },
+              {
+                status: status,
+                updateAt: moment()
+                  .tz('Asia/Bangkok')
+                  .format('YYYY-MM-DD HH:mm:ss'),
+                updatedBy: user.id,
+              },
+            );
+            if (updateResult) {
+              return `Update to SUCCESS contact of ${contactExisted.fullName} - ${contactExisted.phoneNumber} successfully.`;
+            } else {
+              throw new BadRequestException('Error unknown');
+            }
+            break;
         }
       }
       throw new NotFoundException(
@@ -357,5 +377,9 @@ export class CustomerContactsService {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  private generalBuilderContacts(): SelectQueryBuilder<CustomerContactEntity> {
+    return this.customerContactRepository.createQueryBuilder('contacts');
   }
 }

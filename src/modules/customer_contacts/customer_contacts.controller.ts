@@ -93,6 +93,7 @@ export class CustomerContactsController {
       EContactInformation.ACCEPT,
       EContactInformation.REJECT,
       EContactInformation.DELETED,
+      EContactInformation.SUCCESS,
     ],
   })
   @ApiBody({
