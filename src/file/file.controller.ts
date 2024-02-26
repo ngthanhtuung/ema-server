@@ -10,6 +10,7 @@ import { ApiTags, ApiBody, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileRequest } from './dto/file.request';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('file')
 @ApiTags('File Upload')
@@ -18,13 +19,14 @@ export class FileController {
 
   @Post('/upload')
   @ApiConsumes('multipart/form-data')
+  @Public()
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
         folderName: {
           type: 'enum',
-          enum: ['event', 'comment', 'avatar', 'task'],
+          enum: ['event', 'comment', 'avatar', 'task', 'nationalCard'],
           default: 'avatar',
         },
         file: {

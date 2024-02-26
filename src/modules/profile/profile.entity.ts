@@ -26,7 +26,7 @@ export class ProfileEntity {
   @Column({ type: 'varchar', length: 100, unique: true, default: null })
   nationalId: string;
 
-  @Column({ type: 'text', default: null })
+  @Column({ type: 'text', default: null, nullable: true })
   nationalIdImage: string;
 
   @Column({ enum: EGender, type: 'enum', default: null })
