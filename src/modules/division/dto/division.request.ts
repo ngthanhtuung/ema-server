@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
+import * as moment from 'moment-timezone';
 
 export class DivisionCreateRequest {
   @IsString()
@@ -21,9 +22,33 @@ export class DivisionUpdateRequest extends DivisionCreateRequest {
 }
 
 export class DivisionConditionFind {
-  @ApiProperty({ required: true })
+  @ApiProperty({
+    description: 'Id: id user, Email: email user',
+    required: true,
+    default: 'id',
+  })
   fieldName: string;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({
+    description: 'Value of field name',
+    required: true,
+    default: 'value id user',
+  })
   conValue: string;
+}
+
+export class EmployeeFreeFind extends DivisionConditionFind {
+  @ApiProperty({
+    description: 'StartDate: start date of task',
+    required: true,
+    default: moment().format('DD-MM-YYYY'),
+  })
+  startDate: string;
+
+  @ApiProperty({
+    description: 'EndDate: end date of task',
+    required: true,
+    default: moment().add(3, 'days').format('DD-MM-YYYY'),
+  })
+  endDate: string;
 }

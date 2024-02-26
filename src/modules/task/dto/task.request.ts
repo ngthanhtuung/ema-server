@@ -110,6 +110,18 @@ export class TaskConditonFind {
   conValue: string;
 }
 
+export class GetListTaskByDate {
+  @ApiProperty({ description: 'User ID', required: true, default: 'test' })
+  userId: string;
+
+  @ApiProperty({
+    description: 'Date: Get list task in Date',
+    required: true,
+    default: '2024-02-25',
+  })
+  date: string;
+}
+
 export class FilterTask {
   @ApiProperty({ required: false })
   assignee: string;

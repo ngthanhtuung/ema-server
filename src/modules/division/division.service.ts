@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import DivisionRepository from './division.repository';
 import {
   BadRequestException,
@@ -13,10 +14,10 @@ import {
   DivisionUpdateRequest,
 } from './dto/division.request';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { plainToClass } from 'class-transformer';
 import { DivisionResponse } from './dto/division.response';
 import { EUserStatus } from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class DivisionService extends BaseService<DivisionEntity> {
@@ -62,6 +63,140 @@ export class DivisionService extends BaseService<DivisionEntity> {
   }
 
   /**
+   * getListAssigneeEmployee
+   * @param condition
+   * @returns
+   */
+  async getListAssigneeEmployee(condition: object): Promise<DivisionResponse> {
+    try {
+      const fieldName = condition['fieldName'];
+      const conValue = condition['conValue'];
+      const startDate = condition['startDate'];
+      const endDate = condition['endDate'];
+      const idDivision = (
+        await this.findOne({
+          where: {
+            users: {
+              [fieldName]: conValue,
+            },
+          },
+        })
+      ).id;
+      const division: any = await this.findOne({
+        where: {
+          id: idDivision,
+        },
+        order: {
+          users: {
+            role: {
+              roleName: 'DESC',
+            },
+            assignee: {
+              task: {
+                priority: 'desc',
+              },
+            },
+          },
+        },
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+            assignee: true,
+          },
+          assignEvents: true,
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+            assignee: {
+              task: {
+                eventDivision: {
+                  event: true,
+                },
+              },
+            },
+          },
+          assignEvents: true,
+        },
+      });
+      division.users = (division?.users || [])?.map((item: any) => {
+        const listEvent = item?.assignee?.reduce((listEvent, object) => {
+          const startDateFormat = moment(object?.task?.startDate).format(
+            'DD-MM-YYYY',
+          );
+          const endDateFormat = moment(object?.task?.endDate).format(
+            'DD-MM-YYYY',
+          );
+          const checkStartDate =
+            startDate >= startDateFormat && startDate <= endDateFormat;
+          const checkEndDate =
+            endDate >= startDateFormat && endDate <= endDateFormat;
+
+          if (checkStartDate || checkEndDate) {
+            const resTask = {
+              id: object?.task?.id,
+              title: object?.task?.title,
+              startDate: startDateFormat,
+              endDate: endDateFormat,
+              priority: object?.task?.priority,
+              status: object?.task?.status,
+            };
+
+            const eventIndex = listEvent.findIndex(
+              (event) =>
+                event?.eventID === object?.task?.eventDivision?.event?.id,
+            );
+
+            if (eventIndex === -1) {
+              listEvent.push({
+                eventID: object?.task.eventDivision?.event.id,
+                eventName: object?.task?.eventDivision?.event?.eventName,
+                listTask: [resTask],
+                totalTaskInEvent: 1,
+              });
+            } else {
+              listEvent[eventIndex].listTask.push(resTask);
+              listEvent[eventIndex].totalTaskInEvent++;
+            }
+          }
+
+          return listEvent;
+        }, []);
+        const totalTask = listEvent.reduce(
+          (total, data) => (total += data?.totalTaskInEvent),
+          0,
+        );
+        delete item?.assignee;
+        return {
+          ...item,
+          listEvent: listEvent,
+          totalTask: totalTask || 0,
+          isFree: totalTask === 0 ? true : false,
+        };
+      });
+      if (!division) {
+        throw new NotFoundException('Division not found');
+      }
+      const res = {
+        ...division,
+        assignEvents: division?.assignEvents?.length || 0,
+      };
+      return res;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
    * getListUserDivisionByIdOrEmail
    * @param condition
    * @returns
@@ -84,6 +219,13 @@ export class DivisionService extends BaseService<DivisionEntity> {
       const division = await this.findOne({
         where: {
           id: idDivision,
+        },
+        order: {
+          users: {
+            role: {
+              roleName: 'DESC',
+            },
+          },
         },
         select: {
           users: {
@@ -113,7 +255,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
       }
       const res = {
         ...division,
-        assignEvents: division.assignEvents.length || 0,
+        assignEvents: division?.assignEvents?.length || 0,
       };
       return res;
     } catch (err) {
@@ -210,18 +352,17 @@ export class DivisionService extends BaseService<DivisionEntity> {
   ): Promise<unknown> {
     try {
       const { currentPage, sizePage } = divisionPagination;
-      const fieldName = 'staffId';
-      const whereCondition =
-        mode === 2
-          ? {
-              [fieldName]: null,
-            }
-          : undefined;
       const offset = sizePage * (currentPage - 1);
-      const res = await this.divisionRepository.find({
-        where: whereCondition,
+      let getDivsion = await this.divisionRepository.find({
         skip: offset,
         take: sizePage,
+        order: {
+          users: {
+            role: {
+              roleName: 'DESC',
+            },
+          },
+        },
         select: {
           users: {
             id: true,
@@ -244,7 +385,27 @@ export class DivisionService extends BaseService<DivisionEntity> {
           assignEvents: true,
         },
       });
-      const finalData = res.map((item) => {
+      console.log('getDivsion:', getDivsion);
+
+      let listDivisionHaveStaff = [];
+      if (mode === 2) {
+        listDivisionHaveStaff = await this.divisionRepository.find({
+          where: {
+            users: {
+              isStaff: true,
+            },
+          },
+          relations: {
+            users: true,
+          },
+        });
+        console.log('listDivisionHaveStaff:', listDivisionHaveStaff);
+
+        getDivsion = getDivsion?.filter((item) =>
+          listDivisionHaveStaff.find((data) => data.id !== item.id),
+        );
+      }
+      const finalData = getDivsion.map((item) => {
         return {
           ...item,
           assignEvents: item?.assignEvents?.length || 0,

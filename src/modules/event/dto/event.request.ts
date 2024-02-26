@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { EEventStatus, SortEnum } from 'src/common/enum/enum';
+import { EEventDate, EEventStatus, SortEnum } from 'src/common/enum/enum';
 export class EventCreateRequest {
   @IsString()
   @IsNotEmpty()
@@ -95,4 +95,17 @@ export class FilterEvent {
     enum: EEventStatus,
   })
   status: EEventStatus;
+}
+
+export class GetListEvent {
+  @ApiProperty({ description: 'User ID', required: true, default: 'test' })
+  userId: string;
+
+  @ApiProperty({
+    description:
+      'TODAY: Get list event TODAY, UPCOMING: Get list event UPCOMMING',
+    required: true,
+    default: EEventDate.TODAY,
+  })
+  status: EEventDate;
 }

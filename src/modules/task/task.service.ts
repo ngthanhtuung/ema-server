@@ -45,6 +45,7 @@ export class TaskService extends BaseService<TaskEntity> {
   ) {
     super(taskRepository);
   }
+
   /**
    * getTaskInfo
    * @param condition
@@ -106,6 +107,13 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
             },
+            eventDivision: {
+              id: true,
+              event: {
+                id: true,
+                eventName: true,
+              },
+            },
             subTask: {
               id: true,
               // createdAt: true,
@@ -131,6 +139,13 @@ export class TaskService extends BaseService<TaskEntity> {
                     avatar: true,
                     fullName: true,
                   },
+                },
+              },
+              eventDivision: {
+                id: true,
+                event: {
+                  id: true,
+                  eventName: true,
                 },
               },
             },
@@ -159,6 +174,13 @@ export class TaskService extends BaseService<TaskEntity> {
                     avatar: true,
                     fullName: true,
                   },
+                },
+              },
+              eventDivision: {
+                id: true,
+                event: {
+                  id: true,
+                  eventName: true,
                 },
               },
             },
@@ -171,11 +193,17 @@ export class TaskService extends BaseService<TaskEntity> {
                 profile: true,
               },
             },
+            eventDivision: {
+              event: true,
+            },
             subTask: {
               assignTasks: {
                 user: {
                   profile: true,
                 },
+              },
+              eventDivision: {
+                event: true,
               },
               taskFiles: true,
             },
@@ -185,6 +213,9 @@ export class TaskService extends BaseService<TaskEntity> {
                   profile: true,
                 },
               },
+              eventDivision: {
+                event: true,
+              },
               taskFiles: true,
             },
           },
@@ -193,6 +224,175 @@ export class TaskService extends BaseService<TaskEntity> {
       console.log('arrayPromise:', arrayPromise);
       results = await Promise.all(arrayPromise);
       results = results.flatMap((arr) => arr);
+      // if ((!results || results.length == 0) && fieldName !== 'eventID') {
+      //   throw new BadRequestException('No tasks found');
+      // }
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+    return results;
+  }
+
+  /**
+   * getListTaskInfoByDateOfUser
+   * @param condition
+   * @returns
+   */
+  async getListTaskInfoByDateOfUser(condition: object): Promise<TaskEntity> {
+    const userId = condition['userId'];
+    const date = condition['date'];
+    const formatDate = moment(date).format('YYYY-MM-DD');
+    let results;
+    try {
+      results = await this.taskRepository.find({
+        where: {
+          assignTasks: {
+            user: {
+              id: userId,
+            },
+          },
+        },
+        order: {
+          priority: 'DESC',
+        },
+        select: {
+          assignTasks: {
+            id: true,
+            isLeader: true,
+            user: {
+              id: true,
+              email: true,
+              profile: {
+                avatar: true,
+                fullName: true,
+              },
+            },
+          },
+          eventDivision: {
+            id: true,
+            event: {
+              id: true,
+              eventName: true,
+            },
+          },
+          subTask: {
+            id: true,
+            // createdAt: true,
+            createdBy: true,
+            // updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
+            assignTasks: {
+              id: true,
+              isLeader: true,
+              user: {
+                id: true,
+                email: true,
+                profile: {
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+            eventDivision: {
+              id: true,
+              event: {
+                id: true,
+                eventName: true,
+              },
+            },
+          },
+          parent: {
+            id: true,
+            // createdAt: true,
+            createdBy: true,
+            // updatedAt: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+            priority: true,
+            status: true,
+            estimationTime: true,
+            effort: true,
+            modifiedBy: true,
+            approvedBy: true,
+            assignTasks: {
+              id: true,
+              isLeader: true,
+              user: {
+                id: true,
+                email: true,
+                profile: {
+                  avatar: true,
+                  fullName: true,
+                },
+              },
+            },
+            eventDivision: {
+              id: true,
+              event: {
+                id: true,
+                eventName: true,
+              },
+            },
+          },
+        },
+        relations: {
+          taskFiles: true,
+          assignTasks: {
+            user: {
+              profile: true,
+            },
+          },
+          eventDivision: {
+            event: true,
+          },
+          subTask: {
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+            eventDivision: {
+              event: true,
+            },
+          },
+          parent: {
+            assignTasks: {
+              user: {
+                profile: true,
+              },
+            },
+            taskFiles: true,
+            eventDivision: {
+              event: true,
+            },
+          },
+        },
+      });
+      console.log('result:', results);
+      console.log('result.length:', results.length);
+      results = results.filter((item) => {
+        const checkDate = moment(formatDate).isBetween(
+          moment(item?.startDate),
+          moment(item?.endDate),
+          'dates',
+          '[]',
+        );
+        if (checkDate) {
+          return item;
+        }
+      });
       // if ((!results || results.length == 0) && fieldName !== 'eventID') {
       //   throw new BadRequestException('No tasks found');
       // }
@@ -339,8 +539,8 @@ export class TaskService extends BaseService<TaskEntity> {
         title: `Công việc đã được cập nhât`,
         content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
         type: ETypeNotification.TASK,
-        userIdAssignee: listUser.map((item: any) => item.assignee),
-        userIdTaskMaster: [listUser?.[0].taskMaster],
+        userIdAssignee: listUser.map((item: any) => item?.assignee),
+        userIdTaskMaster: [listUser?.[0]?.taskMaster],
         eventID: eventID,
         parentTaskId: taskExisted?.parent?.id,
         commonId: taskID,
@@ -388,6 +588,13 @@ export class TaskService extends BaseService<TaskEntity> {
                   },
                 },
               },
+              eventDivision: {
+                id: true,
+                event: {
+                  id: true,
+                  eventName: true,
+                },
+              },
             },
             where: {
               priority,
@@ -406,6 +613,9 @@ export class TaskService extends BaseService<TaskEntity> {
                 user: {
                   profile: true,
                 },
+              },
+              eventDivision: {
+                event: true,
               },
               taskFiles: true,
             },
@@ -430,6 +640,13 @@ export class TaskService extends BaseService<TaskEntity> {
                 },
               },
             },
+            eventDivision: {
+              id: true,
+              event: {
+                id: true,
+                eventName: true,
+              },
+            },
           },
           where: {
             priority,
@@ -445,6 +662,9 @@ export class TaskService extends BaseService<TaskEntity> {
               user: {
                 profile: true,
               },
+            },
+            eventDivision: {
+              event: true,
             },
             taskFiles: true,
           },

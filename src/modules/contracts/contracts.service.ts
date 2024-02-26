@@ -1,4 +1,3 @@
-import { map } from 'rxjs/operators';
 import { ContractCreateRequest } from './dto/contract.dto';
 import {
   BadRequestException,
@@ -29,6 +28,9 @@ import { FileRequest } from 'src/file/dto/file.request';
 import { FileService } from 'src/file/file.service';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
 import * as moment from 'moment-timezone';
+// import * as mammoth from 'mammoth';
+// import * as puppeteer from 'puppeteer';
+import * as libre from 'libreoffice-convert';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
@@ -44,131 +46,6 @@ export class ContractsService extends BaseService<ContractEntity> {
     super(contractRepository);
   }
 
-  private generalBuilderContracts(): SelectQueryBuilder<ContractEntity> {
-    return this.contractRepository.createQueryBuilder('contracts');
-  }
-
-  private async downloadTemplate(path: string): Promise<Buffer | undefined> {
-    try {
-      const bucket = admin.storage().bucket(); // Get the default bucket
-      const file = bucket.file(path);
-      // Download the file
-      const data = await file.download();
-      const buffer = data[0] as Buffer;
-      return buffer;
-    } catch (err) {
-      return undefined;
-    }
-  }
-
-  private async uploadFile(
-    buf: Buffer,
-    fileName: string,
-  ): Promise<object | undefined> {
-    try {
-      //upload to firebase storage
-      const bucket = admin.storage().bucket();
-      const filePath = `contract/${fileName}`;
-      const file = bucket.file(filePath);
-      await file.save(buf, {
-        metadata: {
-          contentType:
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        },
-      });
-      const downloadUrl = await file.getSignedUrl({
-        action: 'read',
-        expires: '2030-01-01',
-      });
-      const downloadInfo = {
-        downloadUrl: downloadUrl[0],
-        fileSize: buf.length,
-      };
-      return downloadInfo;
-    } catch (err) {
-      return undefined;
-    }
-  }
-  private async generateContractDocs(
-    eventId: string,
-    contractRequest: ContractCreateRequest,
-    user: UserEntity,
-  ): Promise<Buffer | undefined> {
-    try {
-      //get the infomation of event and user
-      const queryRunner = this.dataSource.createQueryRunner();
-      const event = await queryRunner.manager.findOne(EventEntity, {
-        where: { id: eventId },
-        relations: ['eventType'],
-      });
-      if (!event) {
-        throw new InternalServerErrorException(
-          'Event not found or deleted by admin',
-        );
-      }
-      const user = await queryRunner.manager.findOne(UserEntity, {
-        where: { id: event.createdBy },
-        relations: ['profile', 'role'],
-      });
-      if (!user) {
-        throw new InternalServerErrorException(
-          'User not found or deleted by admin',
-        );
-      }
-      //download contract template
-      const template = await this.downloadTemplate(
-        'contract/template/Contract_Template.docx',
-      );
-      const zip = new PizZip(template);
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-      });
-      const formattedCurrency = await this.sharedService.formattedCurrency(
-        parseFloat(contractRequest.contractValue),
-      );
-      const contractValueByName = await this.sharedService.moneyToWord(
-        parseFloat(contractRequest.contractValue),
-      );
-      const calculateDuration = await this.sharedService.calculateDuration(
-        event.startDate,
-        event.endDate,
-      );
-
-      const formattedDateProcessing =
-        await this.sharedService.formatDateToString(
-          event.processingDate,
-          'DD/MM/YYYY HH:mm:ss',
-        );
-      doc.render({
-        companyRepresentativeName: user.profile.fullName,
-        companyRepresentativeRole: user.role.roleName,
-        companyRepresentativeNationalId: user.profile.nationalId,
-        compannyRepresentativePhoneNumber: user.profile.phoneNumber,
-        companyRepresentativeEmail: user.email,
-        customerName: contractRequest.customerName,
-        customerNationalId: contractRequest.customerNationalId,
-        customerAddress: contractRequest.customerAddress,
-        customerPhoneNumber: contractRequest.customerPhoneNumber,
-        customerEmail: contractRequest.customerEmail,
-        eventName: event.eventName,
-        eventAddress: event.location,
-        processingDate: formattedDateProcessing,
-        duration: calculateDuration,
-        contractValue: formattedCurrency,
-        contractValueByName: contractValueByName,
-        paymentMethod: contractRequest.paymentMethod,
-      });
-      const buf = doc.getZip().generate({
-        type: 'nodebuffer',
-        compression: 'DEFLATE',
-      });
-      return buf;
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
-
   async generateNewContract(
     eventId: string,
     contractRequest: ContractCreateRequest,
@@ -179,7 +56,6 @@ export class ContractsService extends BaseService<ContractEntity> {
       const event = await queryRunner.manager.findOne(EventEntity, {
         where: { id: eventId },
       });
-      console.log('User: ', user);
       if (event.createdBy !== user.id && user.role.toString() !== ERole.ADMIN) {
         throw new ForbiddenException('You are not allowed to do this action');
       }
@@ -205,7 +81,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         user,
       );
       if (!buf) return undefined;
-      const fileName = `${generateCode}.docx`;
+      const fileName = `${generateCode}.pdf`;
       const download = await this.uploadFile(buf, fileName);
       if (!download) return undefined;
       await this.contractRepository.update(
@@ -408,6 +284,149 @@ export class ContractsService extends BaseService<ContractEntity> {
         );
       }
       return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  private async convertDocxToPdf(buf: Buffer): Promise<Buffer> {
+    try {
+      const result = await new Promise<Buffer>((resolve, reject) => {
+        libre.convert(buf, 'pdf', undefined, (err, done) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(done);
+        });
+      });
+      return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  private generalBuilderContracts(): SelectQueryBuilder<ContractEntity> {
+    return this.contractRepository.createQueryBuilder('contracts');
+  }
+
+  private async downloadTemplate(path: string): Promise<Buffer | undefined> {
+    try {
+      const bucket = admin.storage().bucket(); // Get the default bucket
+      const file = bucket.file(path);
+      // Download the file
+      const data = await file.download();
+      const buffer = data[0] as Buffer;
+      return buffer;
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  private async uploadFile(
+    buf: Buffer,
+    fileName: string,
+  ): Promise<object | undefined> {
+    try {
+      const pdfBuf = await this.convertDocxToPdf(buf);
+      //upload to firebase storage
+      const bucket = admin.storage().bucket();
+      const filePath = `contract/${fileName}`;
+      const file = bucket.file(filePath);
+      await file.save(pdfBuf, {
+        metadata: {
+          contentType: 'application/pdf',
+        },
+      });
+      const downloadUrl = await file.getSignedUrl({
+        action: 'read',
+        expires: '2030-01-01',
+      });
+      const downloadInfo = {
+        downloadUrl: downloadUrl[0],
+        fileSize: pdfBuf.length,
+      };
+      return downloadInfo;
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      return undefined;
+    }
+  }
+
+  private async generateContractDocs(
+    eventId: string,
+    contractRequest: ContractCreateRequest,
+    user: UserEntity,
+  ): Promise<Buffer | undefined> {
+    try {
+      //get the infomation of event and user
+      const queryRunner = this.dataSource.createQueryRunner();
+      const event = await queryRunner.manager.findOne(EventEntity, {
+        where: { id: eventId },
+        relations: ['eventType'],
+      });
+      if (!event) {
+        throw new InternalServerErrorException(
+          'Event not found or deleted by admin',
+        );
+      }
+      const user = await queryRunner.manager.findOne(UserEntity, {
+        where: { id: event.createdBy },
+        relations: ['profile', 'role'],
+      });
+      if (!user) {
+        throw new InternalServerErrorException(
+          'User not found or deleted by admin',
+        );
+      }
+      //download contract template
+      const template = await this.downloadTemplate(
+        'contract/template/Contract_Template.docx',
+      );
+      const zip = new PizZip(template);
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+      });
+      const formattedCurrency = await this.sharedService.formattedCurrency(
+        parseFloat(contractRequest.contractValue),
+      );
+      const contractValueByName = await this.sharedService.moneyToWord(
+        parseFloat(contractRequest.contractValue),
+      );
+      const calculateDuration = await this.sharedService.calculateDuration(
+        event.startDate,
+        event.endDate,
+      );
+
+      const formattedDateProcessing =
+        await this.sharedService.formatDateToString(
+          event.processingDate,
+          'DD/MM/YYYY HH:mm:ss',
+        );
+      doc.render({
+        companyRepresentativeName: user.profile.fullName,
+        companyRepresentativeRole: user.role.roleName,
+        companyRepresentativeNationalId: user.profile.nationalId,
+        compannyRepresentativePhoneNumber: user.profile.phoneNumber,
+        companyRepresentativeEmail: user.email,
+        customerName: contractRequest.customerName,
+        customerNationalId: contractRequest.customerNationalId,
+        customerAddress: contractRequest.customerAddress,
+        customerPhoneNumber: contractRequest.customerPhoneNumber,
+        customerEmail: contractRequest.customerEmail,
+        eventName: event.eventName,
+        eventAddress: event.location,
+        processingDate: formattedDateProcessing,
+        duration: calculateDuration,
+        contractValue: formattedCurrency,
+        contractValueByName: contractValueByName,
+        paymentMethod: contractRequest.paymentMethod,
+      });
+      const buf = doc.getZip().generate({
+        type: 'nodebuffer',
+        compression: 'DEFLATE',
+      });
+      return buf;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

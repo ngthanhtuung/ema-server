@@ -138,9 +138,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
       const client = this.appGateWay.server;
       await queryRunner.startTransaction();
       const newNoti = await queryRunner.manager.insert(NotificationEntity, {
-        title: notification.title,
-        content: notification.content,
-        type: notification.type,
+        title: notification?.title,
+        content: notification?.content,
+        type: notification?.type,
         commonId: notification?.commonId,
         parentTaskId: notification?.parentTaskId,
         eventID: notification?.eventID,
@@ -156,10 +156,10 @@ export class NotificationService extends BaseService<NotificationEntity> {
         const idUser = notification?.userIdAssignee[index];
         if (idUser !== senderUser) {
           dataNotification = {
-            title: notification.title,
-            content: notification.content,
+            title: notification?.title,
+            content: notification?.content,
             readFlag: false,
-            type: notification.type,
+            type: notification?.type,
             userId: idUser,
             eventID: notification?.eventID,
             parentTaskId: notification?.parentTaskId,
@@ -199,13 +199,13 @@ export class NotificationService extends BaseService<NotificationEntity> {
         };
         if (socket !== null) {
           client
-            .to(socket.id)
+            .to(socket?.id)
             .emit(notification?.messageSocket, dataNotification);
         }
         createNotification.push(
           queryRunner.manager.insert(UserNotificationsEntity, {
             user: { id: notification?.userIdTaskMaster?.[0] },
-            notification: { id: newNoti.identifiers[0].id },
+            notification: { id: newNoti?.identifiers[0]?.id },
           }),
         );
         listUserPushNoti.push(notification?.userIdTaskMaster?.[0]);
