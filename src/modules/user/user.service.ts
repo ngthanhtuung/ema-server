@@ -148,7 +148,6 @@ export class UserService extends BaseService<UserEntity> {
       ]);
 
     const data = await query.execute();
-
     return plainToClass(UserResponse, data[0]);
   }
 
@@ -196,6 +195,40 @@ export class UserService extends BaseService<UserEntity> {
         .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
         .leftJoin('roles', 'roles', 'users.roleId = roles.id')
         .where('users.id = :id', { id });
+      query
+        .select('roles.roleName as role')
+        .addSelect([
+          'users.id as id',
+          'profiles.fullName as fullName',
+          'users.email as email',
+          'profiles.phoneNumber as phoneNumber',
+          'profiles.dob as dob',
+          'profiles.nationalId as nationalId',
+          'profiles.nationalIdImage as nationalImages',
+          'profiles.gender as gender',
+          'profiles.address as address',
+          'profiles.avatar as avatar',
+          'divisions.id as divisionId',
+          'divisions.divisionName as divisionName',
+        ]);
+      const data = await query.execute();
+      if (!data) {
+        throw new BadRequestException('User not found');
+      }
+      return plainToInstance(UserProfile, data[0]);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async findByEmailV2(email: string): Promise<UserProfile> {
+    try {
+      const query = this.generalBuilderUser();
+      query
+        .leftJoin('profiles', 'profiles', 'users.id = profiles.id')
+        .leftJoin('divisions', 'divisions', 'divisions.id = users.divisionId')
+        .leftJoin('roles', 'roles', 'users.roleId = roles.id')
+        .where('users.email = :email', { email });
       query
         .select('roles.roleName as role')
         .addSelect([

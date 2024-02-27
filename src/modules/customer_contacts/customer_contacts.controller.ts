@@ -55,9 +55,7 @@ export class CustomerContactsController {
   @Get('/:id')
   @ApiBearerAuth()
   @Roles(ERole.ADMIN, ERole.MANAGER)
-  async getContactById(
-    @Param('id') contactId: string,
-  ): Promise<CustomerContactEntity> {
+  async getContactById(@Param('id') contactId: string): Promise<unknown> {
     return await this.customerContactsService.getContactDetailsById(contactId);
   }
 

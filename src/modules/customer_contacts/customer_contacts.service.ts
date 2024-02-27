@@ -132,9 +132,7 @@ export class CustomerContactsService {
     }
   }
 
-  async getContactDetailsById(
-    contactId: string,
-  ): Promise<CustomerContactEntity> {
+  async getContactDetailsById(contactId: string): Promise<unknown> {
     try {
       const contactExisted = await this.customerContactRepository.findOne({
         where: { id: contactId },
@@ -142,7 +140,11 @@ export class CustomerContactsService {
       if (!contactExisted) {
         throw new ContactNotFoundException();
       }
-      return contactExisted;
+      const user = await this.userService.findByEmailV2(contactExisted.email);
+      return {
+        ...contactExisted,
+        customerInfo: user,
+      };
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
