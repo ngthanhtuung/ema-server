@@ -69,7 +69,6 @@ export class CustomerContactsService {
         user.role.toString() !== ERole.CUSTOMER &&
         ![EContactInformation.PENDING, EContactInformation.ALL].includes(status)
       ) {
-        console.log('Code is running here!');
         query.where('contacts.processedBy = :userId', { userId: user.id });
       }
       if (status !== EContactInformation.ALL) {
@@ -128,6 +127,22 @@ export class CustomerContactsService {
         currentPage as number,
         sizePage as number,
       );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getContactDetailsById(
+    contactId: string,
+  ): Promise<CustomerContactEntity> {
+    try {
+      const contactExisted = await this.customerContactRepository.findOne({
+        where: { id: contactId },
+      });
+      if (!contactExisted) {
+        throw new ContactNotFoundException();
+      }
+      return contactExisted;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

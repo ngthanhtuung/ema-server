@@ -28,6 +28,7 @@ import { CustomerContactPagination } from './dto/contact.pagination';
 import { Roles } from 'src/decorators/role.decorator';
 import { EContactInformation, ERole } from 'src/common/enum/enum';
 import { GetUser } from 'src/decorators/getUser.decorator';
+import { CustomerContactEntity } from './customer_contacts.entity';
 
 @Controller('customer-contacts')
 @ApiTags('Customer Contacts')
@@ -49,6 +50,15 @@ export class CustomerContactsController {
       filter,
       JSON.parse(user),
     );
+  }
+
+  @Get('/:id')
+  @ApiBearerAuth()
+  @Roles(ERole.ADMIN, ERole.MANAGER)
+  async getContactById(
+    @Param('id') contactId: string,
+  ): Promise<CustomerContactEntity> {
+    return await this.customerContactsService.getContactDetailsById(contactId);
   }
 
   @Post('/messsage')
