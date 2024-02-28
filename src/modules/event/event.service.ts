@@ -138,7 +138,6 @@ export class EventService extends BaseService<EventEntity> {
           createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
           updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
           listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
-          // taskCount: await this.taskService.countTaskInEvent(item?.id),
           taskCount: Number(item?.taskCount),
         };
       });
@@ -161,28 +160,52 @@ export class EventService extends BaseService<EventEntity> {
    */
   async getEventById(id: string): Promise<EventResponse> {
     try {
-      const event = await this.findOne({
-        where: { id: id },
-        select: {
-          eventType: {
-            id: true,
-            typeName: true,
-          },
-        },
-        relations: {
-          eventType: true,
-        },
+      const query = this.generalBuilderEvent();
+      query.leftJoin(
+        'assign_events',
+        'assign_events',
+        'assign_events.eventID = events.id',
+      );
+      query.leftJoin(
+        'tasks',
+        'tasks',
+        'tasks.eventDivision = assign_events.id',
+      );
+      query.leftJoin(
+        'event_types',
+        'event_types',
+        'event_types.id = events.eventTypeId',
+      );
+      query.select([
+        'events.id as id',
+        'events.eventName as eventName',
+        'events.description as description',
+        'events.coverUrl as coverUrl',
+        'events.startDate as startDate',
+        'events.processingDate as processingDate',
+        'events.endDate as endDate',
+        'events.location as location',
+        'events.estBudget as estBudget',
+        'events.createdAt as createdAt',
+        'events.updatedAt as updatedAt',
+        'events.status as status',
+        'event_types.typeName as typeName',
+        'event_types.id as eventTypeID',
+        'COUNT(tasks.id) as taskCount',
+      ]);
+      query.where('events.id = :id', {
+        id,
       });
-      if (!event) {
+      const dataEvent = await query.execute();
+      if (!dataEvent) {
         throw new NotFoundException('Event not found');
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionByEventID(id);
-      const taskCount = await this.taskService.countTaskInEvent(id);
       const finalRes = {
-        ...event,
+        ...dataEvent[0],
         listDivision: listStaffOfDivision || [],
-        taskCount: taskCount,
+        taskCount: Number(dataEvent?.[0]?.taskCount),
       };
       return plainToClass(EventResponse, finalRes);
     } catch (err) {
