@@ -15,6 +15,7 @@ import { EEventDate, EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { EventEntity } from './event.entity';
+import { ContractCreateRequest } from '../contracts/dto/contract.dto';
 
 @Controller('event')
 @ApiBearerAuth()
@@ -119,9 +120,16 @@ export class EventController {
   @Roles(ERole.MANAGER)
   async createEvent(
     @Body() data: EventCreateRequest,
+    @Body() contractRequest: ContractCreateRequest,
+    @Param('contactId') contactId: string,
     @GetUser() user: string,
   ): Promise<string | undefined> {
-    return await this.eventService.createEvent(data, JSON.parse(user));
+    return await this.eventService.createEvent(
+      data,
+      JSON.parse(user),
+      contractRequest,
+      contactId,
+    );
   }
 
   /**

@@ -6,6 +6,8 @@ import { EventEntity } from './event.entity';
 import { AssignEventModule } from '../assign-event/assign-event.module';
 import { FileModule } from 'src/file/file.module';
 import { TaskModule } from '../task/task.module';
+import { ContractsModule } from '../contracts/contracts.module';
+import { CustomerContactsModule } from '../customer_contacts/customer_contacts.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { TaskModule } from '../task/task.module';
     AssignEventModule,
     FileModule,
     TaskModule,
+    ContractsModule,
+    CustomerContactsModule,
   ],
   controllers: [EventController],
   providers: [EventService],

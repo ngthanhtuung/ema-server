@@ -1,3 +1,4 @@
+import { ContractsService } from './../contracts/contracts.service';
 import {
   Injectable,
   InternalServerErrorException,
@@ -24,11 +25,18 @@ import {
   FilterEvent,
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { EEventStatus, ERole, EEventDate } from 'src/common/enum/enum';
+import {
+  EEventStatus,
+  ERole,
+  EEventDate,
+  EContactInformation,
+} from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
+import { ContractCreateRequest } from '../contracts/dto/contract.dto';
+import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -39,6 +47,8 @@ export class EventService extends BaseService<EventEntity> {
     private dataSource: DataSource,
     private readonly assignEventService: AssignEventService,
     private readonly taskService: TaskService,
+    private readonly contractsService: ContractsService,
+    private readonly customerContactsService: CustomerContactsService,
   ) {
     super(eventRepository);
   }
@@ -329,6 +339,8 @@ export class EventService extends BaseService<EventEntity> {
   async createEvent(
     event: EventCreateRequest,
     user: UserEntity,
+    contractRequest: ContractCreateRequest,
+    contactId: string,
   ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
@@ -351,6 +363,18 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
+      await this.contractsService.generateNewContract(
+        createEvent.generatedMaps[0]['id'],
+        contractRequest,
+        user,
+      );
+      const empty: unknown = '';
+      await this.customerContactsService.updateStatus(
+        user,
+        contactId,
+        EContactInformation.SUCCESS,
+        empty,
+      );
       await queryRunner.commitTransaction();
       return `${createEvent.generatedMaps[0]['id']} created successfully`;
     } catch (err) {
