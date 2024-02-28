@@ -1,6 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { EEventDate, EEventStatus, SortEnum } from 'src/common/enum/enum';
+import {
+  EContractPaymentMethod,
+  EEventDate,
+  EEventStatus,
+  SortEnum,
+} from 'src/common/enum/enum';
 export class EventCreateRequest {
   @IsString()
   @IsNotEmpty()
@@ -47,6 +52,119 @@ export class EventCreateRequest {
 
   @ApiProperty()
   eventTypeId?: string;
+}
+
+export class EventCreateRequestContract {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Sự kiện 10 năm thành lập FBT' })
+  eventName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2023-10-10' })
+  startDate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2023-11-09' })
+  processingDate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2023-11-10' })
+  endDate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Quận 12' })
+  location: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    default:
+      'https://img.freepik.com/free-psd/saturday-party-social-media-template_505751-2935.jpg?w=740&t=st=1696662680~exp=1696663280~hmac=30be138e6333ca7cbd4ea46fc39296aed44c5b3247173cab7bd45c230b65bfec',
+  })
+  coverUrl: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({ default: '120000000' })
+  estBudget: number;
+
+  @ApiProperty()
+  eventTypeId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: 'Nguyễn Văn A',
+  })
+  customerName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: '123456789',
+  })
+  customerNationalId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: 'Thành Phố Thủ Dầu Một, Bình Dương',
+  })
+  customerAddress: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: 'nguyenvana@gmail.com',
+  })
+  customerEmail: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: '0987654321',
+  })
+  customerPhoneNumber: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: '10000000',
+  })
+  contractValue: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: 'enum',
+    enum: EContractPaymentMethod,
+    default: EContractPaymentMethod.CASH,
+  })
+  paymentMethod: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+    default: '2021-10-10',
+  })
+  paymentDate: string;
 }
 
 export class EventAssignRequest {

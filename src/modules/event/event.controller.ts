@@ -7,6 +7,7 @@ import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   EventAssignRequest,
   EventCreateRequest,
+  EventCreateRequestContract,
   EventUpdateRequest,
   FilterEvent,
   GetListEvent,
@@ -119,15 +120,13 @@ export class EventController {
   @Post()
   @Roles(ERole.MANAGER)
   async createEvent(
-    @Body() data: EventCreateRequest,
-    @Body() contractRequest: ContractCreateRequest,
+    @Body() data: EventCreateRequestContract,
     @Param('contactId') contactId: string,
     @GetUser() user: string,
   ): Promise<string | undefined> {
     return await this.eventService.createEvent(
       data,
       JSON.parse(user),
-      contractRequest,
       contactId,
     );
   }

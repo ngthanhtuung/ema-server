@@ -1,18 +1,14 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ContractCreateRequest } from './dto/contract.dto';
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { ContractEntity } from './contracts.entity';
 import { BaseService } from '../base/base.service';
-import {
-  DataSource,
-  Repository,
-  QueryRunner,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/user.entity';
 import * as admin from 'firebase-admin';
@@ -46,7 +42,7 @@ export class ContractsService extends BaseService<ContractEntity> {
 
   async generateNewContract(
     eventId: string,
-    contractRequest: ContractCreateRequest,
+    contractRequest: any,
     user: UserEntity,
   ): Promise<object | undefined> {
     try {
@@ -54,7 +50,12 @@ export class ContractsService extends BaseService<ContractEntity> {
       const event = await queryRunner.manager.findOne(EventEntity, {
         where: { id: eventId },
       });
-      if (event.createdBy !== user.id && user.role.toString() !== ERole.ADMIN) {
+      console.log('event:', event);
+
+      if (
+        event?.createdBy !== user.id &&
+        user.role.toString() !== ERole.ADMIN
+      ) {
         throw new ForbiddenException('You are not allowed to do this action');
       }
       const generateCode = await this.sharedService.generateContractCode();
@@ -65,7 +66,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         customerAddress: contractRequest.customerAddress,
         customerEmail: contractRequest.customerEmail,
         customerPhoneNumber: contractRequest.customerPhoneNumber,
-        companyRepresentative: event.createdBy,
+        companyRepresentative: event?.createdBy,
         createdBy: user.id,
         paymentMethod: contractRequest.paymentMethod,
         event: event,

@@ -21,6 +21,7 @@ import * as moment from 'moment-timezone';
 import {
   EventAssignRequest,
   EventCreateRequest,
+  EventCreateRequestContract,
   EventUpdateRequest,
   FilterEvent,
 } from './dto/event.request';
@@ -337,9 +338,8 @@ export class EventService extends BaseService<EventEntity> {
    * @returns
    */
   async createEvent(
-    event: EventCreateRequest,
+    event: EventCreateRequestContract,
     user: UserEntity,
-    contractRequest: ContractCreateRequest,
     contactId: string,
   ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -363,19 +363,30 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
-      await this.contractsService.generateNewContract(
-        createEvent.generatedMaps[0]['id'],
-        contractRequest,
-        user,
-      );
-      const empty: unknown = '';
-      await this.customerContactsService.updateStatus(
-        user,
-        contactId,
-        EContactInformation.SUCCESS,
-        empty,
-      );
       await queryRunner.commitTransaction();
+      const contractRequest = {
+        customerName: event.customerName,
+        customerNationalId: event.customerNationalId,
+        customerAddress: event.customerAddress,
+        customerEmail: event.customerEmail,
+        customerPhoneNumber: event.customerPhoneNumber,
+        contractValue: event.contractValue,
+        paymentMethod: event.paymentMethod,
+      };
+      const empty: unknown = '';
+      await Promise.all([
+        this.contractsService.generateNewContract(
+          createEvent.generatedMaps[0]['id'],
+          contractRequest,
+          user,
+        ),
+        this.customerContactsService.updateStatus(
+          user,
+          contactId,
+          EContactInformation.SUCCESS,
+          empty,
+        ),
+      ]);
       return `${createEvent.generatedMaps[0]['id']} created successfully`;
     } catch (err) {
       await queryRunner.rollbackTransaction();
