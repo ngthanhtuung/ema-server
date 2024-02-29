@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ContractEntity } from './contracts.entity';
 import { BaseService } from '../base/base.service';
@@ -50,8 +51,6 @@ export class ContractsService extends BaseService<ContractEntity> {
       const event = await queryRunner.manager.findOne(EventEntity, {
         where: { id: eventId },
       });
-      console.log('event:', event);
-
       if (
         event?.createdBy !== user.id &&
         user.role.toString() !== ERole.ADMIN
@@ -213,6 +212,14 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * @description Update contract evidence
+   * @param contractId
+   * @param files
+   * @param user
+   * @returns
+   * */
+
   async updateContractEvidence(
     contractId: string,
     files: FileRequest[],
@@ -238,7 +245,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           const number = index + 1;
           const buf = await this.fileService.uploadFile(
             file,
-            'contract/signed', //file path to upload on Firebase
+            `contract/signed/${contract.contractCode}`, //file path to upload on Firebase
             `${contract.contractCode} - ${number}`,
           );
           if (!buf) return undefined;
@@ -283,6 +290,23 @@ export class ContractsService extends BaseService<ContractEntity> {
         );
       }
       return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getEvidenceByContractId(
+    contactId: string,
+  ): Promise<ContractEvidenceEntity[]> {
+    try {
+      const query = this.dataSource.createQueryRunner();
+      const evidence = await query.manager.find(ContractEvidenceEntity, {
+        where: { contract: { id: contactId } },
+      });
+      if (evidence.length > 0) {
+        return evidence;
+      }
+      throw new NotFoundException('Evidence not found');
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

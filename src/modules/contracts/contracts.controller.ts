@@ -25,6 +25,7 @@ import {
 } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileRequest } from 'src/file/dto/file.request';
+import { ContractEvidenceEntity } from './contract_evidence.entity';
 
 @Controller('contracts')
 @ApiBearerAuth()
@@ -68,6 +69,14 @@ export class ContractsController {
       contractRequest,
       JSON.parse(user),
     );
+  }
+
+  @Get('/:contractId/evidence')
+  @Roles(ERole.MANAGER, ERole.ADMIN)
+  async getEvidenceByContractId(
+    @Param('contractId') contractId: string,
+  ): Promise<ContractEvidenceEntity[]> {
+    return await this.contractService.getEvidenceByContractId(contractId);
   }
 
   @Post('/:contractId/evidence')
