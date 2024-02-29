@@ -387,9 +387,11 @@ export class EventService extends BaseService<EventEntity> {
           empty,
         ),
       ]);
+
       return `${createEvent.generatedMaps[0]['id']} created successfully`;
     } catch (err) {
       await queryRunner.rollbackTransaction();
+      console.error(err);
       throw new InternalServerErrorException(err);
     }
   }
