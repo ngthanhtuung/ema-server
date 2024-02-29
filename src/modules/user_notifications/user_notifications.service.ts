@@ -35,6 +35,7 @@ export class UserNotificationsService {
         'notification.eventID as eventID',
         'notification.commonId as commonId',
         'notification.parentTaskId as parentTaskId',
+        'notification.avatarSender as avatarSender',
         'userNotifications.createdAt as createdAt',
         'userNotifications.isRead as isRead',
         'userNotifications.readAt as readAt',
