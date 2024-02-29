@@ -35,11 +35,7 @@ import { IGroupService } from 'src/modules/groups/interfaces/group';
 @UseGuards(WsGuard)
 @WebSocketGateway(3006, {
   cors: {
-    origin: [
-      'http://localhost:3000',
-      'https://ema-manage-website.netlify.app',
-      'https://ema-customer-website.netlify.app',
-    ],
+    origin: '*',
     credentials: true,
   },
   pingInterval: 10000,
