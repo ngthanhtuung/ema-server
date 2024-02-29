@@ -150,8 +150,8 @@ export class SharedService {
   }
 
   public async calculateDuration(
-    startDate: Date,
-    endDate: Date,
+    startDate: string,
+    endDate: string,
   ): Promise<string | undefined> {
     try {
       const start = new Date(startDate);
@@ -170,7 +170,7 @@ export class SharedService {
   }
 
   public async formatDateToString(
-    date: Date,
+    date: string,
     format: string,
   ): Promise<string | undefined> {
     try {

@@ -144,6 +144,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         commonId: notification?.commonId,
         parentTaskId: notification?.parentTaskId,
         eventID: notification?.eventID,
+        avatarSender: notification?.avatar,
       });
       const createNotification = [];
       const listUserPushNoti = [];

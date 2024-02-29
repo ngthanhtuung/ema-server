@@ -26,6 +26,7 @@ import { FileService } from 'src/file/file.service';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
 import * as moment from 'moment-timezone';
 import * as libre from 'libreoffice-convert';
+import { EventCreateRequestContract } from '../event/dto/event.request';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
@@ -42,39 +43,33 @@ export class ContractsService extends BaseService<ContractEntity> {
   }
 
   async generateNewContract(
+    event: EventCreateRequestContract,
     eventId: string,
-    contractRequest: any,
     user: UserEntity,
+    queryRunner?: any,
   ): Promise<object | undefined> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      const event = await queryRunner.manager.findOne(EventEntity, {
-        where: { id: eventId },
-      });
-
-      if (event?.createdBy !== user.id) {
-        throw new ForbiddenException('You are not allowed to do this action');
-      }
       const generateCode = await this.sharedService.generateContractCode();
       const contract = await queryRunner.manager.insert(ContractEntity, {
         contractCode: generateCode,
-        customerName: contractRequest.customerName,
-        customerNationalId: contractRequest.customerNationalId,
-        customerAddress: contractRequest.customerAddress,
-        customerEmail: contractRequest.customerEmail,
-        customerPhoneNumber: contractRequest.customerPhoneNumber,
-        companyRepresentative: event?.createdBy,
+        customerName: event.customerName,
+        customerNationalId: event.customerNationalId,
+        customerAddress: event.customerAddress,
+        customerEmail: event.customerEmail,
+        customerPhoneNumber: event.customerPhoneNumber,
+        companyRepresentative: user.id,
         createdBy: user.id,
-        paymentMethod: contractRequest.paymentMethod,
-        event: event,
+        paymentMethod: event.paymentMethod,
+        eventId: eventId,
       });
       if (!contract) {
         throw new InternalServerErrorException('Create contract failed');
       }
       const buf = await this.generateContractDocs(
         eventId,
-        contractRequest,
+        event,
         user,
+        queryRunner,
       );
       if (!buf) return undefined;
       const fileName = `${generateCode}.pdf`;
@@ -374,23 +369,13 @@ export class ContractsService extends BaseService<ContractEntity> {
 
   private async generateContractDocs(
     eventId: string,
-    contractRequest: ContractCreateRequest,
-    user: UserEntity,
+    contractRequest: EventCreateRequestContract,
+    userId: UserEntity,
+    queryRunner,
   ): Promise<Buffer | undefined> {
     try {
-      //get the infomation of event and user
-      const queryRunner = this.dataSource.createQueryRunner();
-      const event = await queryRunner.manager.findOne(EventEntity, {
-        where: { id: eventId },
-        relations: ['eventType'],
-      });
-      if (!event) {
-        throw new InternalServerErrorException(
-          'Event not found or deleted by admin',
-        );
-      }
       const user = await queryRunner.manager.findOne(UserEntity, {
-        where: { id: event.createdBy },
+        where: { id: userId.id },
         relations: ['profile', 'role'],
       });
       if (!user) {
@@ -414,13 +399,13 @@ export class ContractsService extends BaseService<ContractEntity> {
         parseFloat(contractRequest.contractValue),
       );
       const calculateDuration = await this.sharedService.calculateDuration(
-        event.startDate,
-        event.endDate,
+        contractRequest.startDate,
+        contractRequest.endDate,
       );
 
       const formattedDateProcessing =
         await this.sharedService.formatDateToString(
-          event.processingDate,
+          contractRequest.processingDate,
           'DD/MM/YYYY HH:mm:ss',
         );
       doc.render({
@@ -434,8 +419,8 @@ export class ContractsService extends BaseService<ContractEntity> {
         customerAddress: contractRequest.customerAddress,
         customerPhoneNumber: contractRequest.customerPhoneNumber,
         customerEmail: contractRequest.customerEmail,
-        eventName: event.eventName,
-        eventAddress: event.location,
+        eventName: contractRequest.eventName,
+        eventAddress: contractRequest.location,
         processingDate: formattedDateProcessing,
         duration: calculateDuration,
         contractValue: formattedCurrency,

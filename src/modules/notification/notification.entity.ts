@@ -21,6 +21,9 @@ export class NotificationEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   parentTaskId: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  avatarSender: string;
+
   @Column({
     enum: ETypeNotification,
     type: 'enum',

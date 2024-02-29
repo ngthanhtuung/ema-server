@@ -37,8 +37,8 @@ import { IGroupService } from 'src/modules/groups/interfaces/group';
   cors: {
     origin: [
       'http://localhost:3000',
-      'https://ema-client.netlify.app',
-      'https://ema-landingpage.netlify.app',
+      'https://ema-manage-website.netlify.app',
+      'https://ema-customer-website.netlify.app',
     ],
     credentials: true,
   },

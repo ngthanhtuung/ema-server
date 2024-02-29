@@ -57,19 +57,19 @@ export class ContractsController {
     return await this.contractService.getContractByEventId(id);
   }
 
-  @Post('/:eventId/new')
-  @Roles(ERole.MANAGER)
-  async createContract(
-    @Param('eventId') id: string,
-    @Body() contractRequest: ContractCreateRequest,
-    @GetUser() user: string,
-  ): Promise<object | undefined> {
-    return await this.contractService.generateNewContract(
-      id,
-      contractRequest,
-      JSON.parse(user),
-    );
-  }
+  // @Post('/:eventId/new')
+  // @Roles(ERole.MANAGER)
+  // async createContract(
+  //   @Param('eventId') id: string,
+  //   @Body() contractRequest: ContractCreateRequest,
+  //   @GetUser() user: string,
+  // ): Promise<object | undefined> {
+  //   return await this.contractService.generateNewContract(
+  //     id,
+  //     contractRequest,
+  //     JSON.parse(user),
+  //   );
+  // }
 
   @Get('/:contractId/evidence')
   @Roles(ERole.MANAGER, ERole.ADMIN)

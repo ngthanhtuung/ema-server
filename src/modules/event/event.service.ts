@@ -363,31 +363,20 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
-      await queryRunner.commitTransaction();
-      const contractRequest = {
-        customerName: event.customerName,
-        customerNationalId: event.customerNationalId,
-        customerAddress: event.customerAddress,
-        customerEmail: event.customerEmail,
-        customerPhoneNumber: event.customerPhoneNumber,
-        contractValue: event.contractValue,
-        paymentMethod: event.paymentMethod,
-      };
       const empty: unknown = '';
-      await Promise.all([
-        this.contractsService.generateNewContract(
-          createEvent.generatedMaps[0]['id'],
-          contractRequest,
-          user,
-        ),
-        this.customerContactsService.updateStatus(
-          user,
-          contactId,
-          EContactInformation.SUCCESS,
-          empty,
-        ),
-      ]);
-
+      this.contractsService.generateNewContract(
+        event,
+        createEvent.generatedMaps[0]['id'],
+        user,
+        queryRunner,
+      );
+      this.customerContactsService.updateStatus(
+        user,
+        contactId,
+        EContactInformation.SUCCESS,
+        empty,
+      );
+      await queryRunner.commitTransaction();
       return `${createEvent.generatedMaps[0]['id']} created successfully`;
     } catch (err) {
       await queryRunner.rollbackTransaction();
