@@ -297,14 +297,13 @@ export class ContractsService extends BaseService<ContractEntity> {
     contactId: string,
   ): Promise<ContractEvidenceEntity[]> {
     try {
+      console.log('ContractId: ', contactId);
       const query = this.dataSource.createQueryRunner();
       const evidence = await query.manager.find(ContractEvidenceEntity, {
         where: { contract: { id: contactId } },
       });
-      if (evidence.length > 0) {
-        return evidence;
-      }
-      throw new NotFoundException('Evidence not found');
+      console.log('Evidence: ', evidence);
+      return evidence;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

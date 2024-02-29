@@ -29,6 +29,7 @@ import { UserService } from '../user/user.service';
 import { NotificationService } from '../notification/notification.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AssignEventService } from '../assign-event/assign-event.service';
+
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
   constructor(
@@ -480,7 +481,7 @@ export class TaskService extends BaseService<TaskEntity> {
       }
     };
     await this.transaction(callback, queryRunner);
-    return 'create task success';
+    return 'Create task success';
   }
 
   /**
