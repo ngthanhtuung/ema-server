@@ -80,13 +80,19 @@ export class CustomerContactsService {
       if (sortProperty) {
         query.orderBy(`contacts.${sortProperty}`, sort);
       }
-      const [result, total] = await Promise.all([
+      const [originalResult, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
           .limit(sizePage as number)
           .execute(),
         query.getCount(),
       ]);
+      const result = originalResult;
+      if (status === EContactInformation.ALL) {
+        const result = originalResult.filter(
+          (contact) => contact.status !== EContactInformation.DELETED,
+        );
+      }
       const contactsWithUserDetails = await Promise.all(
         result.map(async (contact) => {
           if (contact.processedBy) {
