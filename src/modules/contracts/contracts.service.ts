@@ -51,10 +51,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       const event = await queryRunner.manager.findOne(EventEntity, {
         where: { id: eventId },
       });
-      if (
-        event?.createdBy !== user.id &&
-        user.role.toString() !== ERole.ADMIN
-      ) {
+
+      if (event?.createdBy !== user.id) {
         throw new ForbiddenException('You are not allowed to do this action');
       }
       const generateCode = await this.sharedService.generateContractCode();
