@@ -36,7 +36,6 @@ import { IGroupService } from 'src/modules/groups/interfaces/group';
 @WebSocketGateway(3006, {
   cors: {
     origin: '*',
-    credentials: true,
   },
   pingInterval: 10000,
   pingTimeout: 15000,
