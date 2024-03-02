@@ -212,6 +212,9 @@ export class CustomerContactsService {
       const contactExisted = await this.customerContactRepository.findOne({
         where: { id: contactId },
       });
+      console.log('contactExisted:', contactExisted);
+      console.log('contactId:', contactId);
+
       if (contactExisted) {
         switch (status) {
           case EContactInformation.ACCEPT:

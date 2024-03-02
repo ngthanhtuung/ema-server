@@ -121,7 +121,7 @@ export class EventController {
   @Roles(ERole.MANAGER)
   async createEvent(
     @Body() data: EventCreateRequestContract,
-    @Param('contactId') contactId: string,
+    @Query('contactId') contactId: string,
     @GetUser() user: string,
   ): Promise<string | undefined> {
     return await this.eventService.createEvent(

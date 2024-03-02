@@ -403,6 +403,8 @@ export class EventService extends BaseService<EventEntity> {
     user: UserEntity,
     contactId: string,
   ): Promise<string> {
+    console.log('contactId:', contactId);
+
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
@@ -433,15 +435,16 @@ export class EventService extends BaseService<EventEntity> {
         user,
         queryRunner,
       );
+      const empty: unknown = '';
+      this.customerContactsService.updateStatus(
+        user,
+        contactId,
+        EContactInformation.SUCCESS,
+        empty,
+      );
     };
     await this.transaction(callback, queryRunner);
-    const empty: unknown = '';
-    await this.customerContactsService.updateStatus(
-      user,
-      contactId,
-      EContactInformation.SUCCESS,
-      empty,
-    );
+
     return `Created event successfully`;
   }
 
