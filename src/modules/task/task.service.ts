@@ -404,10 +404,10 @@ export class TaskService extends BaseService<TaskEntity> {
       console.log('result:', results);
       console.log('result.length:', results.length);
       results = results.filter((item) => {
-        const startDateFormat = moment(item?.startDate).format('DD-MM-YYYY');
+        const startDateFormat = moment(item?.startDate).format('YYYY-MM-DD');
         console.log('startDateFormat:', startDateFormat);
         console.log('Date:', date);
-        const endDateFormat = moment(item?.endDate).format('DD-MM-YYYY');
+        const endDateFormat = moment(item?.endDate).format('YYYY-MM-DD');
         console.log('endDateFormat:', endDateFormat);
         console.log('DateEnd:', dateEnd);
         if (dateEnd) {
