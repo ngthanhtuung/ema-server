@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { ContractEntity } from './contracts.entity';
 import { BaseService } from '../base/base.service';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  DataSource,
+  QueryRunner,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/user.entity';
 import * as admin from 'firebase-admin';
@@ -65,12 +70,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       if (!contract) {
         throw new InternalServerErrorException('Create contract failed');
       }
-      const buf = await this.generateContractDocs(
-        eventId,
-        event,
-        user,
-        queryRunner,
-      );
+      const buf = await this.generateContractDocs(event, user, queryRunner);
       if (!buf) return undefined;
       const fileName = `${generateCode}.pdf`;
       const download = await this.uploadFile(buf, fileName);
@@ -368,10 +368,9 @@ export class ContractsService extends BaseService<ContractEntity> {
   }
 
   private async generateContractDocs(
-    eventId: string,
     contractRequest: EventCreateRequestContract,
     userId: UserEntity,
-    queryRunner,
+    queryRunner: QueryRunner,
   ): Promise<Buffer | undefined> {
     try {
       const user = await queryRunner.manager.findOne(UserEntity, {

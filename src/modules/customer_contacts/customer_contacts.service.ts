@@ -309,7 +309,11 @@ export class CustomerContactsService {
             }
             break;
           case EContactInformation.SUCCESS:
+            console.log('contactExisted.status:', contactExisted.status);
+
             if (contactExisted.status !== EContactInformation.ACCEPT) {
+              console.log('test');
+
               throw new BadRequestException(
                 'This contact is not accepted yet, you can not update to success',
               );

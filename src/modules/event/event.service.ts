@@ -405,14 +405,14 @@ export class EventService extends BaseService<EventEntity> {
     contactId: string,
   ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
-    try {
-      await queryRunner.startTransaction();
+    const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
         where: { id: event.eventTypeId },
       });
       if (!eventType) {
         throw new NotFoundException('Event type not found');
       }
+      const empty: unknown = '';
       const createEvent = await queryRunner.manager.insert(EventEntity, {
         eventName: event.eventName,
         description: event.description,
@@ -425,26 +425,25 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         createdBy: user.id,
       });
-      const empty: unknown = '';
-      await this.contractsService.generateNewContract(
+      console.log(
+        "createEvent.generatedMaps[0]['id']:",
+        createEvent.generatedMaps[0]['id'],
+      );
+      this.contractsService.generateNewContract(
         event,
         createEvent.generatedMaps[0]['id'],
         user,
         queryRunner,
       );
-      await this.customerContactsService.updateStatus(
+      this.customerContactsService.updateStatus(
         user,
         contactId,
         EContactInformation.SUCCESS,
         empty,
       );
-      await queryRunner.commitTransaction();
-      return `${createEvent.generatedMaps[0]['id']} created successfully`;
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      console.error(err);
-      throw new InternalServerErrorException(err);
-    }
+    };
+    await this.transaction(callback, queryRunner);
+    return `Created event successfully`;
   }
 
   /**
