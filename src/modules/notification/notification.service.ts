@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
   BadRequestException,
   Inject,
@@ -7,7 +9,12 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { NotificationEntity } from './notification.entity';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  DataSource,
+  QueryRunner,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { IPaginateResponse } from '../base/filter.pagination';
@@ -132,11 +139,10 @@ export class NotificationService extends BaseService<NotificationEntity> {
   async createNotification(
     notification: NotificationCreateRequest,
     senderUser: string,
+    queryRunner?: QueryRunner,
   ): Promise<unknown> {
-    const queryRunner = this.dataSource.createQueryRunner();
     try {
       const client = this.appGateWay.server;
-      await queryRunner.startTransaction();
       const newNoti = await queryRunner.manager.insert(NotificationEntity, {
         title: notification?.title,
         content: notification?.content,
@@ -221,13 +227,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
       await this.firebaseCustomService.sendCustomNotificationFirebase(
         firebaseNotificationPayload,
       );
-      await queryRunner.commitTransaction();
       if (newNoti?.raw?.affectedRows > 0) {
         return 'Create notification successfully!';
       }
       throw new InternalServerErrorException('Create notification failed!');
     } catch (err) {
-      await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(err);
     }
   }

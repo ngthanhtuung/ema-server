@@ -35,11 +35,14 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     data: AssignTaskReq,
     user: string,
     task?: any,
+    queryRunner?: QueryRunner,
   ): Promise<string> {
     const { assignee, taskID } = data;
     let { leader } = data;
     const oUser = JSON.parse(user);
-    const queryRunner = this.dataSource.createQueryRunner();
+    if (!queryRunner) {
+      queryRunner = this.dataSource.createQueryRunner();
+    }
     if (task == undefined) {
       const taskExisted: any = await queryRunner.manager.findOne(TaskEntity, {
         where: { id: taskID },
@@ -47,40 +50,46 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
           parent: {
             id: true,
           },
+          eventDivision: {
+            id: true,
+            event: {
+              id: true,
+            },
+          },
         },
         relations: {
           parent: true,
+          eventDivision: {
+            event: true,
+          },
         },
       });
       task = taskExisted;
     }
     console.log('task:', task);
+    console.log('eventID:', task?.eventDivision?.event?.id);
+    if (assignee?.length > 0 && leader?.length == 0) {
+      leader = assignee[0];
+    }
+    // Delete all existing assigned tasks for the given task ID.
+    await queryRunner.manager.query(
+      `DELETE FROM assign_tasks WHERE taskID = '${taskID}'`,
+    );
 
-    const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      if (assignee?.length > 0 && leader?.length == 0) {
-        leader = assignee[0];
-      }
-      // Delete all existing assigned tasks for the given task ID.
-      await queryRunner.manager.query(
-        `DELETE FROM assign_tasks WHERE taskID = '${taskID}'`,
-      );
+    // Insert the new assigned tasks.
+    await Promise.all(
+      assignee.map((assignee) => {
+        const isLeader = assignee === leader;
+        const assignTask = {
+          taskID: taskID,
+          assignee: assignee,
+          isLeader: isLeader,
+          taskMaster: oUser?.id,
+        };
 
-      // Insert the new assigned tasks.
-      await Promise.all(
-        assignee.map((assignee) => {
-          const isLeader = assignee === leader;
-          const assignTask = {
-            taskID: taskID,
-            assignee: assignee,
-            isLeader: isLeader,
-            taskMaster: oUser?.id,
-          };
-
-          return queryRunner.manager.insert(AssignTaskEntity, assignTask);
-        }),
-      );
-    };
-    await this.transaction(callback, queryRunner);
+        return queryRunner.manager.insert(AssignTaskEntity, assignTask);
+      }),
+    );
     // Send Notification
     const dataNotification: NotificationCreateRequest = {
       title: `Công việc được giao`,
@@ -88,7 +97,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       type: ETypeNotification.TASK,
       userIdAssignee: assignee,
       userIdTaskMaster: [oUser?.id],
-      eventID: task?.eventID,
+      eventID: task?.eventID || task?.eventDivision?.event?.id,
       parentTaskId: task?.parentTask || task?.parent?.id,
       commonId: taskID,
       avatar: oUser?.avatar,
@@ -97,6 +106,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
     await this.notificationService.createNotification(
       dataNotification,
       oUser?.id,
+      queryRunner,
     );
     return 'Assign member successfully';
   }

@@ -3,7 +3,6 @@ version: '3.8'
 services:
   mysqldb:
     container_name: HREA-DB
-    # platform: linux/x86_64 (optional, uncomment if needed)
     image: mysql:8.0.22
     restart: unless-stopped
     env_file:
@@ -11,6 +10,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD
       - MYSQL_DATABASE=$MYSQL_DB
+      - TZ=Asia/Bangkok  # Set the timezone
     ports:
       - 3307:3306
     volumes:

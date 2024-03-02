@@ -478,8 +478,12 @@ export class TaskService extends BaseService<TaskEntity> {
         eventDivision: {
           id: listIdEventDivison?.[0]?.id,
         },
-        startDate: moment(startDate).tz('Asia/Bangkok').toDate(),
-        endDate: moment(endDate).tz('Asia/Bangkok').toDate(),
+        startDate: startDate
+          ? moment(startDate).tz('Asia/Bangkok').toDate()
+          : undefined,
+        endDate: endDate
+          ? moment(endDate).tz('Asia/Bangkok').toDate()
+          : undefined,
         description: desc,
         estimationTime: estimationTime,
         priority: priority,
@@ -494,7 +498,12 @@ export class TaskService extends BaseService<TaskEntity> {
           taskID: createTask?.generatedMaps?.[0]?.['id'],
           leader,
         };
-        this.assignTaskService.assignMemberToTask(oAssignTask, user, task);
+        this.assignTaskService.assignMemberToTask(
+          oAssignTask,
+          user,
+          task,
+          queryRunner,
+        );
       }
       if (file) {
         for (let i = 0; i < file?.length; i++) {

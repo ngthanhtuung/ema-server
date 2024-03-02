@@ -21,9 +21,11 @@ import { TaskService } from '../task/task.service';
 import { TaskEntity } from '../task/task.entity';
 import { UserEntity } from '../user/user.entity';
 import { CommentFileEntity } from '../commentfile/commentfile.entity';
-import { ERole } from 'src/common/enum/enum';
+import { ERole, ETypeNotification } from 'src/common/enum/enum';
 import { CommentfileService } from '../commentfile/commentfile.service';
 import * as moment from 'moment-timezone';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationCreateRequest } from '../notification/dto/notification.request';
 @Injectable()
 export class CommentService extends BaseService<CommentEntity> {
   constructor(
@@ -33,6 +35,7 @@ export class CommentService extends BaseService<CommentEntity> {
     @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly commentFileService: CommentfileService,
+    private notificationService: NotificationService,
   ) {
     super(commentRepository);
   }
@@ -101,6 +104,21 @@ export class CommentService extends BaseService<CommentEntity> {
             where: {
               id: data.taskID,
             },
+            select: {
+              eventDivision: {
+                id: true,
+                event: {
+                  id: true,
+                },
+              },
+              assignTasks: true,
+            },
+            relations: {
+              eventDivision: {
+                event: true,
+              },
+              assignTasks: true,
+            },
           });
           const user = await queryRunner.manager.findOne(UserEntity, {
             where: {
@@ -115,6 +133,9 @@ export class CommentService extends BaseService<CommentEntity> {
               user: user,
             },
           );
+          const assigne = task?.assignTasks?.map((item) => item?.assignee);
+          console.log('assigne:', assigne);
+
           if (data.file !== undefined) {
             for (let i = 0; i < data.file.length; i++) {
               await queryRunner.manager.insert(CommentFileEntity, {
@@ -124,6 +145,24 @@ export class CommentService extends BaseService<CommentEntity> {
               });
             }
           }
+          // Send Notification
+          const dataNotification: NotificationCreateRequest = {
+            title: `Đã có một comment mới `,
+            content: `${loginUser.fullName} đã comment vào ${task?.title}`,
+            type: ETypeNotification.COMMENT,
+            userIdAssignee: assigne,
+            userIdTaskMaster: [loginUser?.id],
+            eventID: task?.eventDivision?.event?.id,
+            parentTaskId: task?.parentTask || task?.parent?.id,
+            commonId: createdComment.identifiers[0].id,
+            avatar: loginUser?.avatar,
+            messageSocket: 'notification',
+          };
+          await this.notificationService.createNotification(
+            dataNotification,
+            loginUser?.id,
+            queryRunner,
+          );
         };
         await this.transaction(callback, queryRunner);
         return 'Comment successfully';
