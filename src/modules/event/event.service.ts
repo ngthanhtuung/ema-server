@@ -437,7 +437,7 @@ export class EventService extends BaseService<EventEntity> {
     };
     await this.transaction(callback, queryRunner);
     const empty: unknown = '';
-    await this.customerContactsService.updateStatus(
+    this.customerContactsService.updateStatus(
       user,
       contactId,
       EContactInformation.SUCCESS,

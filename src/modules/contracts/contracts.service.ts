@@ -55,7 +55,12 @@ export class ContractsService extends BaseService<ContractEntity> {
   ): Promise<object | undefined> {
     try {
       const generateCode = await this.sharedService.generateContractCode();
-      const contract = await queryRunner.manager.insert(ContractEntity, {
+      const buf = await this.generateContractDocs(event, user, queryRunner);
+      if (!buf) return undefined;
+      const fileName = `${generateCode}.pdf`;
+      const download = await this.uploadFile(buf, fileName);
+      if (!download) return undefined;
+      await queryRunner.manager.insert(ContractEntity, {
         contractCode: generateCode,
         customerName: event.customerName,
         customerNationalId: event.customerNationalId,
@@ -68,25 +73,10 @@ export class ContractsService extends BaseService<ContractEntity> {
         event: {
           id: eventId,
         },
+        contractFileName: fileName,
+        contractFileSize: buf.length,
+        contractFileUrl: download['downloadUrl'],
       });
-      if (!contract) {
-        throw new InternalServerErrorException('Create contract failed');
-      }
-      const buf = await this.generateContractDocs(event, user, queryRunner);
-      if (!buf) return undefined;
-      const fileName = `${generateCode}.pdf`;
-      const download = await this.uploadFile(buf, fileName);
-      if (!download) return undefined;
-      await this.contractRepository.update(
-        {
-          id: contract.identifiers[0].id,
-        },
-        {
-          contractFileName: fileName,
-          contractFileSize: buf.length,
-          contractFileUrl: download['downloadUrl'],
-        },
-      );
       return download;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
