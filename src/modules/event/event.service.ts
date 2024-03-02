@@ -426,13 +426,13 @@ export class EventService extends BaseService<EventEntity> {
         createdBy: user.id,
       });
       const empty: unknown = '';
-      this.contractsService.generateNewContract(
+      await this.contractsService.generateNewContract(
         event,
         createEvent.generatedMaps[0]['id'],
         user,
         queryRunner,
       );
-      this.customerContactsService.updateStatus(
+      await this.customerContactsService.updateStatus(
         user,
         contactId,
         EContactInformation.SUCCESS,
