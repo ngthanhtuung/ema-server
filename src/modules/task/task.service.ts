@@ -406,21 +406,35 @@ export class TaskService extends BaseService<TaskEntity> {
       results = results.filter((item) => {
         const startDateFormat = moment(item?.startDate).format('DD-MM-YYYY');
         console.log('startDateFormat:', startDateFormat);
-
+        console.log('Date:', date);
         const endDateFormat = moment(item?.endDate).format('DD-MM-YYYY');
         console.log('endDateFormat:', endDateFormat);
-        const checkStartDate = Boolean(
-          date >= startDateFormat && date <= endDateFormat,
-        );
-        console.log('checkStartDate:', checkStartDate);
+        console.log('DateEnd:', dateEnd);
+        if (dateEnd) {
+          const checkStartDate = Boolean(
+            startDateFormat >= date && date <= endDateFormat,
+          );
+          console.log('checkStartDate:', checkStartDate);
 
-        const checkEndDate = Boolean(
-          dateEnd >= startDateFormat && dateEnd <= endDateFormat,
-        );
-        console.log('checkEndDate:', checkEndDate);
+          const checkEndDate = Boolean(
+            startDateFormat >= dateEnd && dateEnd <= endDateFormat,
+          );
+          console.log('checkEndDate:', checkEndDate);
 
-        if (checkStartDate || checkEndDate) {
-          return item;
+          if (checkStartDate || checkEndDate) {
+            return item;
+          }
+        } else {
+          const formatDate = moment(date).format('YYYY-MM-DD');
+          const checkDate = moment(formatDate).isBetween(
+            moment(startDateFormat),
+            moment(endDateFormat),
+            'dates',
+            '[]',
+          );
+          if (checkDate) {
+            return item;
+          }
         }
       });
     } catch (error) {
