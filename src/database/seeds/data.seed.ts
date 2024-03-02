@@ -403,9 +403,10 @@ export class DataSeed implements Seeder {
         eventName:
           'Sự kiện ra mắt và quảng bá ngành Công Nghệ Ô Tô, Đại Học FPT',
         startDate: moment().format('YYYY-MM-DD'),
-        endDate: moment().add(6, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-        coverUrl: 'https://picsum.photos/1500/1000',
+        processingDate: moment().add(6, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://sukienachau.com/wp-content/uploads/2021/08/website-bigslide.jpg',
         location: 'Đại học FPT, Cơ sở Thành Phố Hồ Chí Minh',
         description:
           '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
@@ -418,10 +419,11 @@ export class DataSeed implements Seeder {
       {
         eventName:
           'Hội thảo chuyên đề: Xu hướng quảng cáo và tiếp thị trong năm 2024',
-        startDate: moment().add(2, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(6, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-        coverUrl: 'https://picsum.photos/1500/1000',
+        startDate: moment().format('YYYY-MM-DD'),
+        processingDate: moment().add(6, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://treobangron.com.vn/wp-content/uploads/2022/09/banner-khai-truong-31.jpg',
         location: 'Trung tâm Hội nghị Quốc tế, TP. Hồ Chí Minh',
         description:
           '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
@@ -434,9 +436,10 @@ export class DataSeed implements Seeder {
       {
         eventName: 'Khóa học: Kỹ năng viết content thu hút',
         startDate: moment().add(1, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(4, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        coverUrl: 'https://picsum.photos/1500/1000',
+        processingDate: moment().add(4, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1ME4Atqq5Ga7DGksE37o0DOsTVciHir29Vw&usqp=CAU',
         location: 'Trường Đại học Kinh tế TP. Hồ Chí Minh',
         description:
           '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
@@ -449,9 +452,10 @@ export class DataSeed implements Seeder {
       {
         eventName: 'Hội nghị thượng đỉnh marketing Việt Nam 2024',
         startDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(13, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(14, 'days').format('YYYY-MM-DD'),
-        coverUrl: 'https://picsum.photos/1500/1000',
+        processingDate: moment().add(13, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(14, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://thumbs.dreamstime.com/b/blue-golden-royal-awards-graphics-background-royal-awards-graphics-background-award-background-luxury-premium-graphics-blue-golden-268397993.jpg',
         location: 'Trung tâm Hội nghị Quốc gia, Hà Nội',
         description:
           '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
@@ -464,9 +468,10 @@ export class DataSeed implements Seeder {
       {
         eventName: 'Lễ trao giải Marketing Awards 2024',
         startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-        coverUrl: 'https://picsum.photos/1500/1000',
+        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://www.shutterstock.com/shutterstock/photos/2167924209/display_1500/stock-vector-golden-blue-purple-award-background-jubilee-night-decorative-invitation-trophy-on-stage-platform-2167924209.jpg',
         location: 'Nhà hát Lớn, TP. Hồ Chí Minh',
         description:
           '[{"insert":"Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n"}]',
@@ -479,9 +484,10 @@ export class DataSeed implements Seeder {
       {
         eventName: 'Khóa học: SEO nâng cao',
         startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-        coverUrl: 'https://picsum.photos/1500/1000',
+        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
         location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
         description:
           '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',

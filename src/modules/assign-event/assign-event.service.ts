@@ -46,44 +46,56 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
     }
   }
 
-  /**
-   * getEventByDivisionID
-   * @param id
-   * @returns
-   */
-  async getEventByDivisionID(id: string): Promise<Array<EventResponse>> {
-    try {
-      const query = this.generalBuilderAssignEvent();
-      query.leftJoin('events', 'events', 'assign_events.eventId = events.id');
-      query.leftJoin(
-        'event_types',
-        'event_types',
-        'event_types.id = events.eventTypeId',
-      );
-      query.select([
-        'events.id as id',
-        'events.eventName as eventName',
-        'events.description as description',
-        'events.coverUrl as coverUrl',
-        'events.startDate as startDate',
-        'events.endDate as endDate',
-        'events.location as location',
-        'events.estBudget as estBudget',
-        'events.createdAt as createdAt',
-        'events.updatedAt as updatedAt',
-        'event_types.typeName as typeName',
-        'events.status as status',
-      ]);
-      query.where('assign_events.divisionId = :divisionId', {
-        divisionId: id,
-      });
-      query.andWhere('events.isTemplate = 0');
-      const data = await query.execute();
-      return data;
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
+  // /**
+  //  * getEventByDivisionID
+  //  * @param id
+  //  * @returns
+  //  */
+  // async getEventByDivisionID(id: string): Promise<Array<EventResponse>> {
+  //   try {
+  //     const data = await this.assignEventRepository.find({
+
+  //     })
+  //     const query = this.generalBuilderAssignEvent();
+  //     query.leftJoin('events', 'events', 'assign_events.eventId = events.id');
+  //     query.leftJoin(
+  //       'tasks',
+  //       'tasks',
+  //       ' tasks.eventDivisionId = assign_events.id',
+  //     );
+  //     query.leftJoin(
+  //       'event_types',
+  //       'event_types',
+  //       'event_types.id = events.eventTypeId',
+  //     );
+  //     query.select([
+  //       'events.id as id',
+  //       'events.eventName as eventName',
+  //       'events.description as description',
+  //       'events.coverUrl as coverUrl',
+  //       'events.startDate as startDate',
+  //       'events.endDate as endDate',
+  //       'events.location as location',
+  //       'events.estBudget as estBudget',
+  //       'events.createdAt as createdAt',
+  //       'events.updatedAt as updatedAt',
+  //       'event_types.typeName as typeName',
+  //       'events.status as status',
+  //       'tasks.id as idTask',
+  //       'tasks.status as statusTask',
+  //     ]);
+  //     query.where('assign_events.divisionId = :divisionId', {
+  //       divisionId: id,
+  //     });
+  //     query.andWhere('events.isTemplate = 0');
+  //     const data = await query.execute();
+  //     console.log('data:', data);
+
+  //     return data;
+  //   } catch (err) {
+  //     throw new InternalServerErrorException(err.message);
+  //   }
+  // }
 
   /**
    * getEventByDivisionID

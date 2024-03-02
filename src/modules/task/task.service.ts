@@ -22,7 +22,11 @@ import {
 import { AssignTaskService } from '../assign-task/assign-task.service';
 import { UserPagination } from '../user/dto/user.request';
 import * as moment from 'moment-timezone';
-import { ETaskStatus, ETypeNotification } from 'src/common/enum/enum';
+import {
+  EPriority,
+  ETaskStatus,
+  ETypeNotification,
+} from 'src/common/enum/enum';
 import { NotificationCreateRequest } from '../notification/dto/notification.request';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { UserService } from '../user/user.service';
@@ -223,11 +227,25 @@ export class TaskService extends BaseService<TaskEntity> {
         });
       });
       console.log('arrayPromise:', arrayPromise);
+      const currentDate = moment();
+      const mapPriory = {
+        [EPriority.HIGH]: 1,
+        [EPriority.MEDIUM]: 2,
+        [EPriority.LOW]: 3,
+      };
       results = await Promise.all(arrayPromise);
-      results = results.flatMap((arr) => arr);
-      // if ((!results || results.length == 0) && fieldName !== 'eventID') {
-      //   throw new BadRequestException('No tasks found');
-      // }
+      results = results
+        .flatMap((arr) => arr)
+        .sort((a, b) => {
+          const diffA = moment(a.startDate).diff(currentDate);
+          const diffB = moment(b.startDate).diff(currentDate);
+          if (diffA === diffB) {
+            return mapPriory[`${a.priority}`] - mapPriory[`${b.priority}`];
+          }
+          if (diffB > diffA) {
+            return -1;
+          }
+        });
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -242,7 +260,9 @@ export class TaskService extends BaseService<TaskEntity> {
   async getListTaskInfoByDateOfUser(condition: object): Promise<TaskEntity> {
     const userId = condition['userId'];
     const date = condition['date'];
-    const formatDate = moment(date).format('YYYY-MM-DD');
+    const dateEnd = condition?.['dateEnd'];
+    console.log('dateEnd:', dateEnd);
+
     let results;
     try {
       results = await this.taskRepository.find({
@@ -384,19 +404,25 @@ export class TaskService extends BaseService<TaskEntity> {
       console.log('result:', results);
       console.log('result.length:', results.length);
       results = results.filter((item) => {
-        const checkDate = moment(formatDate).isBetween(
-          moment(item?.startDate),
-          moment(item?.endDate),
-          'dates',
-          '[]',
+        const startDateFormat = moment(item?.startDate).format('DD-MM-YYYY');
+        console.log('startDateFormat:', startDateFormat);
+
+        const endDateFormat = moment(item?.endDate).format('DD-MM-YYYY');
+        console.log('endDateFormat:', endDateFormat);
+        const checkStartDate = Boolean(
+          date >= startDateFormat && date <= endDateFormat,
         );
-        if (checkDate) {
+        console.log('checkStartDate:', checkStartDate);
+
+        const checkEndDate = Boolean(
+          dateEnd >= startDateFormat && dateEnd <= endDateFormat,
+        );
+        console.log('checkEndDate:', checkEndDate);
+
+        if (checkStartDate || checkEndDate) {
           return item;
         }
       });
-      // if ((!results || results.length == 0) && fieldName !== 'eventID') {
-      //   throw new BadRequestException('No tasks found');
-      // }
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

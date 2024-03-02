@@ -117,9 +117,16 @@ export class GetListTaskByDate {
   @ApiProperty({
     description: 'Date: Get list task in Date',
     required: true,
-    default: '2024-02-25',
+    default: moment().format('DD-MM-YYYY'),
   })
   date: string;
+
+  @ApiProperty({
+    description: 'dateEnd: Get list task in Date to DateEnd',
+    required: false,
+    default: moment().add(6, 'days').format('DD-MM-YYYY'),
+  })
+  dateEnd?: string;
 }
 
 export class FilterTask {

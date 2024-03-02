@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ContractsService } from './../contracts/contracts.service';
 import {
   Injectable,
@@ -20,7 +21,6 @@ import { EventResponse } from './dto/event.response';
 import * as moment from 'moment-timezone';
 import {
   EventAssignRequest,
-  EventCreateRequest,
   EventCreateRequestContract,
   EventUpdateRequest,
   FilterEvent,
@@ -128,19 +128,6 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionAllEvent();
-      // const finalData = [];
-      // for (const item of dataPromise[0]) {
-      //   const dataMap = {
-      //     ...item,
-      //     startDate: moment(item.startDate).format('YYYY-MM-DD'),
-      //     endDate: moment(item.endDate).format('YYYY-MM-DD'),
-      //     createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
-      //     updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
-      //     listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
-      //     // taskCount: await this.taskService.countTaskInEvent(item?.id),
-      //   };
-      //   finalData.push(dataMap);
-      // }
       const finalData = dataPromise[0].map((item) => {
         return {
           ...item,
@@ -247,14 +234,83 @@ export class EventService extends BaseService<EventEntity> {
    * @param divisionID
    * @returns
    */
-  async getAllEventByDivisionID(
-    divisionID: string,
-  ): Promise<Array<EventResponse>> {
+  async getAllEventByDivisionID(divisionID: string): Promise<Array<any>> {
     try {
-      const data = await this.assignEventService.getEventByDivisionID(
-        divisionID,
-      );
-      return data;
+      const data = await this.eventRepository.find({
+        select: {
+          assignEvents: {
+            id: true,
+            division: {
+              id: true,
+            },
+            tasks: {
+              id: true,
+              status: true,
+            },
+          },
+          eventType: {
+            typeName: true,
+          },
+        },
+        where: {
+          assignEvents: {
+            division: {
+              id: divisionID,
+            },
+          },
+        },
+        relations: {
+          eventType: true,
+          assignEvents: {
+            division: true,
+            tasks: true,
+          },
+        },
+      });
+      console.log('data:', data);
+      const currentDate = moment();
+      const result = data
+        .map((item) => {
+          const diffYears = moment(item.startDate).diff(currentDate, 'years');
+          const diffMonths = moment(item.startDate).diff(currentDate, 'months');
+          const diffDays = moment(item.startDate).diff(currentDate, 'days');
+          let totalTimeRemaining = diffYears;
+          let typeTimeRemaining = 3;
+          if (diffYears <= 0) {
+            totalTimeRemaining = diffMonths;
+            typeTimeRemaining = 2;
+          }
+          if (diffMonths <= 0) {
+            totalTimeRemaining = diffDays;
+            typeTimeRemaining = 1;
+          }
+          const res = {
+            id: item.id,
+            eventName: item.eventName,
+            startDate: item.startDate,
+            processingDate: item.processingDate,
+            endDate: item.endDate,
+            location: item.location,
+            meetingUrl: item.meetingUrl,
+            description: item.description,
+            coverUrl: item.coverUrl,
+            estBudget: item.estBudget,
+            status: item.status,
+            createdBy: item.createdBy,
+            eventTypeName: item.eventType.typeName,
+            tasks: item.assignEvents[0].tasks,
+            totalTimeRemaining: totalTimeRemaining,
+            typeTimeRemaining: typeTimeRemaining,
+          };
+          return res;
+        })
+        .sort((a, b) => {
+          if (a.typeTimeRemaining === b.typeTimeRemaining) {
+            return a.totalTimeRemaining - b.totalTimeRemaining;
+          }
+          return a.typeTimeRemaining - b.typeTimeRemaining;
+        });
+      return result;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
