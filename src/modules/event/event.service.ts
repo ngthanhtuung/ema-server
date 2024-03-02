@@ -433,16 +433,15 @@ export class EventService extends BaseService<EventEntity> {
         user,
         queryRunner,
       );
-      const empty: unknown = '';
-      await this.customerContactsService.updateStatus(
-        user,
-        contactId,
-        EContactInformation.SUCCESS,
-        empty,
-      );
     };
     await this.transaction(callback, queryRunner);
-
+    const empty: unknown = '';
+    await this.customerContactsService.updateStatus(
+      user,
+      contactId,
+      EContactInformation.SUCCESS,
+      empty,
+    );
     return `Created event successfully`;
   }
 
