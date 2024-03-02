@@ -65,7 +65,9 @@ export class ContractsService extends BaseService<ContractEntity> {
         companyRepresentative: user.id,
         createdBy: user.id,
         paymentMethod: event.paymentMethod,
-        eventId: eventId,
+        event: {
+          id: eventId,
+        },
       });
       if (!contract) {
         throw new InternalServerErrorException('Create contract failed');

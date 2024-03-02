@@ -412,7 +412,6 @@ export class EventService extends BaseService<EventEntity> {
       if (!eventType) {
         throw new NotFoundException('Event type not found');
       }
-      const empty: unknown = '';
       const createEvent = await queryRunner.manager.insert(EventEntity, {
         eventName: event.eventName,
         description: event.description,
@@ -429,20 +428,21 @@ export class EventService extends BaseService<EventEntity> {
         "createEvent.generatedMaps[0]['id']:",
         createEvent.generatedMaps[0]['id'],
       );
-      this.contractsService.generateNewContract(
+      await this.contractsService.generateNewContract(
         event,
         createEvent.generatedMaps[0]['id'],
         user,
         queryRunner,
       );
-      this.customerContactsService.updateStatus(
-        user,
-        contactId,
-        EContactInformation.SUCCESS,
-        empty,
-      );
     };
     await this.transaction(callback, queryRunner);
+    const empty: unknown = '';
+    await this.customerContactsService.updateStatus(
+      user,
+      contactId,
+      EContactInformation.SUCCESS,
+      empty,
+    );
     return `Created event successfully`;
   }
 
