@@ -268,12 +268,18 @@ export class EventService extends BaseService<EventEntity> {
         },
       });
       console.log('data:', data);
-      const currentDate = moment();
+      const currentDate = moment().tz('Asia/Bangkok');
       const result = data
         .map((item) => {
-          const diffYears = moment(item.startDate).diff(currentDate, 'years');
-          const diffMonths = moment(item.startDate).diff(currentDate, 'months');
-          const diffDays = moment(item.startDate).diff(currentDate, 'days');
+          const diffYears = moment(item.processingDate)
+            .tz('Asia/Bangkok')
+            .diff(currentDate, 'years');
+          const diffMonths = moment(item.processingDate)
+            .tz('Asia/Bangkok')
+            .diff(currentDate, 'months');
+          const diffDays = moment(item.processingDate)
+            .tz('Asia/Bangkok')
+            .diff(currentDate, 'days');
           let totalTimeRemaining = diffYears;
           let typeTimeRemaining = 3;
           if (diffYears <= 0) {
