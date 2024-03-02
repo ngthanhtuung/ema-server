@@ -36,7 +36,6 @@ import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
-import { ContractCreateRequest } from '../contracts/dto/contract.dto';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
 
 @Injectable()
@@ -434,15 +433,16 @@ export class EventService extends BaseService<EventEntity> {
         user,
         queryRunner,
       );
+      const empty: unknown = '';
+      await this.customerContactsService.updateStatus(
+        user,
+        contactId,
+        EContactInformation.SUCCESS,
+        empty,
+      );
     };
     await this.transaction(callback, queryRunner);
-    const empty: unknown = '';
-    this.customerContactsService.updateStatus(
-      user,
-      contactId,
-      EContactInformation.SUCCESS,
-      empty,
-    );
+
     return `Created event successfully`;
   }
 
