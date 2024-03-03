@@ -585,11 +585,12 @@ export class TaskService extends BaseService<TaskEntity> {
           parent: true,
         },
       });
+
       const dataNotification: NotificationCreateRequest = {
         title: `Công việc đã được cập nhât`,
         content: `${oUser.fullName} đã cập nhât công việc ${taskExisted?.title}`,
         type: ETypeNotification.TASK,
-        userIdAssignee: listUser.map((item: any) => item?.assignee),
+        userIdAssignee: listUser?.map((item: any) => item?.assignee),
         userIdTaskMaster: [listUser?.[0]?.taskMaster],
         eventID: eventID,
         parentTaskId: taskExisted?.parent?.id,
@@ -600,6 +601,7 @@ export class TaskService extends BaseService<TaskEntity> {
       await this.notificationService.createNotification(
         dataNotification,
         oUser?.id,
+        queryRunner,
       );
     } catch (error) {
       throw new InternalServerErrorException(error.message);
