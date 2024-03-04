@@ -137,11 +137,11 @@ export class DivisionService extends BaseService<DivisionEntity> {
             'YYYY-MM-DD',
           );
           const checkStartDate =
-            startDateFormat >= startDate && startDate <= endDateFormat;
+            startDateFormat >= startDate && startDateFormat <= endDate;
           const checkEndDate =
-            startDateFormat >= endDate && endDate <= endDateFormat;
+            endDateFormat >= startDate && endDateFormat <= endDate;
 
-          if (checkStartDate || checkEndDate) {
+          if (checkStartDate && checkEndDate) {
             const resTask = {
               id: object?.task?.id,
               title: object?.task?.title,
@@ -276,9 +276,9 @@ export class DivisionService extends BaseService<DivisionEntity> {
               'YYYY-MM-DD',
             );
             const checkStartDate =
-              startDate >= startDateFormat && startDate <= endDateFormat;
+              startDateFormat >= startDate && startDateFormat <= endDate;
             const checkEndDate =
-              endDate >= startDateFormat && endDate <= endDateFormat;
+              endDateFormat >= startDate && endDateFormat <= endDate;
 
             if (checkStartDate || checkEndDate) {
               const resTask = {

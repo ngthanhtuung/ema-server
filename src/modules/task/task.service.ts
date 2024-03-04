@@ -412,16 +412,16 @@ export class TaskService extends BaseService<TaskEntity> {
         console.log('DateEnd:', dateEnd);
         if (dateEnd) {
           const checkStartDate = Boolean(
-            startDateFormat >= date && date <= endDateFormat,
+            startDateFormat >= date && startDateFormat <= dateEnd,
           );
           console.log('checkStartDate:', checkStartDate);
 
           const checkEndDate = Boolean(
-            startDateFormat >= dateEnd && dateEnd <= endDateFormat,
+            endDateFormat >= date && endDateFormat <= dateEnd,
           );
           console.log('checkEndDate:', checkEndDate);
 
-          if (checkStartDate || checkEndDate) {
+          if (checkStartDate && checkEndDate) {
             return item;
           }
         } else {
