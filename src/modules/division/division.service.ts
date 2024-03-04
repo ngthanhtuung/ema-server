@@ -137,9 +137,9 @@ export class DivisionService extends BaseService<DivisionEntity> {
             'YYYY-MM-DD',
           );
           const checkStartDate =
-            startDate >= startDateFormat && startDate <= endDateFormat;
+            startDateFormat >= startDate && startDate <= endDateFormat;
           const checkEndDate =
-            endDate >= startDateFormat && endDate <= endDateFormat;
+            startDateFormat >= endDate && endDate <= endDateFormat;
 
           if (checkStartDate || checkEndDate) {
             const resTask = {
