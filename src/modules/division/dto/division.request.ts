@@ -41,14 +41,37 @@ export class EmployeeFreeFind extends DivisionConditionFind {
   @ApiProperty({
     description: 'StartDate: start date of task',
     required: true,
-    default: moment().format('DD-MM-YYYY'),
+    default: moment().format('YYYY-MM-DD'),
   })
   startDate: string;
 
   @ApiProperty({
     description: 'EndDate: end date of task',
     required: true,
-    default: moment().add(3, 'days').format('DD-MM-YYYY'),
+    default: moment().add(3, 'days').format('YYYY-MM-DD'),
+  })
+  endDate: string;
+}
+
+export class DivisionEventFind {
+  @ApiProperty({
+    description: 'EventID: Truyền dùm id ạ, cám ơn',
+    required: true,
+    default: 'ID event nha làm ơn',
+  })
+  eventID: string;
+
+  @ApiProperty({
+    description: 'StartDate: start date of task',
+    required: true,
+    default: moment().format('YYYY-MM-DD'),
+  })
+  startDate: string;
+
+  @ApiProperty({
+    description: 'EndDate: end date of task',
+    required: true,
+    default: moment().add(3, 'days').format('YYYY-MM-DD'),
   })
   endDate: string;
 }

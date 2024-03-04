@@ -4,6 +4,7 @@ import { Body, Param, Get, Put, Controller, Post, Query } from '@nestjs/common';
 import {
   DivisionConditionFind,
   DivisionCreateRequest,
+  DivisionEventFind,
   DivisionUpdateRequest,
   EmployeeFreeFind,
 } from './dto/division.request';
@@ -53,6 +54,18 @@ export class DivisionController {
     @Query() condition: EmployeeFreeFind,
   ): Promise<DivisionResponse> {
     return await this.divisionService.getListAssigneeEmployee(condition);
+  }
+
+  /**
+   *  Get getDivisionById
+   * @param data
+   */
+  @Get('/list/assignee/division')
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
+  async getListAssigneeDivision(
+    @Query() condition: DivisionEventFind,
+  ): Promise<DivisionResponse[]> {
+    return await this.divisionService.getListAssigneeDivision(condition);
   }
 
   /**

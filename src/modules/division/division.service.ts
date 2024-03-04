@@ -131,10 +131,10 @@ export class DivisionService extends BaseService<DivisionEntity> {
       division.users = (division?.users || [])?.map((item: any) => {
         const listEvent = item?.assignee?.reduce((listEvent, object) => {
           const startDateFormat = moment(object?.task?.startDate).format(
-            'DD-MM-YYYY',
+            'YYYY-MM-DD',
           );
           const endDateFormat = moment(object?.task?.endDate).format(
-            'DD-MM-YYYY',
+            'YYYY-MM-DD',
           );
           const checkStartDate =
             startDate >= startDateFormat && startDate <= endDateFormat;
@@ -191,6 +191,149 @@ export class DivisionService extends BaseService<DivisionEntity> {
         assignEvents: division?.assignEvents?.length || 0,
       };
       return res;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * getListAssigneeEmployee
+   * @param condition
+   * @returns
+   */
+  async getListAssigneeDivision(
+    condition: object,
+  ): Promise<DivisionResponse[]> {
+    try {
+      const eventID = condition['eventID'];
+      const startDate = condition['startDate'];
+      const endDate = condition['endDate'];
+      const getDivision = await this.divisionRepository.find({
+        where: {
+          assignEvents: {
+            event: {
+              id: eventID,
+            },
+          },
+        },
+        order: {
+          users: {
+            role: {
+              roleName: 'DESC',
+            },
+            assignee: {
+              task: {
+                priority: 'desc',
+              },
+            },
+          },
+        },
+        select: {
+          users: {
+            id: true,
+            email: true,
+            role: {
+              roleName: true,
+            },
+            profile: {
+              avatar: true,
+              fullName: true,
+            },
+            assignee: true,
+          },
+          assignEvents: true,
+        },
+        relations: {
+          users: {
+            profile: true,
+            role: true,
+            assignee: {
+              task: {
+                eventDivision: {
+                  event: true,
+                },
+              },
+            },
+          },
+          assignEvents: {
+            event: true,
+          },
+        },
+      });
+      console.log('getDivsion:', getDivision);
+      console.log('getDivsion:', getDivision.length);
+      const finalData = [];
+      for (const division of getDivision) {
+        const item = division?.users?.[0];
+        console.log('Item:', item);
+
+        const listEvent: any = item?.assignee?.reduce(
+          (listEvent: any, object) => {
+            const startDateFormat = moment(object?.task?.startDate).format(
+              'YYYY-MM-DD',
+            );
+            const endDateFormat = moment(object?.task?.endDate).format(
+              'YYYY-MM-DD',
+            );
+            const checkStartDate =
+              startDate >= startDateFormat && startDate <= endDateFormat;
+            const checkEndDate =
+              endDate >= startDateFormat && endDate <= endDateFormat;
+
+            if (checkStartDate || checkEndDate) {
+              const resTask = {
+                id: object?.task?.id,
+                title: object?.task?.title,
+                startDate: startDateFormat,
+                endDate: endDateFormat,
+                priority: object?.task?.priority,
+                status: object?.task?.status,
+              };
+
+              const eventIndex = listEvent.findIndex(
+                (event) =>
+                  event?.eventID === object?.task?.eventDivision?.event?.id,
+              );
+
+              if (eventIndex === -1) {
+                listEvent.push({
+                  eventID: object?.task.eventDivision?.event.id,
+                  eventName: object?.task?.eventDivision?.event?.eventName,
+                  listTask: [resTask],
+                  totalTaskInEvent: 1,
+                });
+              } else {
+                listEvent[eventIndex].listTask.push(resTask);
+                listEvent[eventIndex].totalTaskInEvent++;
+              }
+            }
+
+            return listEvent;
+          },
+          [],
+        );
+        console.log('listEvent:', listEvent);
+
+        const totalTask = listEvent.reduce(
+          (total, data) => (total += data?.totalTaskInEvent),
+          0,
+        );
+        delete item?.assignee;
+        const dataMapUser: any = [
+          {
+            ...item,
+            listEvent: listEvent,
+            totalTask: totalTask || 0,
+            isFree: totalTask === 0 ? true : false,
+          },
+        ];
+        division.users = dataMapUser;
+        finalData.push({
+          ...division,
+          assignEvents: division?.assignEvents?.length || 0,
+        });
+      }
+      return finalData;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
