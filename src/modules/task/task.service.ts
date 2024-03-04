@@ -598,6 +598,7 @@ export class TaskService extends BaseService<TaskEntity> {
         avatar: oUser?.avatar,
         messageSocket: 'notification',
       };
+      console.log('dataNotification:', dataNotification);
       await this.notificationService.createNotification(
         dataNotification,
         oUser?.id,
