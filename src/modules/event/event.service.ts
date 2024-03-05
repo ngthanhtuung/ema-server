@@ -199,8 +199,14 @@ export class EventService extends BaseService<EventEntity> {
       }
       const listStaffOfDivision =
         await this.assignEventService.getListStaffDivisionByEventID(id);
+      const item = dataEvent[0];
       const finalRes = {
         ...dataEvent[0],
+        startDate: moment(item.startDate).format('YYYY-MM-DD'),
+        endDate: moment(item.endDate).format('YYYY-MM-DD'),
+        processingDate: moment(item.processingDate).format('YYYY-MM-DD'),
+        createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+        updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
         listDivision: listStaffOfDivision || [],
         taskCount: Number(dataEvent?.[0]?.taskCount),
       };
