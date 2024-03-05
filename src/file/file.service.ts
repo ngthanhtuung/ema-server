@@ -23,8 +23,9 @@ export class FileService {
       let uniqueFileName;
       if (!customizeFileName) {
         uniqueFileName = uuidv4();
+      } else {
+        uniqueFileName = customizeFileName;
       }
-      uniqueFileName = customizeFileName;
       const filePath = `${folderName}/${uniqueFileName}`;
       const file = bucket.file(filePath);
       await file.save(data.fileBuffer, {
@@ -36,6 +37,8 @@ export class FileService {
         action: 'read',
         expires: '2030-01-01',
       });
+      console.log('Donwload: ', downloadUrl);
+      console.log('Unique filename: ', uniqueFileName);
       const fileDownload = {
         fileName: uniqueFileName,
         fileType: data.fileType,
