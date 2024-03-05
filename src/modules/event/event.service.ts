@@ -384,11 +384,16 @@ export class EventService extends BaseService<EventEntity> {
           'dates',
           '[]',
         );
+        const checkInComming = moment(today).isBefore(
+          moment(item?.startDate),
+          'dates',
+        );
         const checkCondition =
           status === EEventDate.TODAY
             ? checkInToday &&
               ![EEventStatus.DONE, EEventStatus.CANCEL].includes(item?.status)
-            : ![EEventStatus.DONE, EEventStatus.CANCEL].includes(item?.status);
+            : checkInComming &&
+              ![EEventStatus.DONE, EEventStatus.CANCEL].includes(item?.status);
         if (checkCondition) {
           return item;
         }
@@ -429,6 +434,7 @@ export class EventService extends BaseService<EventEntity> {
         coverUrl: event.coverUrl,
         estBudget: event.estBudget,
         eventType: eventType,
+        status: EEventStatus.PREPARING,
         createdBy: user.id,
       });
       console.log(

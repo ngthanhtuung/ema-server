@@ -86,30 +86,30 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       );
 
       // Insert the new assigned tasks.
-      const assigneePromises = assignee.map((assignee) => {
-        const isLeader = assignee === leader;
-        const assignTask = {
-          taskID: taskID,
-          assignee: assignee,
-          isLeader: isLeader,
-          taskMaster: oUser?.id,
-        };
-        return this.assignTaskRepository.save(assignTask);
-      });
-      await Promise.all(assigneePromises);
-      // await Promise.all(
-      //   assignee.map((assignee) => {
-      //     const isLeader = assignee === leader;
-      //     const assignTask = {
-      //       taskID: taskID,
-      //       assignee: assignee,
-      //       isLeader: isLeader,
-      //       taskMaster: oUser?.id,
-      //     };
-      //     return this.assignTaskRepository.save(assignTask);
-      //     // return queryRunner.manager.insert(AssignTaskEntity, assignTask);
-      //   }),
-      // );
+      // const assigneePromises = assignee.map((assignee) => {
+      //   const isLeader = assignee === leader;
+      //   const assignTask = {
+      //     taskID: taskID,
+      //     assignee: assignee,
+      //     isLeader: isLeader,
+      //     taskMaster: oUser?.id,
+      //   };
+      //   return this.assignTaskRepository.save(assignTask);
+      // });
+      // await Promise.all(assigneePromises);
+      await Promise.all(
+        assignee.map((assignee) => {
+          const isLeader = assignee === leader;
+          const assignTask = {
+            taskID: taskID,
+            assignee: assignee,
+            isLeader: isLeader,
+            taskMaster: oUser?.id,
+          };
+          // return this.assignTaskRepository.save(assignTask);
+          return queryRunner.manager.insert(AssignTaskEntity, assignTask);
+        }),
+      );
       // Send Notification
       const dataNotification: NotificationCreateRequest = {
         title: `Công việc được giao`,

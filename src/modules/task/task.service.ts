@@ -512,7 +512,7 @@ export class TaskService extends BaseService<TaskEntity> {
           taskID: createTask?.generatedMaps?.[0]?.['id'],
           leader,
         };
-        this.assignTaskService.assignMemberToTask(
+        await this.assignTaskService.assignMemberToTask(
           oAssignTask,
           user,
           task,
@@ -521,7 +521,7 @@ export class TaskService extends BaseService<TaskEntity> {
       }
       if (file) {
         for (let i = 0; i < file?.length; i++) {
-          this.taskFileService.insertTaskFile({
+          await this.taskFileService.insertTaskFile({
             taskID: createTask?.generatedMaps?.[0]?.['id'],
             fileName: file?.[0]?.fileName,
             fileUrl: file?.[0]?.fileUrl,
