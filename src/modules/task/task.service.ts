@@ -477,14 +477,14 @@ export class TaskService extends BaseService<TaskEntity> {
 
       const divisionId = (await this.userService.findById(assignee[0]))
         ?.divisionId;
-      console.log('divisionId:', divisionId);
+      // console.log('divisionId:', divisionId);
 
       const listIdEventDivison =
         await this.assignEventService.getListIdEventDivision(
           eventID,
           divisionId,
         );
-      console.log('listIdEventDivison:', listIdEventDivison);
+      // console.log('listIdEventDivison:', listIdEventDivison);
 
       const createTask = await queryRunner.manager.insert(TaskEntity, {
         title: title,
