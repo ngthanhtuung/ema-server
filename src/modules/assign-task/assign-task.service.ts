@@ -82,7 +82,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       }
       // Delete all existing assigned tasks for the given task ID.
       await queryRunner.manager.query(
-        `DELETE FROM assign_tasks WHERE taskID = '${taskID}'`,
+        `DELETE FROM assign_tasks WHERE taskID = '${task}'`,
       );
 
       // Insert the new assigned tasks.
