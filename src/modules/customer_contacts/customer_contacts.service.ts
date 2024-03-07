@@ -149,6 +149,12 @@ export class CustomerContactsService {
       const user = await this.userService.findByEmailV2(contactExisted.email);
       return {
         ...contactExisted,
+        startDate: moment(contactExisted.startDate)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD HH:mm:ss'),
+        endDate: moment(contactExisted.endDate)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD HH:mm:ss'),
         customerInfo: user,
       };
     } catch (err) {

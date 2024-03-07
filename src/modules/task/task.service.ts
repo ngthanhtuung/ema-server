@@ -276,6 +276,7 @@ export class TaskService extends BaseService<TaskEntity> {
         },
         order: {
           priority: 'DESC',
+          assignTasks: { isLeader: 'DESC' },
         },
         select: {
           assignTasks: {
@@ -675,6 +676,7 @@ export class TaskService extends BaseService<TaskEntity> {
             },
             order: {
               createdAt: { direction: sort },
+              assignTasks: { isLeader: 'DESC' },
             },
           });
         });
