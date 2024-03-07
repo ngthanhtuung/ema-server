@@ -79,9 +79,12 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
       }
+      const taskIDCommon = task?.id || taskID;
+      console.log('taskIDCommon:', taskIDCommon);
+
       // Delete all existing assigned tasks for the given task ID.
       await queryRunner.manager.query(
-        `DELETE FROM assign_tasks WHERE taskID = '${task}'`,
+        `DELETE FROM assign_tasks WHERE taskID = '${taskIDCommon}'`,
       );
 
       // Insert the new assigned tasks.
@@ -89,7 +92,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         assignee.map((assignee) => {
           const isLeader = assignee === leader;
           const assignTask = {
-            taskID: taskID,
+            taskID: taskIDCommon,
             assignee: assignee,
             isLeader: isLeader,
             taskMaster: oUser?.id,
@@ -106,7 +109,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         userIdTaskMaster: [oUser?.id],
         eventID: task?.eventID || task?.eventDivision?.event?.id,
         parentTaskId: task?.parentTask || task?.parent?.id,
-        commonId: taskID,
+        commonId: taskIDCommon,
         avatar: oUser?.avatar,
         messageSocket: 'notification',
       };
