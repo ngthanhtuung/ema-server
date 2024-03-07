@@ -75,7 +75,6 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         });
         task = taskExisted;
       }
-      console.log('task:', task);
       console.log('eventID:', task?.eventDivision?.event?.id);
       if (assignee?.length > 0 && leader?.length == 0) {
         leader = assignee[0];
@@ -86,17 +85,6 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       );
 
       // Insert the new assigned tasks.
-      // const assigneePromises = assignee.map((assignee) => {
-      //   const isLeader = assignee === leader;
-      //   const assignTask = {
-      //     taskID: taskID,
-      //     assignee: assignee,
-      //     isLeader: isLeader,
-      //     taskMaster: oUser?.id,
-      //   };
-      //   return this.assignTaskRepository.save(assignTask);
-      // });
-      // await Promise.all(assigneePromises);
       await Promise.all(
         assignee.map((assignee) => {
           const isLeader = assignee === leader;
@@ -106,7 +94,6 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
             isLeader: isLeader,
             taskMaster: oUser?.id,
           };
-          // return this.assignTaskRepository.save(assignTask);
           return queryRunner.manager.insert(AssignTaskEntity, assignTask);
         }),
       );
