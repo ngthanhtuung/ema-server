@@ -120,6 +120,10 @@ export class CommentService extends BaseService<CommentEntity> {
               assignTasks: true,
             },
           });
+          let notificationType = ETypeNotification.COMMENT;
+          if (task?.parentTask !== null) {
+            notificationType = ETypeNotification.COMMENT_SUBTASK;
+          }
           const user = await queryRunner.manager.findOne(UserEntity, {
             where: {
               id: loginUser.id,
@@ -149,7 +153,7 @@ export class CommentService extends BaseService<CommentEntity> {
           const dataNotification: NotificationCreateRequest = {
             title: `Đã có một comment mới `,
             content: `${loginUser.fullName} đã comment vào ${task?.title}`,
-            type: ETypeNotification.COMMENT,
+            type: notificationType,
             userIdAssignee: assigne,
             userIdTaskMaster: [loginUser?.id],
             eventID: task?.eventDivision?.event?.id,
