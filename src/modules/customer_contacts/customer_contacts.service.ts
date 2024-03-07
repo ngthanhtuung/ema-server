@@ -140,21 +140,30 @@ export class CustomerContactsService {
 
   async getContactDetailsById(contactId: string): Promise<unknown> {
     try {
-      const contactExisted = await this.customerContactRepository.findOne({
-        where: { id: contactId },
-      });
-      if (!contactExisted) {
+      const query = this.generalBuilderContacts();
+      query.select([
+        'contacts.id as id',
+        'contacts.fullName as fullName',
+        'contacts.email as email',
+        'contacts.phoneNumber as phoneNumber',
+        'contacts.address as address',
+        'contacts.note as note',
+        'contacts.startDate as startDate',
+        'contacts.endDate as endDate',
+        'contacts.budget as budget',
+        'contacts.eventTypeId as eventType',
+        'contacts.processedBy as processedBy',
+        'contacts.createdAt as createdAt',
+        'contacts.status as status',
+      ]);
+      query.where('contacts.id = :id', { id: contactId });
+      const data = await query.execute();
+      if (!data) {
         throw new ContactNotFoundException();
       }
-      const user = await this.userService.findByEmailV2(contactExisted.email);
+      const user = await this.userService.findByEmailV2(data?.[0]?.email);
       return {
-        ...contactExisted,
-        startDate: moment(contactExisted.startDate)
-          .tz('Asia/Bangkok')
-          .format('YYYY-MM-DD HH:mm:ss'),
-        endDate: moment(contactExisted.endDate)
-          .tz('Asia/Bangkok')
-          .format('YYYY-MM-DD HH:mm:ss'),
+        ...data[0],
         customerInfo: user,
       };
     } catch (err) {
