@@ -88,6 +88,7 @@ export enum ETypeNotification {
   REQUEST = 'REQUEST',
   BUDGETS = 'BUDGETS',
   CONTRACT = 'CONTRACT',
+  COMMENT_SUBTASK = 'COMMENT_SUBTASK',
 }
 
 export enum ETypeMessage {
