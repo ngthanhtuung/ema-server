@@ -33,6 +33,7 @@ import { UserService } from '../user/user.service';
 import { NotificationService } from '../notification/notification.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AssignEventService } from '../assign-event/assign-event.service';
+import { TaskFileEntity } from '../taskfile/taskfile.entity';
 
 @Injectable()
 export class TaskService extends BaseService<TaskEntity> {
@@ -466,6 +467,7 @@ export class TaskService extends BaseService<TaskEntity> {
     } = task;
     const oUser = JSON.parse(user);
     const createBy = oUser.id;
+    let createTaskId;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventExisted = await queryRunner.manager.findOne(EventEntity, {
         where: { id: eventID },
@@ -485,7 +487,6 @@ export class TaskService extends BaseService<TaskEntity> {
           divisionId,
         );
       // console.log('listIdEventDivison:', listIdEventDivison);
-
       const createTask = await queryRunner.manager.insert(TaskEntity, {
         title: title,
         createdBy: createBy,
@@ -505,7 +506,16 @@ export class TaskService extends BaseService<TaskEntity> {
           id: parentTask,
         },
       });
-
+      createTaskId = createTask?.generatedMaps?.[0]?.['id'];
+      // If task have file
+      if (file) {
+        console.log('Code running here');
+        await queryRunner.manager.insert(TaskFileEntity, {
+          taskID: createTask?.generatedMaps?.[0]?.['id'],
+          fileName: file?.[0]?.fileName,
+          fileUrl: file?.[0]?.fileUrl,
+        });
+      }
       if (assignee?.length > 0) {
         const oAssignTask = {
           assignee,
@@ -518,15 +528,6 @@ export class TaskService extends BaseService<TaskEntity> {
           task,
           queryRunner,
         );
-      }
-      if (file) {
-        for (let i = 0; i < file?.length; i++) {
-          await this.taskFileService.insertTaskFile({
-            taskID: createTask?.generatedMaps?.[0]?.['id'],
-            fileName: file?.[0]?.fileName,
-            fileUrl: file?.[0]?.fileUrl,
-          });
-        }
       }
     };
     await this.transaction(callback, queryRunner);
