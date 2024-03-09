@@ -84,6 +84,7 @@ export enum EStatusBudgets {
 
 export enum ETypeNotification {
   TASK = 'TASK',
+  SUBTASK = 'SUBTASK',
   COMMENT = 'COMMENT',
   REQUEST = 'REQUEST',
   BUDGETS = 'BUDGETS',
