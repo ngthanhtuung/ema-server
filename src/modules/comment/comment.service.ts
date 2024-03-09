@@ -26,6 +26,7 @@ import { CommentfileService } from '../commentfile/commentfile.service';
 import * as moment from 'moment-timezone';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationCreateRequest } from '../notification/dto/notification.request';
+
 @Injectable()
 export class CommentService extends BaseService<CommentEntity> {
   constructor(
@@ -120,6 +121,7 @@ export class CommentService extends BaseService<CommentEntity> {
               assignTasks: true,
             },
           });
+          const taskMasterId = task?.assignTasks[0]?.taskMaster;
           let notificationType = ETypeNotification.COMMENT;
           if (task?.parentTask !== null) {
             notificationType = ETypeNotification.COMMENT_SUBTASK;
@@ -155,13 +157,16 @@ export class CommentService extends BaseService<CommentEntity> {
             content: `${loginUser.fullName} đã comment vào ${task?.title}`,
             type: notificationType,
             userIdAssignee: assigne,
-            userIdTaskMaster: [loginUser?.id],
+            // userIdTaskMaster: [loginUser?.id],
+            userIdTaskMaster: [taskMasterId],
             eventID: task?.eventDivision?.event?.id,
             parentTaskId: task?.parentTask || task?.parent?.id,
             commonId: createdComment.identifiers[0].id,
             avatar: loginUser?.avatar,
             messageSocket: 'notification',
           };
+
+          console.log('Data notification: ', dataNotification);
           await this.notificationService.createNotification(
             dataNotification,
             loginUser?.id,

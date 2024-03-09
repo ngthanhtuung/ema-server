@@ -152,6 +152,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         eventID: notification?.eventID,
         avatarSender: notification?.avatar,
       });
+
       const createNotification = [];
       const listUserPushNoti = [];
       let dataNotification;
