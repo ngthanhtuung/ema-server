@@ -46,8 +46,6 @@ export class TaskService extends BaseService<TaskEntity> {
     private assignEventService: AssignEventService,
     private userService: UserService,
     private notificationService: NotificationService,
-    @Inject(forwardRef(() => TaskfileService))
-    private readonly taskFileService: TaskfileService,
   ) {
     super(taskRepository);
   }
@@ -105,6 +103,8 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               isLeader: true,
               status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
@@ -140,6 +140,8 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 isLeader: true,
                 status: true,
+                createdAt: true,
+                updatedAt: true,
                 user: {
                   id: true,
                   email: true,
@@ -176,6 +178,8 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 isLeader: true,
                 status: true,
+                createdAt: true,
+                updatedAt: true,
                 user: {
                   id: true,
                   email: true,
@@ -286,6 +290,8 @@ export class TaskService extends BaseService<TaskEntity> {
             id: true,
             isLeader: true,
             status: true,
+            createdAt: true,
+            updatedAt: true,
             user: {
               id: true,
               email: true,
@@ -321,6 +327,8 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               isLeader: true,
               status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
@@ -357,6 +365,8 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               isLeader: true,
               status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
@@ -644,6 +654,8 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 isLeader: true,
                 status: true,
+                createdAt: true,
+                updatedAt: true,
                 user: {
                   id: true,
                   email: true,
@@ -698,6 +710,8 @@ export class TaskService extends BaseService<TaskEntity> {
               id: true,
               isLeader: true,
               status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,

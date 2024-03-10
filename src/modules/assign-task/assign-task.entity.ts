@@ -1,8 +1,17 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  UpdateDateColumn,
+} from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { TaskEntity } from '../task/task.entity';
 import { UserEntity } from '../user/user.entity';
 import { EStatusAssignee } from 'src/common/enum/enum';
+import * as moment from 'moment-timezone';
+import { Transform } from 'class-transformer';
 
 @Entity({ name: 'assign_tasks' })
 export class AssignTaskEntity extends BaseEntity {
@@ -36,4 +45,19 @@ export class AssignTaskEntity extends BaseEntity {
     enum: EStatusAssignee,
   })
   status: EStatusAssignee;
+
+  @CreateDateColumn()
+  @Transform(({ value }) => {
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
+  })
+  public createdAt: Date;
+
+  @Column({ type: 'varchar', nullable: false })
+  createdBy: string;
+
+  @UpdateDateColumn()
+  @Transform(({ value }) => {
+    return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
+  })
+  updatedAt: Date;
 }

@@ -161,7 +161,7 @@ export class CommentService extends BaseService<CommentEntity> {
             userIdTaskMaster: [taskMasterId],
             eventID: task?.eventDivision?.event?.id,
             parentTaskId: task?.parentTask || task?.parent?.id,
-            commonId: createdComment.identifiers[0].id,
+            commonId: data.taskID,
             avatar: loginUser?.avatar,
             messageSocket: 'notification',
           };
