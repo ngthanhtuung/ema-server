@@ -52,9 +52,6 @@ export class AssignTaskEntity extends BaseEntity {
   })
   public createdAt: Date;
 
-  @Column({ type: 'varchar', nullable: false })
-  createdBy: string;
-
   @UpdateDateColumn()
   @Transform(({ value }) => {
     return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
