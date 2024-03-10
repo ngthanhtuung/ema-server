@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { TaskEntity } from '../task/task.entity';
 import { UserEntity } from '../user/user.entity';
+import { EStatusAssignee } from 'src/common/enum/enum';
 
 @Entity({ name: 'assign_tasks' })
 export class AssignTaskEntity extends BaseEntity {
@@ -28,4 +29,11 @@ export class AssignTaskEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'assignee', referencedColumnName: 'id' })
   user: UserEntity;
+
+  @Column({
+    type: 'enum',
+    default: EStatusAssignee.ACTIVE,
+    enum: EStatusAssignee,
+  })
+  status: EStatusAssignee;
 }

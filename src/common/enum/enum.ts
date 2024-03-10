@@ -133,3 +133,8 @@ export enum EContractPaymentMethod {
   CASH = 'Tiền Mặt',
   TRANSFER = 'Chuyển Khoản',
 }
+
+export enum EStatusAssignee {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}

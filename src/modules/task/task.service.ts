@@ -104,6 +104,7 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
               user: {
                 id: true,
                 email: true,
@@ -138,6 +139,7 @@ export class TaskService extends BaseService<TaskEntity> {
               assignTasks: {
                 id: true,
                 isLeader: true,
+                status: true,
                 user: {
                   id: true,
                   email: true,
@@ -173,6 +175,7 @@ export class TaskService extends BaseService<TaskEntity> {
               assignTasks: {
                 id: true,
                 isLeader: true,
+                status: true,
                 user: {
                   id: true,
                   email: true,
@@ -282,6 +285,7 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: {
             id: true,
             isLeader: true,
+            status: true,
             user: {
               id: true,
               email: true,
@@ -316,6 +320,7 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
               user: {
                 id: true,
                 email: true,
@@ -351,6 +356,7 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
               user: {
                 id: true,
                 email: true,
@@ -637,6 +643,7 @@ export class TaskService extends BaseService<TaskEntity> {
               assignTasks: {
                 id: true,
                 isLeader: true,
+                status: true,
                 user: {
                   id: true,
                   email: true,
@@ -690,6 +697,7 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
               user: {
                 id: true,
                 email: true,

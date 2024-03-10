@@ -17,7 +17,7 @@ import {
 } from 'typeorm';
 import { AssignTaskReq } from './dto/assign-task.request';
 import { NotificationCreateRequest } from '../notification/dto/notification.request';
-import { ETypeNotification } from 'src/common/enum/enum';
+import { EStatusAssignee, ETypeNotification } from 'src/common/enum/enum';
 import { NotificationService } from '../notification/notification.service';
 import { TaskEntity } from '../task/task.entity';
 
@@ -81,25 +81,77 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       }
       const taskIDCommon = task?.id || taskID;
       console.log('taskIDCommon:', taskIDCommon);
-
-      // Delete all existing assigned tasks for the given task ID.
-      await queryRunner.manager.query(
-        `DELETE FROM assign_tasks WHERE taskID = '${taskIDCommon}'`,
-      );
-
-      // Insert the new assigned tasks.
-      await Promise.all(
-        assignee.map((assignee) => {
-          const isLeader = assignee === leader;
-          const assignTask = {
+      const getAllListAssignee = await queryRunner.manager.find(
+        AssignTaskEntity,
+        {
+          where: {
             taskID: taskIDCommon,
-            assignee: assignee,
-            isLeader: isLeader,
-            taskMaster: oUser?.id,
-          };
-          return queryRunner.manager.insert(AssignTaskEntity, assignTask);
-        }),
+          },
+        },
       );
+      const listNewAssignee = [...assignee];
+      const listUserReplace = getAllListAssignee.reduce(
+        (listUserReplace, item) => {
+          if (!listNewAssignee.includes(item?.assignee)) {
+            listUserReplace.push(item?.assignee);
+          } else {
+            const indexNewMember = listNewAssignee.indexOf(item?.assignee);
+            if (
+              listNewAssignee.includes(item?.assignee) &&
+              indexNewMember > -1
+            ) {
+              listNewAssignee.splice(indexNewMember, 1);
+            }
+          }
+          return listUserReplace;
+        },
+        [],
+      );
+      const listRemainingEmployeeNew = assignee.filter(
+        (item) => !listNewAssignee.includes(item),
+      );
+      console.log(
+        'getAllListAssignee:',
+        getAllListAssignee.map((item) => item.assignee),
+      );
+      console.log('listUserReplace:', listUserReplace);
+      console.log('listNewAssignee:', listNewAssignee);
+      console.log('assignee:', assignee);
+      console.log('listRemainingEmployeeNew:', listRemainingEmployeeNew);
+      // Update status employee replace
+      const listReplace = listUserReplace.map((assignee) => {
+        const isLeader = assignee === leader;
+        return queryRunner.manager.update(
+          AssignTaskEntity,
+          { assignee },
+          { status: EStatusAssignee.INACTIVE, isLeader: isLeader },
+        );
+      });
+      // Update isLeader if change Leader
+      const listRemainingAssignee = listRemainingEmployeeNew.map((assignee) => {
+        const isLeader = assignee === leader;
+        return queryRunner.manager.update(
+          AssignTaskEntity,
+          { assignee },
+          { isLeader: isLeader },
+        );
+      });
+      // Update status employee replace
+      const listAssignee = listNewAssignee.map((assignee) => {
+        const isLeader = assignee === leader;
+        const assignTask = {
+          taskID: taskIDCommon,
+          assignee: assignee,
+          isLeader: isLeader,
+          taskMaster: oUser?.id,
+        };
+        return queryRunner.manager.insert(AssignTaskEntity, assignTask);
+      });
+      await Promise.all([
+        ...listReplace,
+        ...listRemainingAssignee,
+        ...listAssignee,
+      ]);
       // Send Notification
       const dataNotification: NotificationCreateRequest = {
         title: `Công việc được giao`,
