@@ -206,30 +206,30 @@ export class ItemsService extends BaseService<ItemEntity> {
       };
       const data = [];
       const STT = 'STT';
-      for (let i = 0; i < dataPlan.length; i++) {
-        dataPlan.map((value, index) => {
-          const originalRow = {
-            STT: `=IF(${columnName[headers.indexOf('Hạng mục')]}${
-              i + 2
-            }="","",ROW()-ROW(${columnName[headers.indexOf('STT')]}$2)+1)`,
-            'ID Loại hạng mục': value.categoryId,
-            'Loại hạng mục': value.categoryName,
+      let i = 0;
+      dataPlan.map((value, index) => {
+        const originalRow = {
+          STT: `=IF(${columnName[headers.indexOf('Hạng mục')]}${
+            i + 2
+          }="","",ROW()-ROW(${columnName[headers.indexOf('STT')]}$2)+1)`,
+          'ID Loại hạng mục': value.categoryId,
+          'Loại hạng mục': value.categoryName,
+        };
+        value.items.map((item) => {
+          const row = {
+            ...originalRow,
+            'Hạng mục': item.itemName,
+            'Diễn giải': item.description,
+            'Độ ưu tiên': item.priority,
+            'Đơn vị tính': item.plannedUnit,
+            'Số Lượng': item.plannedAmount,
+            'Đơn giá': item.plannedPrice,
+            'Thành Tiền': item.plannedAmount * item.plannedPrice,
           };
-          value.items.map((item) => {
-            const row = {
-              ...originalRow,
-              'Hạng mục': item.itemName,
-              'Diễn giải': item.description,
-              'Độ ưu tiên': item.priority,
-              'Đơn vị tính': item.plannedUnit,
-              'Số Lượng': item.plannedAmount,
-              'Đơn giá': item.plannedPrice,
-              'Thành Tiền': item.plannedAmount * item.plannedPrice,
-            };
-            data.push(row);
-          });
+          data.push(row);
+          i++;
         });
-      }
+      });
       const csv = csvFormat.parse(data, opts);
       // Encode the CSV data in UTF-8 format
       const encodedCsv = iconv.encode(csv, 'utf8');
