@@ -31,6 +31,7 @@ import {
   ERole,
   EEventDate,
   EContactInformation,
+  EStatusAssignee,
 } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
@@ -369,6 +370,7 @@ export class EventService extends BaseService<EventEntity> {
           assignEvents: {
             tasks: {
               assignTasks: {
+                status: EStatusAssignee.ACTIVE,
                 user: {
                   id: userId,
                 },
