@@ -102,6 +102,9 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         },
         [],
       );
+      const listRemainingEmployeeNew = assignee.filter(
+        (item) => !listNewAssignee.includes(item),
+      );
       console.log(
         'getAllListAssignee:',
         getAllListAssignee.map((item) => item.assignee),
@@ -109,6 +112,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
       console.log('listUserReplace:', listUserReplace);
       console.log('listNewAssignee:', listNewAssignee);
       console.log('assignee:', assignee);
+      console.log('listRemainingEmployeeNew:', listRemainingEmployeeNew);
       // Update status employee replace
       const listReplace = listUserReplace.map((assignee) => {
         const isLeader = assignee === leader;
@@ -125,14 +129,14 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         );
       });
       // Update isLeader if change Leader
-      const updateLeader = queryRunner.manager.update(
-        AssignTaskEntity,
-        { assignee: leader },
-        {
-          isLeader: true,
-          updatedAt: moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
-        },
-      );
+      const listRemainingAssignee = listRemainingEmployeeNew.map((assignee) => {
+        const isLeader = assignee === leader;
+        return queryRunner.manager.update(
+          AssignTaskEntity,
+          { assignee },
+          { isLeader: isLeader, status: EStatusAssignee.ACTIVE },
+        );
+      });
       // Update status employee replace
       const listAssignee = listNewAssignee.map((assignee) => {
         const isLeader = assignee === leader;
@@ -145,7 +149,11 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         };
         return queryRunner.manager.insert(AssignTaskEntity, assignTask);
       });
-      await Promise.all([...listReplace, ...listAssignee, updateLeader]);
+      await Promise.all([
+        ...listReplace,
+        ...listAssignee,
+        ...listRemainingAssignee,
+      ]);
       // Send Notification
       const dataNotification: NotificationCreateRequest = {
         title: `Công việc được giao`,
