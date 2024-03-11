@@ -141,3 +141,8 @@ export enum EPlanningUnit {
   M2 = 'm2',
   CÁI = 'Cái',
 }
+
+export enum EStatusAssignee {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}

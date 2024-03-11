@@ -46,8 +46,6 @@ export class TaskService extends BaseService<TaskEntity> {
     private assignEventService: AssignEventService,
     private userService: UserService,
     private notificationService: NotificationService,
-    @Inject(forwardRef(() => TaskfileService))
-    private readonly taskFileService: TaskfileService,
   ) {
     super(taskRepository);
   }
@@ -104,6 +102,9 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
@@ -138,6 +139,9 @@ export class TaskService extends BaseService<TaskEntity> {
               assignTasks: {
                 id: true,
                 isLeader: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
                 user: {
                   id: true,
                   email: true,
@@ -173,6 +177,9 @@ export class TaskService extends BaseService<TaskEntity> {
               assignTasks: {
                 id: true,
                 isLeader: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
                 user: {
                   id: true,
                   email: true,
@@ -282,6 +289,9 @@ export class TaskService extends BaseService<TaskEntity> {
           assignTasks: {
             id: true,
             isLeader: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
             user: {
               id: true,
               email: true,
@@ -316,6 +326,9 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
@@ -351,6 +364,9 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
@@ -510,14 +526,13 @@ export class TaskService extends BaseService<TaskEntity> {
       createTaskId = createTask?.generatedMaps?.[0]?.['id'];
       // If task have file
       if (file) {
-        const fileUpload = file.map((file) => {
-          queryRunner.manager.insert(TaskFileEntity, {
+        const fileUpload = file.map(async (file) => {
+          await queryRunner.manager.insert(TaskFileEntity, {
             taskID: createTask?.generatedMaps?.[0]?.['id'],
-            fileName: file?.[0]?.fileName,
-            fileUrl: file?.[0]?.fileUrl,
+            fileName: file?.fileName,
+            fileUrl: file?.fileUrl,
           });
         });
-        await Promise.all(fileUpload);
       }
       if (assignee?.length > 0) {
         const oAssignTask = {
@@ -639,6 +654,9 @@ export class TaskService extends BaseService<TaskEntity> {
               assignTasks: {
                 id: true,
                 isLeader: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
                 user: {
                   id: true,
                   email: true,
@@ -692,6 +710,9 @@ export class TaskService extends BaseService<TaskEntity> {
             assignTasks: {
               id: true,
               isLeader: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
               user: {
                 id: true,
                 email: true,
