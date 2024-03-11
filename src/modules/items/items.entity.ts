@@ -9,8 +9,17 @@ export class ItemEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   itemName: string;
 
+  @Column({ type: 'text', nullable: false })
+  description: string;
+
   @ManyToOne(() => EventEntity, (event) => event.items)
   event: EventEntity;
+
+  @Column({ type: 'varchar', nullable: false })
+  createdBy: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  updatedBy: string;
 
   @ManyToOne(() => CategoryEntity, (category) => category.items)
   category: CategoryEntity;

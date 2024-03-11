@@ -133,3 +133,11 @@ export enum EContractPaymentMethod {
   CASH = 'Tiền Mặt',
   TRANSFER = 'Chuyển Khoản',
 }
+
+export enum EPlanningUnit {
+  GÓI = 'Gói',
+  BỘ = 'Bộ',
+  NGƯỜI = 'Người',
+  M2 = 'm2',
+  CÁI = 'Cái',
+}

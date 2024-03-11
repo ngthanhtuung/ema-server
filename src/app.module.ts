@@ -44,6 +44,8 @@ import { GroupsMessagesAttachmentsModule } from './modules/groups_messages_attac
 import { MessagesAttachmentsModule } from './modules/messages_attachments/messages_attachments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MapModule } from './modules/map/map.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ItemsModule } from './modules/items/items.module';
 
 @Module({
   imports: [
@@ -95,6 +97,8 @@ import { MapModule } from './modules/map/map.module';
     GroupsMessagesAttachmentsModule,
     MessagesAttachmentsModule,
     MapModule,
+    ItemsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

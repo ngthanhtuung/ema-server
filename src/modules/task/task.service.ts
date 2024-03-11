@@ -510,12 +510,14 @@ export class TaskService extends BaseService<TaskEntity> {
       createTaskId = createTask?.generatedMaps?.[0]?.['id'];
       // If task have file
       if (file) {
-        console.log('Code running here');
-        await queryRunner.manager.insert(TaskFileEntity, {
-          taskID: createTask?.generatedMaps?.[0]?.['id'],
-          fileName: file?.[0]?.fileName,
-          fileUrl: file?.[0]?.fileUrl,
+        const fileUpload = file.map((file) => {
+          queryRunner.manager.insert(TaskFileEntity, {
+            taskID: createTask?.generatedMaps?.[0]?.['id'],
+            fileName: file?.[0]?.fileName,
+            fileUrl: file?.[0]?.fileUrl,
+          });
         });
+        await Promise.all(fileUpload);
       }
       if (assignee?.length > 0) {
         const oAssignTask = {
