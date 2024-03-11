@@ -26,7 +26,7 @@ export class FileService {
       } else {
         uniqueFileName = customizeFileName;
       }
-      const filePath = `${folderName}/${uniqueFileName}`;
+      const filePath = `${folderName}/${uniqueFileName}.${data.fileType}`;
       const file = bucket.file(filePath);
       await file.save(data.fileBuffer, {
         metadata: {
@@ -35,7 +35,7 @@ export class FileService {
       });
       const downloadUrl = await file.getSignedUrl({
         action: 'read',
-        expires: '2030-01-01',
+        expires: '9999-01-01',
       });
       console.log('Donwload: ', downloadUrl);
       console.log('Unique filename: ', uniqueFileName);
