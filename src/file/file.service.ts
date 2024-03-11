@@ -26,7 +26,7 @@ export class FileService {
       } else {
         uniqueFileName = customizeFileName;
       }
-      const filePath = `${folderName}/${uniqueFileName}.${data.fileType}`;
+      const filePath = `${folderName}/${uniqueFileName}`;
       const file = bucket.file(filePath);
       await file.save(data.fileBuffer, {
         metadata: {
