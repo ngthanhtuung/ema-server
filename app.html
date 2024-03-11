@@ -7,8 +7,18 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-<input id="tokenInput" placeholder="Enter your token" type="text">
-<button id="downloadButton">Download CSV</button>
+<div>
+  <h2>Download Template</h2>
+  <input id="tokenInput" placeholder="Enter your token" type="text">
+  <button id="downloadButton">Download CSV</button>
+</div>
+<div>
+  <h2>Export template</h2>
+  <input id="tokenInputExport" placeholder="Enter your token" type="text">
+  <input id="eventId" placeholder="Enter your eventId" type="text">
+  <button id="exportButton">Download CSV</button>
+</div>
+
 
 <script>
   document.getElementById('downloadButton').addEventListener('click', async () => {
@@ -37,6 +47,38 @@
     } catch (error) {
       console.error('Error downloading template:', error);
       alert('Failed to download template. Please try again later.');
+    }
+  });
+  //export
+
+  document.getElementById('exportButton').addEventListener('click', async () => {
+    try {
+      const token = document.getElementById('tokenInputExport').value.trim();
+      const eventId = document.getElementById('eventId').value.trim();
+      if (!token) {
+        alert('Please enter a valid token.');
+        return;
+      }
+
+      const response = await axios.get(`http://localhost:6969/api/v1/items/export-plan?eventId=${eventId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(response.data);
+      console.log('Response data: ', response.headers);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template.csv';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert(`Failed to export. ${error}`);
     }
   });
 </script>

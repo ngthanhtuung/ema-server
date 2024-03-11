@@ -640,7 +640,6 @@ export class TaskService extends BaseService<TaskEntity> {
    */
   async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
     const { assignee, priority, sort, status, eventID } = filter;
-
     let result;
     try {
       let listIdEventDivison: any = undefined;

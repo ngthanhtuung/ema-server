@@ -5,12 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ItemEntity } from './items.entity';
 import { CategoriesModule } from '../categories/categories.module';
 import { BudgetsModule } from '../budgets/budgets.module';
+import { EventModule } from '../event/event.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ItemEntity]),
     CategoriesModule,
     BudgetsModule,
+    EventModule,
   ],
   providers: [ItemsService],
   controllers: [ItemsController],
