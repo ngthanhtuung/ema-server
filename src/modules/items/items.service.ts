@@ -242,6 +242,11 @@ export class ItemsService extends BaseService<ItemEntity> {
 
   async readCSVFile(file: Express.Multer.File): Promise<object> {
     try {
+      if (!file.mimetype.includes('csv')) {
+        throw new BadRequestException(
+          'Invalid file format. You need to use CSV format',
+        );
+      }
       const results = [];
       const errors = [];
       let lineNumber = 1;

@@ -88,7 +88,7 @@ export class ItemsController {
     return this.itemsService.createEventPlan(data, eventId, JSON.parse(user));
   }
 
-  @Post('/upload-csv')
+  @Post('/import-csv')
   @ApiConsumes('multipart/form-data')
   @Roles(ERole.MANAGER)
   @ApiBody({
