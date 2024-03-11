@@ -12,5 +12,9 @@ export class CreatePlanBudgetRequest {
 
   @ApiProperty()
   @IsString()
+  plannedUnit: string;
+
+  @ApiProperty()
+  @IsString()
   description: string;
 }

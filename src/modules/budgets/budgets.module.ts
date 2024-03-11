@@ -8,5 +8,6 @@ import { BudgetEntity } from './budgets.entity';
   imports: [TypeOrmModule.forFeature([BudgetEntity])],
   providers: [BudgetsService],
   controllers: [BudgetsController],
+  exports: [BudgetsService],
 })
 export class BudgetsModule {}

@@ -12,17 +12,17 @@ import { ERole } from '../../common/enum/enum';
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @Get('')
-  @Roles(ERole.MANAGER)
-  async getAllCategories(): Promise<CategoryEntity[]> {
-    return this.categoriesService.getCategories();
-  }
-
-  @Post()
-  @Roles(ERole.MANAGER)
-  async createCategory(
-    @Body() category: CreateCategoryRequest,
-  ): Promise<CategoryEntity> {
-    return this.categoriesService.createCategory(category);
-  }
+  // @Get('')
+  // @Roles(ERole.MANAGER)
+  // async getAllCategories(): Promise<CategoryEntity[]> {
+  //   return this.categoriesService.getCategories();
+  // }
+  //
+  // @Post()
+  // @Roles(ERole.MANAGER)
+  // async createCategory(
+  //   @Body() category: CreateCategoryRequest,
+  // ): Promise<CategoryEntity> {
+  //   return this.categoriesService.createCategory(category);
+  // }
 }

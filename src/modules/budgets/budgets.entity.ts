@@ -10,18 +10,24 @@ export class BudgetEntity extends BaseEntity {
   @Column({ type: 'float', nullable: false })
   plannedPrice: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'varchar', nullable: false })
+  plannedUnit: string;
+
+  @Column({ type: 'integer', nullable: true })
   actualAmount: number;
 
-  @Column({ type: 'float' })
+  @Column({ type: 'float', nullable: true })
   actualPrice: number;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
+  actualUnit: string;
+
+  @Column({ type: 'varchar', nullable: true })
   description: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   note: string;
 
-  @ManyToOne(() => ItemEntity, (item) => item.budgets)
+  @ManyToOne(() => ItemEntity, (item) => item.budgets, { onDelete: 'CASCADE' })
   item: ItemEntity;
 }

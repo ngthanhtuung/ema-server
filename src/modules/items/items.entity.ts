@@ -24,6 +24,8 @@ export class ItemEntity extends BaseEntity {
   @ManyToOne(() => CategoryEntity, (category) => category.items)
   category: CategoryEntity;
 
-  @OneToMany(() => BudgetEntity, (budget) => budget.item)
+  @OneToMany(() => BudgetEntity, (budget) => budget.item, {
+    onDelete: 'CASCADE',
+  })
   budgets: BudgetEntity[];
 }
