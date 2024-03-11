@@ -3,8 +3,8 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
-  Param,
   Post,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -15,8 +15,7 @@ import { ERole } from '../../common/enum/enum';
 import { Roles } from '../../decorators/role.decorator';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Public } from '../../decorators/public.decorator';
-// import { CreateItemRequest } from './dto/item.request';
+import { CreateItemRequest } from './dto/item.request';
 import { GetUser } from '../../decorators/getUser.decorator';
 
 @Controller('items')
@@ -39,7 +38,7 @@ export class ItemsController {
   //     throw new InternalServerErrorException(err.message);
   //   }
   // }
-
+  //
   // @Post('')
   // @Roles(ERole.MANAGER)
   // @ApiBody({
@@ -48,15 +47,16 @@ export class ItemsController {
   // })
   // async createPlan(
   //   @Body() data: CreateItemRequest[],
-  //   @Param('eventId') eventId: string,
+  //   @Query('eventId') eventId: string,
   //   @GetUser() user: string,
   // ): Promise<string> {
+  //   console.log('Event ID at controller: ', eventId);
   //   return this.itemsService.createEventPlan(data, eventId, JSON.parse(user));
   // }
-
+  //
   // @Post('/upload-csv')
   // @ApiConsumes('multipart/form-data')
-  // @Public()
+  // @Roles(ERole.MANAGER)
   // @ApiBody({
   //   schema: {
   //     type: 'object',

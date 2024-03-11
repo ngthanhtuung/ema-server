@@ -1,36 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Download CSV</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
-
 <body>
-    <button id="myButton">Emit event</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js">
-    </script>
-    <script>
-        var socket = io('http://localhost:3006', {
-            auth: {
-                accessToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFkNmJhNDcxLTJiYzMtNDIwNS04ZDc5LTA0ZjgxMjBjMzZiNSIsInJvbGUiOiJNQU5BR0VSIiwiZW1haWwiOiJodXlkb2FubWVjQGdtYWlsLmNvbSIsImRpdmlzaW9uSUQiOm51bGwsImlhdCI6MTY5NzY4NDgzMiwiZXhwIjoxNjk3NzcxMjMyfQ.hpcpF_Wkec61stzGm-KnNU6HXihrGpJfswCPVdfcDvE'
-            }
-        });
-        var button = document.getElementById("myButton");
-        socket.on('recComment', (data) => {
-            console.log(data);
-        })
-        // Attach an event listener to the button
-        button.addEventListener("click", function () {
-            socket.emit('comment', {
-                taskID: '123',
-                content: 'Hello world',
-                fileUrl: 'http://localhost'
-            })
-            // Perform additional actions or call other functions
-        });
-    </script>
-</body>
+<input id="tokenInput" placeholder="Enter your token" type="text">
+<button id="downloadButton">Download CSV</button>
 
+<script>
+  document.getElementById('downloadButton').addEventListener('click', async () => {
+    try {
+      const token = document.getElementById('tokenInput').value.trim();
+      if (!token) {
+        alert('Please enter a valid token.');
+        return;
+      }
+
+      const response = await axios.get('http://localhost:6969/api/v1/items/download-template', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(response.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'template.csv';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert('Failed to download template. Please try again later.');
+    }
+  });
+</script>
+</body>
 </html>
