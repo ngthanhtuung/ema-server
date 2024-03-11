@@ -12,6 +12,22 @@ export class ItemEntity extends BaseEntity {
   @Column({ type: 'text', nullable: false })
   description: string;
 
+  @Column({ type: 'integer', nullable: false })
+  plannedAmount: number;
+
+  @Column({ type: 'float', nullable: false })
+  plannedPrice: number;
+
+  @Column({ type: 'varchar', nullable: false })
+  plannedUnit: string;
+
+  @Column({
+    type: 'integer',
+    nullable: false,
+    default: 5,
+  })
+  priority: number;
+
   @ManyToOne(() => EventEntity, (event) => event.items)
   event: EventEntity;
 

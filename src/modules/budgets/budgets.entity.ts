@@ -4,15 +4,6 @@ import { ItemEntity } from '../items/items.entity';
 
 @Entity({ name: 'budgets' })
 export class BudgetEntity extends BaseEntity {
-  @Column({ type: 'integer', nullable: false })
-  plannedAmount: number;
-
-  @Column({ type: 'float', nullable: false })
-  plannedPrice: number;
-
-  @Column({ type: 'varchar', nullable: false })
-  plannedUnit: string;
-
   @Column({ type: 'integer', nullable: true })
   actualAmount: number;
 

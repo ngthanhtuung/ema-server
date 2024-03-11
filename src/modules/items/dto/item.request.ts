@@ -1,6 +1,13 @@
 import { CreatePlanBudgetRequest } from '../../budgets/dto/budget.request';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsObject, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsDecimal,
+  IsInt,
+  IsNumber,
+  IsObject,
+  IsString,
+} from 'class-validator';
 
 export class ItemArrayRequest {
   @ApiProperty()
@@ -12,8 +19,19 @@ export class ItemArrayRequest {
   description: string;
 
   @ApiProperty()
-  @IsObject()
-  budget: CreatePlanBudgetRequest;
+  @IsInt()
+  priority: number;
+
+  @ApiProperty()
+  @IsNumber({ allowNaN: false })
+  plannedAmount: number;
+
+  @ApiProperty()
+  plannedPrice: number;
+
+  @ApiProperty()
+  @IsString()
+  plannedUnit: string;
 }
 
 export class CreateItemRequest {
@@ -27,4 +45,10 @@ export class CreateItemRequest {
   })
   @IsArray()
   items: ItemArrayRequest[];
+}
+
+export class UpdateItemRequest extends ItemArrayRequest {
+  @ApiProperty()
+  @IsString()
+  categoryId: string;
 }
