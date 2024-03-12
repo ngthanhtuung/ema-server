@@ -118,7 +118,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         const isLeader = assignee === leader;
         return queryRunner.manager.update(
           AssignTaskEntity,
-          { assignee },
+          { assignee, taskID: taskIDCommon },
           {
             status: EStatusAssignee.INACTIVE,
             isLeader: isLeader,
@@ -133,7 +133,7 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
         const isLeader = assignee === leader;
         return queryRunner.manager.update(
           AssignTaskEntity,
-          { assignee },
+          { assignee, taskID: taskIDCommon },
           { isLeader: isLeader, status: EStatusAssignee.ACTIVE },
         );
       });
