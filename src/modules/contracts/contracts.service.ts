@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContractCreateRequest } from './dto/contract.dto';
+import { ContractRejectNote, FilterContract } from './dto/contract.dto';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -22,7 +23,12 @@ import * as Docxtemplater from 'docxtemplater';
 import * as PizZip from 'pizzip';
 import { EventEntity } from '../event/event.entity';
 import { SharedService } from 'src/shared/shared.service';
-import { EEventStatus, ERole } from 'src/common/enum/enum';
+import {
+  EContactInformation,
+  EContractStatus,
+  EEventStatus,
+  ERole,
+} from 'src/common/enum/enum';
 import { UserService } from '../user/user.service';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { ContractPagination } from './dto/contract.pagination';
@@ -32,6 +38,9 @@ import { ContractEvidenceEntity } from './contract_evidence.entity';
 import * as moment from 'moment-timezone';
 import * as libre from 'libreoffice-convert';
 import { EventCreateRequestContract } from '../event/dto/event.request';
+import { ItemsService } from '../items/items.service';
+import { ContractFileEntity } from './contract_files.entity';
+import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
@@ -43,41 +52,73 @@ export class ContractsService extends BaseService<ContractEntity> {
     private readonly sharedService: SharedService,
     private readonly userService: UserService,
     private readonly fileService: FileService,
+    private readonly planService: ItemsService,
   ) {
     super(contractRepository);
   }
 
   async generateNewContract(
-    event: EventCreateRequestContract,
-    eventId: string,
+    customerInfo: EventCreateRequestContract,
+    contactId: string,
     user: UserEntity,
-    queryRunner?: any,
+    // queryRunner?: any,
   ): Promise<object | undefined> {
     try {
-      const generateCode = await this.sharedService.generateContractCode();
-      const buf = await this.generateContractDocs(event, user, queryRunner);
-      if (!buf) return undefined;
-      const fileName = `${generateCode}.pdf`;
-      const download = await this.uploadFile(buf, fileName);
-      if (!download) return undefined;
-      await queryRunner.manager.insert(ContractEntity, {
-        contractCode: generateCode,
-        customerName: event.customerName,
-        customerNationalId: event.customerNationalId,
-        customerAddress: event.customerAddress,
-        customerEmail: event.customerEmail,
-        customerPhoneNumber: event.customerPhoneNumber,
-        companyRepresentative: user.id,
-        createdBy: user.id,
-        paymentMethod: event.paymentMethod,
-        event: {
-          id: eventId,
+      const queryRunner = this.dataSource.createQueryRunner();
+      let downloadObject = undefined;
+      const contactExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: contactId },
+          relations: {
+            contract: true,
+          },
         },
-        contractFileName: fileName,
-        contractFileSize: buf.length,
-        contractFileUrl: download['downloadUrl'],
-      });
-      return download;
+      );
+      console.log('Contact Existed: ', contactExisted);
+      const callback = async (queryRunner: QueryRunner): Promise<void> => {
+        const generateCode = await this.sharedService.generateContractCode();
+        const buf = await this.generateContractDocs(
+          customerInfo,
+          contactId,
+          user,
+          queryRunner,
+        );
+        if (!buf) return undefined;
+        const fileName = `${generateCode}.pdf`;
+        const download = await this.uploadFile(buf, fileName);
+        if (download) {
+          downloadObject = download;
+        }
+        let contractId = contactExisted?.contract?.id;
+        if (!contactExisted.contract) {
+          const contract = await queryRunner.manager.insert(ContractEntity, {
+            customerName: customerInfo.customerName,
+            customerNationalId: customerInfo.customerNationalId,
+            customerAddress: customerInfo.customerAddress,
+            customerEmail: customerInfo.customerEmail,
+            customerPhoneNumber: customerInfo.customerPhoneNumber,
+            companyRepresentative: user.id,
+            createdBy: user.id,
+            paymentMethod: customerInfo.paymentMethod,
+            customerContact: {
+              id: contactId,
+            },
+          });
+          contractId = contract?.generatedMaps[0]['id'];
+        }
+        await queryRunner.manager.insert(ContractFileEntity, {
+          contractCode: generateCode,
+          contractFileName: fileName,
+          contractFileSize: buf.length,
+          contractFileUrl: download['downloadUrl'],
+          contract: {
+            id: contractId,
+          },
+        });
+      };
+      await this.transaction(callback, queryRunner);
+      return downloadObject;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -124,9 +165,9 @@ export class ContractsService extends BaseService<ContractEntity> {
       const { currentPage, sizePage } = contractPagination;
       const query = this.generalBuilderContracts();
       query.leftJoinAndSelect('contracts.event', 'event');
+      query.leftJoinAndSelect('contracts.files', 'files');
       query.select([
         'contracts.id as id',
-        'contracts.contractCode as contractCode',
         'contracts.customerName as customerName',
         'contracts.customerNationalId as customerNationalId',
         'contracts.customerEmail as customerEmail',
@@ -134,9 +175,6 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.customerAddress as customerAddress',
         'contracts.dateOfSigning as dateOfSigning',
         'contracts.companyRepresentative as companyRepresentative',
-        'contracts.contractFileName as contractFileName',
-        'contracts.contractFileSize as contractFileSize',
-        'contracts.contractFileUrl as contractFileUrl',
         'contracts.paymentMethod as paymentMethod',
         'contracts.createdAt as createdAt',
         'contracts.createdBy as createdBy',
@@ -152,6 +190,12 @@ export class ContractsService extends BaseService<ContractEntity> {
         'event.eventType as eventType',
         'event.createdAt as eventCreatedAt',
         'event.createdBy as eventCreatedBy',
+        'files.contractCode as contractCode',
+        'files.contractFileName as contractFileName',
+        'files.contractFileSize as contractFile',
+        'files.contractFileUrl as contractFileUrl',
+        'files.rejectNote as rejectNote',
+        'files.status as contractStatus',
       ]);
       if (user.role.toString() !== ERole.ADMIN) {
         query.where('contracts.companyRepresentative = :userId', {
@@ -230,15 +274,15 @@ export class ContractsService extends BaseService<ContractEntity> {
           const number = index + 1;
           const buf = await this.fileService.uploadFile(
             file,
-            `contract/signed/${contract.contractCode}`, //file path to upload on Firebase
-            `${contract.contractCode} - ${number}`,
+            `contract/signed/${contract.id}`, //file path to upload on Firebase
+            `${contract.id} - ${number}`,
           );
           if (!buf) return undefined;
           const updatedEvidence = await queryRunner.manager.insert(
             ContractEvidenceEntity,
             {
               contract: contract,
-              evidenceFileName: `${contract.contractCode} - ${number}`,
+              evidenceFileName: `${contract.id} - ${number}`,
               evidenceFileSize: buf['fileSize'],
               evidenceFileType: buf['fileType'],
               evidenceUrl: buf['downloadUrl'],
@@ -260,19 +304,20 @@ export class ContractsService extends BaseService<ContractEntity> {
               .format('YYYY-MM-DD HH:mm:ss'),
             updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
             updatedBy: user.id,
+            status: EContractStatus.WAIT_FOR_PAID,
           },
         );
-        await queryRunner.manager.update(
-          EventEntity,
-          {
-            id: contract.event.id,
-          },
-          {
-            updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
-            updatedBy: user.id,
-            status: EEventStatus.PREPARING,
-          },
-        );
+        // await queryRunner.manager.update(
+        //   EventEntity,
+        //   {
+        //     id: contract.event.id,
+        //   },
+        //   {
+        //     updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
+        //     updatedBy: user.id,
+        //     status: EEventStatus.PREPARING,
+        //   },
+        // );
       }
       return result;
     } catch (err) {
@@ -291,6 +336,181 @@ export class ContractsService extends BaseService<ContractEntity> {
       });
       console.log('Evidence: ', evidence);
       return evidence;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async updateStatusContractFile(
+    contractFileId: string,
+    rejectReason: ContractRejectNote,
+    status: EContractStatus,
+    user: UserEntity,
+  ): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contractFileExisted = await queryRunner.manager.findOne(
+        ContractFileEntity,
+        {
+          where: { id: contractFileId },
+          relations: ['contract'],
+        },
+      );
+      console.log('Contract File: ', contractFileExisted);
+      if (!contractFileExisted) {
+        throw new NotFoundException('Không tìm thấy hợp đồng này');
+      }
+      if (contractFileExisted.status === EContractStatus.PENDING) {
+        switch (status) {
+          case EContractStatus.ACCEPTED:
+            const updateContractFileAccept = await queryRunner.manager.update(
+              ContractFileEntity,
+              {
+                id: contractFileId,
+              },
+              {
+                status: EContractStatus.ACCEPTED,
+                updatedAt: moment
+                  .tz('Asia/Bangkok')
+                  .format('YYYY-MM-DD HH:mm:ss'),
+              },
+            );
+            if (updateContractFileAccept.affected > 0) {
+              await queryRunner.manager.update(
+                ContractEntity,
+                {
+                  id: contractFileExisted?.contract?.id,
+                },
+                {
+                  status: EContractStatus.WAIT_FOR_SIGN,
+                  updatedAt: moment
+                    .tz('Asia/Bangkok')
+                    .format('YYYY-MM-DD HH:mm:ss'),
+                },
+              );
+              return 'Hợp đồng được chấp thuận';
+            } else {
+              return 'Cập nhật hợp đồng thất bại, vui lòng thử lại';
+            }
+            break;
+          case EContractStatus.REJECTED:
+            if (rejectReason.rejectNote.length <= 0) {
+              throw new BadRequestException(
+                'Bạn cần phải nhập lý do từ chối hợp đồng này',
+              );
+            }
+            const updateContractFileReject = await queryRunner.manager.update(
+              ContractFileEntity,
+              {
+                id: contractFileId,
+              },
+              {
+                status: EContractStatus.REJECTED,
+                rejectNote: rejectReason.rejectNote,
+                updatedAt: moment
+                  .tz('Asia/Bangkok')
+                  .format('YYYY-MM-DD HH:mm:ss'),
+              },
+            );
+            return `Hợp đồng bị từ chối vì lí do: ${rejectReason.rejectNote}`;
+            break;
+        }
+      }
+      throw new InternalServerErrorException(
+        `Hợp đồng này ${
+          contractFileExisted.status === EContractStatus.ACCEPTED
+            ? 'đã được chấp thuận, không thể cập nhật trạng thái ngay bây giờ'
+            : 'đã bị từ chối, không thể cập nhật trạng thái ngay bây giờ'
+        }`,
+      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async recreateContract(
+    customerContactId: string,
+    user: UserEntity,
+  ): Promise<object | undefined> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contactExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: customerContactId, status: EContactInformation.ACCEPT },
+          relations: ['contract', 'eventType'],
+        },
+      );
+      const contractFiles = await this.getContractFileByCustomerContactId(
+        customerContactId,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const hasPendingOrAcceptedFiles = contractFiles?.files.some(
+        (file) =>
+          file.status === EContractStatus.PENDING ||
+          file.status === EContractStatus.ACCEPTED,
+      );
+
+      if (!contactExisted) {
+        throw new NotFoundException(
+          'Không thể tìm thấy thông tin người dùng này hoặc thông tin liên hệ này đã bị từ chối',
+        );
+      }
+      if (contactExisted.contract === null) {
+        throw new BadRequestException(
+          'Hiện tại chưa có hợp đồng nào để tạo lại. Quán lý vui lòng tạo kế hoạch để có thể tạo hợp đồng',
+        );
+      }
+      if (hasPendingOrAcceptedFiles) {
+        throw new BadRequestException(
+          'Đang có hợp đồng trong trạng thái chờ hoặc đã được đồng ý. Không thể tạo hợp đồng khác, vui lòng kiểm tra lại',
+        );
+      }
+      const contractExisted = contactExisted.contract;
+      const dataObject: EventCreateRequestContract = {
+        eventName: 'Sự kiện 10 năm thành lập FBT',
+        startDate: moment(contactExisted.startDate).format('YYYY - MM - DD'),
+        processingDate: '2023-11-09',
+        endDate: moment(contactExisted.endDate).format('YYYY - MM - DD'),
+        location: contactExisted.address,
+        eventTypeId: contactExisted.eventType.id,
+        customerName: contractExisted.customerName,
+        customerNationalId: contractExisted.customerNationalId,
+        customerAddress: contractExisted.customerAddress,
+        customerEmail: contractExisted.customerEmail,
+        customerPhoneNumber: contractExisted.customerPhoneNumber,
+        paymentMethod: contractExisted.paymentMethod,
+        paymentDate: '2021-10-10',
+      };
+      const newContract = await this.generateNewContract(
+        dataObject,
+        contactExisted.id,
+        user,
+      );
+      return newContract;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getContractFileByCustomerContactId(
+    customerContactId: string,
+  ): Promise<object | undefined> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contractExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: customerContactId },
+          relations: ['contract', 'contract.files'],
+        },
+      );
+      if (!contractExisted) {
+        throw new NotFoundException('Hợp đồng này không tồn tại');
+      }
+      return contractExisted?.contract;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -361,6 +581,7 @@ export class ContractsService extends BaseService<ContractEntity> {
 
   private async generateContractDocs(
     contractRequest: EventCreateRequestContract,
+    contactId: string,
     userId: UserEntity,
     queryRunner: QueryRunner,
   ): Promise<Buffer | undefined> {
@@ -383,22 +604,62 @@ export class ContractsService extends BaseService<ContractEntity> {
         paragraphLoop: true,
         linebreaks: true,
       });
-      const formattedCurrency = await this.sharedService.formattedCurrency(
-        parseFloat(contractRequest.contractValue),
-      );
-      const contractValueByName = await this.sharedService.moneyToWord(
-        parseFloat(contractRequest.contractValue),
-      );
       const calculateDuration = await this.sharedService.calculateDuration(
         contractRequest.startDate,
         contractRequest.endDate,
       );
-
       const formattedDateProcessing =
         await this.sharedService.formatDateToString(
           contractRequest.processingDate,
           'DD/MM/YYYY HH:mm:ss',
         );
+      const dataPlan = await this.planService.getPlanByCustomerContactId(
+        contactId,
+      );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const plan = dataPlan.plan;
+      console.log('PLan: ', plan);
+      if (plan.length <= 0) {
+        throw new BadRequestException(
+          'Quản lý vui lòng tạo kế hoạch trước khi tạo hợp đồng',
+        );
+      }
+      let index = 1;
+      let plannedTotalPrice = 0;
+      for (const category of plan) {
+        // Initialize index for items within the category
+        for (const item of category.items) {
+          // Calculate total price for each item
+          const itemTotalPrice = item.plannedPrice * item.plannedAmount;
+          plannedTotalPrice += itemTotalPrice;
+          // Add totalPrice and index fields to each item
+          item.plannedPrice = await this.sharedService.formattedCurrency(
+            parseFloat(item.plannedPrice),
+          );
+          item.itemTotalPrice = await this.sharedService.formattedCurrency(
+            parseFloat(String(itemTotalPrice)),
+          );
+          item.index = index++;
+        }
+      }
+      const plannedBackup = plannedTotalPrice * 0.5;
+      const plannedVAT = (plannedTotalPrice + plannedBackup) * 0.1;
+      const plannedTotal = plannedTotalPrice + plannedBackup + plannedVAT;
+      const plannedTotalPriceFormatted =
+        await this.sharedService.formattedCurrency(plannedTotalPrice);
+      const plannedBackupFormatted = await this.sharedService.formattedCurrency(
+        plannedBackup,
+      );
+      const plannedVATFormatted = await this.sharedService.formattedCurrency(
+        plannedVAT,
+      );
+      const plannedTotalFormatted = await this.sharedService.formattedCurrency(
+        plannedTotal,
+      );
+      const contractValueByName = await this.sharedService.moneyToWord(
+        parseFloat(String(plannedTotal)),
+      );
       doc.render({
         companyRepresentativeName: user.profile.fullName,
         companyRepresentativeRole: user.role.roleName,
@@ -414,9 +675,14 @@ export class ContractsService extends BaseService<ContractEntity> {
         eventAddress: contractRequest.location,
         processingDate: formattedDateProcessing,
         duration: calculateDuration,
-        contractValue: formattedCurrency,
+        contractValue: plannedTotalFormatted,
         contractValueByName: contractValueByName,
         paymentMethod: contractRequest.paymentMethod,
+        plan: plan,
+        plannedTotalPrice: plannedTotalPriceFormatted,
+        plannedBackup: plannedBackupFormatted,
+        plannedVAT: plannedVATFormatted,
+        plannedTotal: plannedTotalFormatted,
       });
       const buf = doc.getZip().generate({
         type: 'nodebuffer',

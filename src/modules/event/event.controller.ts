@@ -120,7 +120,7 @@ export class EventController {
   @Post()
   @Roles(ERole.MANAGER)
   async createEvent(
-    @Body() data: EventCreateRequestContract,
+    @Body() data: EventCreateRequest,
     @Query('contactId') contactId: string,
     @GetUser() user: string,
   ): Promise<string | undefined> {
@@ -142,6 +142,7 @@ export class EventController {
   ): Promise<string | undefined> {
     return await this.eventService.editDivisionIntoEvent(data);
   }
+
   /**
    * updateEvent
    * @param data

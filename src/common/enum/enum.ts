@@ -146,3 +146,13 @@ export enum EStatusAssignee {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
 }
+
+export enum EContractStatus {
+  ALL = 'ALL',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  WAIT_FOR_SIGN = 'WAIT_FOR_SIGN',
+  WAIT_FOR_PAID = 'WAIT_FOR_PAID',
+}

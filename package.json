@@ -42,6 +42,7 @@
     "@nestjs/platform-express": "^10.0.5",
     "@nestjs/platform-socket.io": "^10.2.7",
     "@nestjs/schedule": "^4.0.0",
+    "@nestjs/serve-static": "^4.0.1",
     "@nestjs/swagger": "^7.0.11",
     "@nestjs/throttler": "^5.1.2",
     "@nestjs/typeorm": "^10.0.0",

@@ -26,10 +26,7 @@ import { EventService } from '../event/event.service';
 @ApiTags('Planning')
 @ApiBearerAuth()
 export class ItemsController {
-  constructor(
-    private readonly itemsService: ItemsService,
-    private readonly eventService: EventService,
-  ) {}
+  constructor(private readonly itemsService: ItemsService) {}
 
   @Get('/download-template')
   @Roles(ERole.MANAGER)
@@ -65,12 +62,14 @@ export class ItemsController {
     }
   }
 
-  @Get('/:eventId')
+  @Get('/:customerContactId')
   @Roles(ERole.MANAGER)
   async getPlanningByEventId(
-    @Param('eventId') eventId: string,
+    @Param('customerContactId') customerContactId: string,
   ): Promise<unknown> {
-    return await this.itemsService.getPlanningByEventId(eventId);
+    return await this.itemsService.getPlanByCustomerContactId(
+      customerContactId,
+    );
   }
 
   @Post('')
@@ -81,11 +80,14 @@ export class ItemsController {
   })
   async createPlan(
     @Body() data: CreateItemRequest[],
-    @Query('eventId') eventId: string,
+    @Query('customerContactId') customerContactId: string,
     @GetUser() user: string,
   ): Promise<string> {
-    console.log('Event ID at controller: ', eventId);
-    return this.itemsService.createEventPlan(data, eventId, JSON.parse(user));
+    return this.itemsService.createEventPlan(
+      data,
+      customerContactId,
+      JSON.parse(user),
+    );
   }
 
   @Post('/import-csv')

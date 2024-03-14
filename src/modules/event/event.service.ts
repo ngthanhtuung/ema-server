@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ContractsService } from './../contracts/contracts.service';
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -21,6 +22,7 @@ import { EventResponse } from './dto/event.response';
 import * as moment from 'moment-timezone';
 import {
   EventAssignRequest,
+  EventCreateRequest,
   EventCreateRequestContract,
   EventUpdateRequest,
   FilterEvent,
@@ -32,12 +34,15 @@ import {
   EEventDate,
   EContactInformation,
   EStatusAssignee,
+  EContractStatus,
 } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
+import { ContractEntity } from '../contracts/contracts.entity';
+import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -337,12 +342,12 @@ export class EventService extends BaseService<EventEntity> {
     try {
       const data = await this.eventRepository.find({
         where: {
-          contracts: {
+          contract: {
             customerEmail: email,
           },
         },
         relations: {
-          contracts: true,
+          contract: true,
         },
       });
       return data;
@@ -412,12 +417,11 @@ export class EventService extends BaseService<EventEntity> {
    * @returns
    */
   async createEvent(
-    event: EventCreateRequestContract,
+    event: EventCreateRequest,
     user: UserEntity,
     contactId: string,
   ): Promise<string> {
     console.log('contactId:', contactId);
-
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
@@ -425,6 +429,21 @@ export class EventService extends BaseService<EventEntity> {
       });
       if (!eventType) {
         throw new NotFoundException('Event type not found');
+      }
+      const customerContact = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: contactId },
+          relations: ['contract'],
+        },
+      );
+      if (!customerContact) {
+        throw new NotFoundException('Thông tin liên hệ này không tồn tại');
+      }
+      if (customerContact.contract.status !== EContractStatus.PAID) {
+        throw new BadRequestException(
+          'Hợp đồng này chưa được thanh toán nên không thể tạo được sự kiện',
+        );
       }
       const createEvent = await queryRunner.manager.insert(EventEntity, {
         eventName: event.eventName,
@@ -438,27 +457,27 @@ export class EventService extends BaseService<EventEntity> {
         eventType: eventType,
         status: EEventStatus.PREPARING,
         createdBy: user.id,
+        contract: customerContact?.contract,
       });
       console.log(
         "createEvent.generatedMaps[0]['id']:",
         createEvent.generatedMaps[0]['id'],
       );
-      await this.contractsService.generateNewContract(
-        event,
-        createEvent.generatedMaps[0]['id'],
-        user,
-        queryRunner,
-      );
-      const empty: unknown = '';
-      this.customerContactsService.updateStatus(
-        user,
-        contactId,
-        EContactInformation.SUCCESS,
-        empty,
-      );
+      // await this.contractsService.generateNewContract(
+      //   event,
+      //   createEvent.generatedMaps[0]['id'],
+      //   user,
+      //   queryRunner,
+      // );
+      // const empty: unknown = '';
+      // this.customerContactsService.updateStatus(
+      //   user,
+      //   contactId,
+      //   EContactInformation.SUCCESS,
+      //   empty,
+      // );
     };
     await this.transaction(callback, queryRunner);
-
     return `Created event successfully`;
   }
 

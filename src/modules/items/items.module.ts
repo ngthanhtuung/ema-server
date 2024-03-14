@@ -6,13 +6,18 @@ import { ItemEntity } from './items.entity';
 import { CategoriesModule } from '../categories/categories.module';
 import { BudgetsModule } from '../budgets/budgets.module';
 import { EventModule } from '../event/event.module';
+import { forwardRef } from '@nestjs/common/utils';
+import { ContractsModule } from '../contracts/contracts.module';
+import { SharedModule } from '../../shared/shared.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ItemEntity]),
     CategoriesModule,
     BudgetsModule,
-    EventModule,
+    SharedModule,
+    UserModule,
   ],
   providers: [ItemsService],
   controllers: [ItemsController],

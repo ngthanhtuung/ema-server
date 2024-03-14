@@ -1,9 +1,18 @@
-import { Column, CreateDateColumn, Entity, ManyToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { Transform } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import { EContactInformation } from 'src/common/enum/enum';
 import { EventTypeEntity } from '../event_types/event_types.entity';
+import { ItemEntity } from '../items/items.entity';
+import { ContractEntity } from '../contracts/contracts.entity';
 
 @Entity({ name: 'customer_contacts' })
 export class CustomerContactEntity extends BaseEntity {
@@ -22,6 +31,9 @@ export class CustomerContactEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   note: string;
 
+  @Column({ type: 'varchar', nullable: false })
+  eventName: string;
+
   @Column({ type: 'date', nullable: true })
   startDate: Date;
 
@@ -38,19 +50,19 @@ export class CustomerContactEntity extends BaseEntity {
   @Transform(({ value }) => {
     return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
-  public createdAt: Date;
+  createdAt: Date;
 
   @Column({ type: 'varchar', nullable: false })
-  public createdBy: string;
+  createdBy: string;
 
   @Column({ type: 'datetime', nullable: true })
-  public updateAt: Date;
+  updateAt: Date;
 
   @Column({ type: 'varchar', nullable: true })
-  public updatedBy: string;
+  updatedBy: string;
 
   @Column({ type: 'text', nullable: true })
-  public rejectNote: string;
+  rejectNote: string;
 
   @Column({
     type: 'enum',
@@ -61,4 +73,10 @@ export class CustomerContactEntity extends BaseEntity {
 
   @ManyToOne(() => EventTypeEntity, (eventType) => eventType.customerContacts)
   eventType: EventTypeEntity;
+
+  @OneToMany(() => ItemEntity, (item) => item.customerInfo)
+  items: ItemEntity[];
+
+  @OneToOne(() => ContractEntity, (contract) => contract.customerContact)
+  contract: ContractEntity;
 }

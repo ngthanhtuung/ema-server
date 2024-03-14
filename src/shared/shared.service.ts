@@ -5,9 +5,7 @@ import { MailService } from 'src/modules/mail/mail.service';
 import * as moment from 'moment';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { ETypeEmployee } from '../common/enum/enum';
-import { ProfileEntity } from '../modules/profile/profile.entity';
-import { UserEntity } from '../modules/user/user.entity';
+import * as jwt from 'jsonwebtoken';
 // import {
 //   InvalidFormatError,
 //   InvalidNumberError,
@@ -125,6 +123,32 @@ export class SharedService {
     }
   }
 
+  public async sendConfirmContract(
+    email: string,
+    customerName: string,
+    emailConfirm: string,
+    companyRepresentativeName: string,
+    companyRepresentativeEmail: string,
+    companyRepresentativePhoneNumber: string,
+  ): Promise<boolean> {
+    try {
+      const response = await this.mailService.sendConfirmContractEmail(
+        email,
+        customerName,
+        emailConfirm,
+        companyRepresentativeName,
+        companyRepresentativeEmail,
+        companyRepresentativePhoneNumber,
+      );
+      if (response) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  }
+
   public async moneyToWord(amount: number): Promise<string | undefined> {
     // const config = new ReadingConfig();
     // config.unit = ['đồng'];
@@ -214,6 +238,24 @@ export class SharedService {
       return contractCode;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async generateJWTTokenForAnHour(payload: object): Promise<string> {
+    try {
+      const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // Current time in seconds + 1 hour
+      const secretToken = this.configService.get<string>('ACCESS_TOKEN_SECRET');
+      const token = jwt.sign({ ...payload, exp: expirationTime }, secretToken);
+      return token;
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  async decode(token: string): Promise<object> {
+    try {
+    } catch (err) {
+      return undefined;
     }
   }
 

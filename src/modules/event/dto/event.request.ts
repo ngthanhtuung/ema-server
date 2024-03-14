@@ -6,6 +6,7 @@ import {
   EEventStatus,
   SortEnum,
 } from 'src/common/enum/enum';
+
 export class EventCreateRequest {
   @IsString()
   @IsNotEmpty()
@@ -60,10 +61,10 @@ export class EventCreateRequestContract {
   @ApiProperty({ default: 'Sự kiện 10 năm thành lập FBT' })
   eventName: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ default: 'Test desc' })
-  description: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // @ApiProperty({ default: 'Test desc' })
+  // description: string;
 
   @IsString()
   @IsNotEmpty()
@@ -85,18 +86,18 @@ export class EventCreateRequestContract {
   @ApiProperty({ default: 'Quận 12' })
   location: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({
-    default:
-      'https://img.freepik.com/free-psd/saturday-party-social-media-template_505751-2935.jpg?w=740&t=st=1696662680~exp=1696663280~hmac=30be138e6333ca7cbd4ea46fc39296aed44c5b3247173cab7bd45c230b65bfec',
-  })
-  coverUrl: string;
+  // @IsString()
+  // @IsNotEmpty()
+  // @ApiProperty({
+  //   default:
+  //     'https://img.freepik.com/free-psd/saturday-party-social-media-template_505751-2935.jpg?w=740&t=st=1696662680~exp=1696663280~hmac=30be138e6333ca7cbd4ea46fc39296aed44c5b3247173cab7bd45c230b65bfec',
+  // })
+  // coverUrl: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty({ default: '120000000' })
-  estBudget: number;
+  // @IsNumber()
+  // @IsNotEmpty()
+  // @ApiProperty({ default: '120000000' })
+  // estBudget: number;
 
   @ApiProperty()
   eventTypeId?: string;
@@ -140,14 +141,6 @@ export class EventCreateRequestContract {
     default: '0987654321',
   })
   customerPhoneNumber: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({
-    required: true,
-    default: '10000000',
-  })
-  contractValue: string;
 
   @IsString()
   @IsNotEmpty()

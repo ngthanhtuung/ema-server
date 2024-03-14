@@ -7,12 +7,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { ServiceAccount } from 'firebase-admin';
 import * as firebaseAdmin from 'firebase-admin';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { join } from 'path';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
   });
   app.useWebSocketAdapter(new IoAdapter(app));
+
   const configService = app.get(ConfigService);
 
   const port: number = configService.get('PORT');
@@ -65,4 +67,5 @@ async function bootstrap(): Promise<void> {
     console.info(`Server is running at ${server_host}:${port}/${pathOpenApi}`);
   });
 }
+
 bootstrap();
