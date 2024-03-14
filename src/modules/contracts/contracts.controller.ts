@@ -4,28 +4,32 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiTags, ApiBody } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ContractsService } from './contracts.service';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { Roles } from 'src/decorators/role.decorator';
-import { ERole } from 'src/common/enum/enum';
-import { ContractCreateRequest } from './dto/contract.dto';
+import { EContractStatus, ERole } from 'src/common/enum/enum';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { ContractPagination } from './dto/contract.pagination';
-import {
-  FileFieldsInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileRequest } from 'src/file/dto/file.request';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
+import { EventCreateRequestContract } from '../event/dto/event.request';
+import { ContractRejectNote, FilterContract } from './dto/contract.dto';
 
 @Controller('contracts')
 @ApiBearerAuth()
@@ -57,19 +61,31 @@ export class ContractsController {
     return await this.contractService.getContractByEventId(id);
   }
 
-  // @Post('/:eventId/new')
-  // @Roles(ERole.MANAGER)
-  // async createContract(
-  //   @Param('eventId') id: string,
-  //   @Body() contractRequest: ContractCreateRequest,
-  //   @GetUser() user: string,
-  // ): Promise<object | undefined> {
-  //   return await this.contractService.generateNewContract(
-  //     id,
-  //     contractRequest,
-  //     JSON.parse(user),
-  //   );
-  // }
+  @Post('/:customerContactId/new')
+  @Roles(ERole.MANAGER)
+  async createContract(
+    @Param('customerContactId') id: string,
+    @Body() contract: EventCreateRequestContract,
+    @GetUser() user: string,
+  ): Promise<object | undefined> {
+    return await this.contractService.generateNewContract(
+      contract,
+      id,
+      JSON.parse(user),
+    );
+  }
+
+  @Post('/:customerContactId/re-create')
+  @Roles(ERole.MANAGER)
+  async reGenerateContract(
+    @Param('customerContactId') customerContactId: string,
+    @GetUser() user: string,
+  ): Promise<object | string> {
+    return await this.contractService.recreateContract(
+      customerContactId,
+      JSON.parse(user),
+    );
+  }
 
   @Get('/:contractId/evidence')
   @Roles(ERole.MANAGER, ERole.ADMIN)
@@ -113,6 +129,42 @@ export class ContractsController {
     return await this.contractService.updateContractEvidence(
       id,
       fileDtos,
+      JSON.parse(user),
+    );
+  }
+
+  @Get('file/:customerContactId')
+  @Roles(ERole.CUSTOMER, ERole.MANAGER)
+  async getContractFileByContractId(
+    @Param('customerContactId') contractId: string,
+  ): Promise<object | undefined> {
+    return await this.contractService.getContractFileByCustomerContactId(
+      contractId,
+    );
+  }
+
+  @Put('file/:contractFileId/status')
+  @ApiBearerAuth()
+  @Roles(ERole.CUSTOMER)
+  @ApiQuery({
+    name: 'status',
+    type: 'enum',
+    enum: [EContractStatus.ACCEPTED, EContractStatus.REJECTED],
+  })
+  @ApiBody({
+    type: ContractRejectNote,
+    required: false,
+  })
+  async updateStatusContractFile(
+    @GetUser() user: string,
+    @Param('contractFileId') contractFileId: string,
+    @Body() rejectNote: ContractRejectNote,
+    @Query('status') status: EContractStatus,
+  ): Promise<string> {
+    return await this.contractService.updateStatusContractFile(
+      contractFileId,
+      rejectNote,
+      status,
       JSON.parse(user),
     );
   }

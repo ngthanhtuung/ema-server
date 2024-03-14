@@ -6,6 +6,8 @@ import { ContractEntity } from './contracts.entity';
 import { SharedModule } from 'src/shared/shared.module';
 import { UserModule } from '../user/user.module';
 import { FileModule } from 'src/file/file.module';
+import { forwardRef } from '@nestjs/common/utils';
+import { ItemsModule } from '../items/items.module';
 
 @Module({
   imports: [
@@ -13,6 +15,7 @@ import { FileModule } from 'src/file/file.module';
     SharedModule,
     UserModule,
     FileModule,
+    forwardRef(() => ItemsModule),
   ],
   providers: [ContractsService],
   controllers: [ContractsController],

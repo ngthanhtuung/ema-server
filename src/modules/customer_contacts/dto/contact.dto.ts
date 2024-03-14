@@ -60,6 +60,7 @@ export class CustomerContactRequest {
   @ApiProperty()
   eventTypeId: string;
 }
+
 export class ProcessBy {
   id: string;
   fullName: string;

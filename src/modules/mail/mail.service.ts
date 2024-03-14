@@ -4,6 +4,7 @@ import Mailgun, { MessagesSendResult } from 'mailgun.js';
 import * as FormData from 'form-data';
 import MailRepository from './mail.repository';
 import { IMailgunClient } from 'mailgun.js/Interfaces';
+
 @Injectable()
 export class MailService {
   constructor(
@@ -96,6 +97,43 @@ export class MailService {
       return response;
     } catch (err) {
       console.info(err);
+    }
+  }
+
+  async sendConfirmContractEmail(
+    toUser: string,
+    customerName: string,
+    emailConfirm: string,
+    companyRepresentativeName: string,
+    companyRepresentativeEmail: string,
+    companyRepresentativePhoneNumber: string,
+  ): Promise<MessagesSendResult> {
+    try {
+      const mg = await this.getConnection();
+      // Get ID : 3
+      const mailData = await this.mailRepository.getDetailMailTemplate(3);
+      const htmlMail = mailData?.mailText
+        ?.replace('{customerName}', customerName)
+        ?.replace('{emailConfirm}', emailConfirm)
+        ?.replace('{companyRepresentativeName}', companyRepresentativeName)
+        ?.replace('{companyRepresentativeEmail}', companyRepresentativeEmail)
+        ?.replace(
+          '{companyRepresentativePhoneNumber}',
+          companyRepresentativePhoneNumber,
+        );
+      const data = {
+        from: 'EMA System <ema.event@gmail.com>',
+        to: [toUser],
+        subject: mailData?.mailTitle,
+        html: htmlMail,
+      };
+      const response = await mg.messages.create(
+        this.configService.get<string>('MAILGUN_API_BASE_URL'),
+        data,
+      );
+      return response;
+    } catch (err) {
+      console.error(err);
     }
   }
 }

@@ -1,7 +1,18 @@
 import { StringColorFormat } from '@faker-js/faker';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
-import { EContractPaymentMethod } from 'src/common/enum/enum';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import {
+  EContactInformation,
+  EContractPaymentMethod,
+  EContractStatus,
+} from 'src/common/enum/enum';
+
 export class ContractCreateRequest {
   @IsString()
   @IsNotEmpty()
@@ -67,4 +78,21 @@ export class ContractCreateRequest {
     default: '2021-10-10',
   })
   paymentDate: string;
+}
+
+export class ContractRejectNote {
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  rejectNote?: string;
+}
+
+export class FilterContract {
+  @ApiProperty({
+    required: false,
+    type: 'enum',
+    enum: EContractStatus,
+    default: EContractStatus.ALL,
+  })
+  status: EContractStatus;
 }

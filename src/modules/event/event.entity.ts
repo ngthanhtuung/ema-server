@@ -3,8 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   UpdateDateColumn,
 } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
@@ -37,7 +39,7 @@ export class EventEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   meetingUrl: string;
 
-  @Column({ type: 'varchar', length: 15000 })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @Column({ type: 'text', nullable: true })
@@ -82,12 +84,13 @@ export class EventEntity extends BaseEntity {
   @OneToMany(() => FeedbackEntity, (feedback) => feedback.event)
   feedbacks: FeedbackEntity[];
 
-  @OneToMany(() => ContractEntity, (contract) => contract.event)
-  contracts: ContractEntity[];
+  @OneToOne(() => ContractEntity, (contract) => contract.event)
+  @JoinColumn()
+  contract: ContractEntity;
 
   @ManyToOne(() => EventTypeEntity, (type) => type.events)
   eventType: EventTypeEntity;
 
-  @OneToMany(() => ItemEntity, (item) => item.event)
-  items: ItemEntity[];
+  // @OneToMany(() => ItemEntity, (item) => item.event)
+  // items: ItemEntity[];
 }

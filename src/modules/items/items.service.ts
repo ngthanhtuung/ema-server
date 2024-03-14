@@ -8,21 +8,20 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ItemEntity } from './items.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { CategoriesService } from '../categories/categories.service';
-import { EPlanningUnit } from '../../common/enum/enum';
+import { EContactInformation, EPlanningUnit } from '../../common/enum/enum';
 import * as csvFormat from 'json2csv';
 import { Readable } from 'stream';
 import * as csvParser from 'csv-parser';
-import { EventEntity } from '../event/event.entity';
-import { EVENT_ERROR_MESSAGE } from '../../common/constants/constants';
 import { BaseService } from '../base/base.service';
 import { CreateItemRequest, UpdateItemRequest } from './dto/item.request';
 import { CategoryEntity } from '../categories/categories.entity';
 import { UserEntity } from '../user/user.entity';
-import { BudgetEntity } from '../budgets/budgets.entity';
 import { BudgetsService } from '../budgets/budgets.service';
 import * as iconv from 'iconv-lite';
-import { plainToInstance } from 'class-transformer';
-import * as moment from 'moment-timezone';
+import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
+import { SharedService } from '../../shared/shared.service';
+import { ConfigService } from '@nestjs/config';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ItemsService extends BaseService<ItemEntity> {
@@ -33,17 +32,23 @@ export class ItemsService extends BaseService<ItemEntity> {
     @InjectDataSource()
     private dataSource: DataSource,
     private readonly budgetService: BudgetsService,
+    private readonly sharedService: SharedService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {
     super(itemsRepository);
   }
 
-  async getPlanningByEventId(eventId: string): Promise<object> {
+  async getPlanByCustomerContactId(customerContactId: string): Promise<object> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const eventExisted = await queryRunner.manager.findOne(EventEntity, {
-        where: { id: eventId },
-      });
-      if (!eventExisted) {
+      const customerContactExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: customerContactId },
+        },
+      );
+      if (!customerContactExisted) {
         throw new NotFoundException('Event not found');
       }
       const planning = await this.itemsRepository.find({
@@ -54,13 +59,12 @@ export class ItemsService extends BaseService<ItemEntity> {
           },
         },
         where: {
-          event: {
-            id: eventId,
+          customerInfo: {
+            id: customerContactId,
           },
         },
         relations: {
           category: true,
-          budgets: true,
         },
         order: {
           priority: 'ASC',
@@ -99,7 +103,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         return acc;
       }, []);
       const response = {
-        ...eventExisted,
+        ...customerContactExisted,
         plan: groupedItems,
       };
       return response;
@@ -174,9 +178,11 @@ export class ItemsService extends BaseService<ItemEntity> {
     }
   }
 
-  async exportPlanToCSV(eventId: string): Promise<unknown> {
+  async exportPlanToCSV(customerContactId: string): Promise<unknown> {
     try {
-      const planExisted = await this.getPlanningByEventId(eventId);
+      const planExisted = await this.getPlanByCustomerContactId(
+        customerContactId,
+      );
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const dataPlan = planExisted.plan;
@@ -329,18 +335,31 @@ export class ItemsService extends BaseService<ItemEntity> {
 
   async createEventPlan(
     planData: CreateItemRequest[],
-    eventId: string,
+    customerContactId: string,
     user: UserEntity,
   ): Promise<string> {
     // const { itemName, description, eventId, categoryId, budget } = planData;
     const queryRunner = this.dataSource.createQueryRunner();
+    let customerContactPayload;
+    let processById;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      const eventExisted = await queryRunner.manager.findOne(EventEntity, {
-        where: { id: eventId },
-      });
-      if (!eventExisted) {
-        throw new NotFoundException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
+      const customerInfoExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: customerContactId },
+        },
+      );
+
+      if (!customerInfoExisted) {
+        throw new NotFoundException('Customer contact not found');
       }
+      if (customerInfoExisted.status !== EContactInformation.ACCEPT) {
+        throw new NotFoundException(
+          'Thông tin khách hàng cần được chấp nhận trước khi lên kế hoạch cho sự kiện',
+        );
+      }
+      customerContactPayload = customerInfoExisted;
+      processById = customerInfoExisted.processedBy;
       //Create plan
       await Promise.all(
         planData.map(async (plan) => {
@@ -362,7 +381,7 @@ export class ItemsService extends BaseService<ItemEntity> {
                 plannedPrice: itemData.plannedPrice,
                 plannedUnit: itemData.plannedUnit,
                 category,
-                event: eventExisted,
+                customerInfo: customerInfoExisted,
                 createdBy: user.id,
               });
               const createdItem = await queryRunner.manager.save(newItem);
@@ -372,6 +391,27 @@ export class ItemsService extends BaseService<ItemEntity> {
       );
     };
     await this.transaction(callback, queryRunner);
+    const payload = {
+      ...customerContactPayload,
+      managerId: user.id,
+    };
+
+    console.log('Payload: ', payload);
+    const HOST = this.configService.get<string>('SERVER_HOST');
+    const PATH_API = this.configService.get<string>('PATH_OPEN_API');
+    const PORT = this.configService.get<string>('PORT');
+    const token = await this.sharedService.generateJWTTokenForAnHour(payload);
+    const url = `${HOST}:${PORT}/customer_contract_info.html?token=${token}`;
+    console.log('URL: ', url);
+    const processBy = await this.userService.findByIdV2(processById);
+    await this.sharedService.sendConfirmContract(
+      customerContactPayload.customerEmail,
+      customerContactPayload.fullName,
+      url,
+      processBy.fullName,
+      processBy.email,
+      processBy.phoneNumber,
+    );
     return 'Create planning successfully';
   }
 

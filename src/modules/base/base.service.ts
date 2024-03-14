@@ -41,6 +41,7 @@ export class BaseService<T extends BaseEntity> {
       // commit transaction now:
       await queryRunner.commitTransaction();
     } catch (err) {
+      console.error(err);
       // since we have errors let's rollback changes we made
       await queryRunner.rollbackTransaction();
       throw err;

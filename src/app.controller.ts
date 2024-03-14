@@ -7,6 +7,8 @@ import {
   Query,
   Body,
   Post,
+  Req,
+  Render,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -15,6 +17,7 @@ import * as firebaseAdmin from 'firebase-admin';
 import { AuthService } from './auth/auth.service';
 import { LoginGoogleRequest } from './auth/dto/login.dto';
 import { SharedService } from './shared/shared.service';
+import { JwtService } from '@nestjs/jwt';
 import { ETypeEmployee } from './common/enum/enum';
 
 @Controller()
@@ -25,7 +28,22 @@ export class AppController {
     private readonly firebaseMessageService: FirebaseMessageService,
     private readonly authService: AuthService,
     private readonly sharedService: SharedService,
+    private readonly jwtService: JwtService,
   ) {}
+
+  @Get('/customer_contract_info')
+  @Render('customer_contract_info')
+  @Public()
+  async renderCustomerContractInfo(@Query() token: string): Promise<any> {
+    try {
+      console.log('Token: ', token);
+      const payload = this.jwtService.decode(token);
+      return payload;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return { error: 'Failed to fetch data' }; // Return an error message or handle the error accordingly
+    }
+  }
 
   @Post('/test-notification')
   @Public()

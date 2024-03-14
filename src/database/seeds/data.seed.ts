@@ -13,6 +13,7 @@ import Mail from 'src/modules/mail/mail.entity';
 import { RoleEntity } from 'src/modules/roles/roles.entity';
 import { EventTypeEntity } from 'src/modules/event_types/event_types.entity';
 import * as moment from 'moment-timezone';
+import { CategoryEntity } from '../../modules/categories/categories.entity';
 
 const maleFirstName = [
   'An',
@@ -499,6 +500,24 @@ export class DataSeed implements Seeder {
       },
     ];
 
+    const listCategories = [
+      {
+        categoryName: 'Địa điểm tổ chức',
+      },
+      {
+        categoryName: 'Sản xuất chương trình',
+      },
+      {
+        categoryName: 'Các hạng mục khác',
+      },
+    ];
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(CategoryEntity)
+      .values(listCategories)
+      .execute();
+
     const event1 = await connection
       .createQueryBuilder()
       .insert()
@@ -511,6 +530,20 @@ export class DataSeed implements Seeder {
     const mailTextId2 =
       '<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;"> <h2>Xác Nhận Mã</h2> <p>Xin chào,</p> <p>Dưới đây là mã xác nhận của tên đăng nhập ${email}:</p> <h3 style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">${code}</h3> <p>Vui lòng sử dụng mã này để hoàn tất quá trình xác thực.</p> <p>Lưu ý mã này chỉ có thời hạn 10 phút.</p> <p>Trân trọng,</p> <p>Đội ngũ hỗ trợ của chúng tôi( HREA System)</p> </div>';
     const mailTitleId2 = 'Yêu cầu Đặt Lại Mật Khẩu';
+    const mailTextId3 =
+      '<p>Xin chào <strong style="box-sizing:border-box;">{customerName},</strong></p>\n' +
+      '<p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(0, 0, 0);counter-reset:list-1 0 list-2 0 list-3 0 list-4 0 list-5 0 list-6 0 list-7 0 list-8 0 list-9 0;cursor:text;font-family:arial;font-size:14px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;line-height:20px;margin-bottom:0px;margin-right:0px;margin-top:0px;orphans:2;padding:0px;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:pre-wrap;widows:2;word-spacing:0px;">Cảm ơn vì đã sử dụng dịch vụ của EMA, vui lòng <a target="_blank" rel="noopener noreferrer" href="{emailConfirm}">click tại đây</a> để xác nhận thông tin cuối cùng trước khi chúng tôi tạo hợp đồng và gửi đến bạn. <strong>(Lưu ý: đường dẫn chỉ có hiệu lực trong vòng 24h)</strong></p>\n' +
+      '<p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(0, 0, 0);counter-reset:list-1 0 list-2 0 list-3 0 list-4 0 list-5 0 list-6 0 list-7 0 list-8 0 list-9 0;cursor:text;font-family:arial;font-size:14px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;line-height:20px;margin:0px;orphans:2;padding:0px;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:pre-wrap;widows:2;word-spacing:0px;">&nbsp;</p>\n' +
+      '<p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(0, 0, 0);counter-reset:list-1 0 list-2 0 list-3 0 list-4 0 list-5 0 list-6 0 list-7 0 list-8 0 list-9 0;cursor:text;font-family:arial;font-size:14px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;line-height:20px;margin:0px;orphans:2;padding:0px;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:pre-wrap;widows:2;word-spacing:0px;">Sau khi gửi thông tin, bạn vui lòng chờ 5 phút hợp đồng sẽ được tự động tạo. Vui lòng đăng nhập vào hệ thống để kiếm tra hợp đồng được tạo.</p>\n' +
+      '<p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(0, 0, 0);counter-reset:list-1 0 list-2 0 list-3 0 list-4 0 list-5 0 list-6 0 list-7 0 list-8 0 list-9 0;cursor:text;font-family:arial;font-size:14px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;line-height:20px;margin:0px;orphans:2;padding:0px;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:pre-wrap;widows:2;word-spacing:0px;">&nbsp;</p>\n' +
+      '<p style="-webkit-text-stroke-width:0px;background-color:rgb(255, 255, 255);box-sizing:border-box;color:rgb(0, 0, 0);counter-reset:list-1 0 list-2 0 list-3 0 list-4 0 list-5 0 list-6 0 list-7 0 list-8 0 list-9 0;cursor:text;font-family:arial;font-size:14px;font-style:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-weight:400;letter-spacing:normal;line-height:20px;margin:0px;orphans:2;padding:0px;text-align:left;text-decoration-color:initial;text-decoration-style:initial;text-decoration-thickness:initial;text-indent:0px;text-transform:none;white-space:pre-wrap;widows:2;word-spacing:0px;">Mọi thắc mắc vui lòng liên hệ với người phụ trách theo thông tin sau:</p>\n' +
+      '<ul>\n' +
+      '    <li>Họ và Tên: <strong>{companyRepresentativeName}</strong></li>\n' +
+      '    <li>Email: <strong>{companyRepresentativeEmail}</strong></li>\n' +
+      '    <li>Số điện thoại: <strong>{companyRepresentativePhoneNumber}</strong></li>\n' +
+      '</ul>\n' +
+      '<p>Trân trọng!</p>';
+    const mailTitleId3 = 'Xác nhận thông tin hợp đồng';
     await connection
       .createQueryBuilder()
       .insert()
@@ -529,6 +562,16 @@ export class DataSeed implements Seeder {
         id: 2,
         mailTitle: mailTitleId2,
         mailText: mailTextId2,
+      })
+      .execute();
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(Mail)
+      .values({
+        id: 3,
+        mailTitle: mailTitleId3,
+        mailText: mailTextId3,
       })
       .execute();
   }

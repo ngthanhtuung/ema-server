@@ -46,6 +46,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MapModule } from './modules/map/map.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ItemsModule } from './modules/items/items.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -66,6 +68,10 @@ import { ItemsModule } from './modules/items/items.module';
       secret: jwtConstants.accessTokenSecret,
       signOptions: { expiresIn: '1d' },
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'), // Path to your public directory
+      exclude: ['/api*'],
+    }),
     AuthenticationModule,
     SettingsModule,
     CustomerContactsModule,
@@ -77,6 +83,7 @@ import { ItemsModule } from './modules/items/items.module';
     EventModule,
     ContractsModule,
     AssignEventModule,
+    ItemsModule,
     TaskModule,
     AssignTaskModule,
     FileModule,
@@ -97,7 +104,6 @@ import { ItemsModule } from './modules/items/items.module';
     GroupsMessagesAttachmentsModule,
     MessagesAttachmentsModule,
     MapModule,
-    ItemsModule,
     CategoriesModule,
   ],
   controllers: [AppController],
