@@ -15,7 +15,11 @@ import {
 } from './dto/division.request';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DivisionResponse } from './dto/division.response';
-import { EUserStatus } from 'src/common/enum/enum';
+import {
+  EStatusAssignee,
+  ETaskStatus,
+  EUserStatus,
+} from 'src/common/enum/enum';
 import { DivisionPagination } from './dto/division.pagination';
 import * as moment from 'moment-timezone';
 
@@ -140,8 +144,16 @@ export class DivisionService extends BaseService<DivisionEntity> {
             startDateFormat >= startDate && startDateFormat <= endDate;
           const checkEndDate =
             endDateFormat >= startDate && endDateFormat <= endDate;
+          console.log('object:', object);
 
-          if (checkStartDate && checkEndDate) {
+          if (
+            checkStartDate &&
+            checkEndDate &&
+            object?.status === EStatusAssignee.ACTIVE &&
+            [ETaskStatus.PENDING, ETaskStatus.PROCESSING].includes(
+              object?.task?.status,
+            )
+          ) {
             const resTask = {
               id: object?.task?.id,
               title: object?.task?.title,
@@ -280,7 +292,13 @@ export class DivisionService extends BaseService<DivisionEntity> {
             const checkEndDate =
               endDateFormat >= startDate && endDateFormat <= endDate;
 
-            if (checkStartDate || checkEndDate) {
+            if (
+              (checkStartDate || checkEndDate) &&
+              object?.status === EStatusAssignee.ACTIVE &&
+              [ETaskStatus.PENDING, ETaskStatus.PROCESSING].includes(
+                object?.task?.status,
+              )
+            ) {
               const resTask = {
                 id: object?.task?.id,
                 title: object?.task?.title,
