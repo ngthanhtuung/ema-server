@@ -31,7 +31,7 @@ export class CustomerContactEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   note: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   eventName: string;
 
   @Column({ type: 'date', nullable: true })
