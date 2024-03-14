@@ -23,7 +23,6 @@ import * as moment from 'moment-timezone';
 import {
   EventAssignRequest,
   EventCreateRequest,
-  EventCreateRequestContract,
   EventUpdateRequest,
   FilterEvent,
 } from './dto/event.request';
@@ -32,7 +31,6 @@ import {
   EEventStatus,
   ERole,
   EEventDate,
-  EContactInformation,
   EStatusAssignee,
   EContractStatus,
 } from 'src/common/enum/enum';
@@ -41,7 +39,6 @@ import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
-import { ContractEntity } from '../contracts/contracts.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 
 @Injectable()
@@ -230,6 +227,28 @@ export class EventService extends BaseService<EventEntity> {
     try {
       const event = await this.findOne({
         where: { isTemplate: true },
+        select: {
+          assignEvents: {
+            id: true,
+            division: {
+              id: true,
+            },
+            tasks: {
+              id: true,
+              status: true,
+            },
+          },
+          eventType: {
+            typeName: true,
+          },
+        },
+        relations: {
+          eventType: true,
+          assignEvents: {
+            division: true,
+            tasks: true,
+          },
+        },
       });
       if (!event) {
         throw new NotFoundException('Event not found');

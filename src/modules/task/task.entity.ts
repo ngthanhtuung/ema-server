@@ -81,4 +81,7 @@ export class TaskEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   assignTasks: AssignTaskEntity[];
+
+  @Column({ type: 'boolean', default: false })
+  isTemplate: boolean;
 }

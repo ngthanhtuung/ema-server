@@ -498,6 +498,23 @@ export class DataSeed implements Seeder {
           id: eventType['identifiers'][6]['id'],
         },
       },
+      {
+        eventName: 'Vui Lòng Điền Tên Event',
+        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
+        location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
+        description:
+          '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
+        estBudget: 50000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][6]['id'],
+        },
+        isTemplate: true,
+      },
     ];
 
     const listCategories = [

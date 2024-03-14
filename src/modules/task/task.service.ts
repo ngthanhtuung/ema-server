@@ -70,7 +70,8 @@ export class TaskService extends BaseService<TaskEntity> {
     const { sizePage, currentPage } = userPagination;
     let listConditions = [
       {
-        [fieldName]: conValue,
+        [fieldName]:
+          fieldName === 'isTemplate' ? /^true$/i.test(conValue) : conValue,
       },
     ];
     if (fieldName === 'eventID') {
@@ -481,6 +482,7 @@ export class TaskService extends BaseService<TaskEntity> {
       assignee,
       file,
       leader,
+      isTemplate,
     } = task;
     const oUser = JSON.parse(user);
     const createBy = oUser.id;
@@ -522,17 +524,18 @@ export class TaskService extends BaseService<TaskEntity> {
         parent: {
           id: parentTask,
         },
+        isTemplate: isTemplate,
       });
       createTaskId = createTask?.generatedMaps?.[0]?.['id'];
       // If task have file
       if (file) {
-        const fileUpload = file.map(async (file) => {
+        for (const itemFile of file) {
           await queryRunner.manager.insert(TaskFileEntity, {
             taskID: createTask?.generatedMaps?.[0]?.['id'],
-            fileName: file?.fileName,
-            fileUrl: file?.fileUrl,
+            fileName: itemFile?.fileName,
+            fileUrl: itemFile?.fileUrl,
           });
-        });
+        }
       }
       if (assignee?.length > 0) {
         const oAssignTask = {

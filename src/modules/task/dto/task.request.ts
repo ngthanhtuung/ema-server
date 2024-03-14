@@ -20,6 +20,9 @@ export class TaskCreateReq {
   @ApiProperty({ required: false })
   desc: string;
 
+  @ApiProperty({ required: false, default: false })
+  isTemplate: boolean;
+
   @ApiProperty({
     type: 'enum',
     enum: EPriority,
