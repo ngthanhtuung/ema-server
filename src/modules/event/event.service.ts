@@ -612,6 +612,7 @@ export class EventService extends BaseService<EventEntity> {
             where: { isTemplate: false },
             select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
           });
+          console.log('Event at statistic: ', events);
         } else {
           events = await this.eventRepository.find({
             where: { status: mode, isTemplate: false },
@@ -624,7 +625,6 @@ export class EventService extends BaseService<EventEntity> {
             where: {
               isTemplate: false,
             },
-
             select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
           });
         } else {
