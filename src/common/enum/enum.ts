@@ -156,3 +156,8 @@ export enum EContractStatus {
   WAIT_FOR_SIGN = 'WAIT_FOR_SIGN',
   WAIT_FOR_PAID = 'WAIT_FOR_PAID',
 }
+
+export enum EContractEvidenceType {
+  CONTRACT_SIGNED = 'CONTRACT_SIGNED',
+  CONTRACT_PAID = 'CONTRACT_PAID',
+}

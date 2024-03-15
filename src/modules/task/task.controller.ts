@@ -45,7 +45,7 @@ export class TaskController {
   }
 
   @Post('createTask')
-  @Roles(ERole.MANAGER, ERole.STAFF)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
   async createTask(
     @GetUser() user: string,
     @Body() req: TaskCreateReq,

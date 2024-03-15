@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContractRejectNote, FilterContract } from './dto/contract.dto';
+import { ContractRejectNote } from './dto/contract.dto';
 import {
   BadRequestException,
   ForbiddenException,
@@ -21,12 +21,11 @@ import { UserEntity } from '../user/user.entity';
 import * as admin from 'firebase-admin';
 import * as Docxtemplater from 'docxtemplater';
 import * as PizZip from 'pizzip';
-import { EventEntity } from '../event/event.entity';
 import { SharedService } from 'src/shared/shared.service';
 import {
   EContactInformation,
+  EContractEvidenceType,
   EContractStatus,
-  EEventStatus,
   ERole,
 } from 'src/common/enum/enum';
 import { UserService } from '../user/user.service';
@@ -75,7 +74,6 @@ export class ContractsService extends BaseService<ContractEntity> {
           },
         },
       );
-      console.log('Contact Existed: ', contactExisted);
       const callback = async (queryRunner: QueryRunner): Promise<void> => {
         const generateCode = await this.sharedService.generateContractCode();
         const buf = await this.generateContractDocs(
@@ -251,6 +249,7 @@ export class ContractsService extends BaseService<ContractEntity> {
 
   async updateContractEvidence(
     contractId: string,
+    type: EContractEvidenceType,
     files: FileRequest[],
     user: UserEntity,
   ): Promise<unknown | undefined> {
@@ -258,8 +257,9 @@ export class ContractsService extends BaseService<ContractEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       const contract = await queryRunner.manager.findOne(ContractEntity, {
         where: { id: contractId },
-        relations: ['event'],
+        relations: ['customerContact', 'files'],
       });
+
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
       }
@@ -269,55 +269,111 @@ export class ContractsService extends BaseService<ContractEntity> {
       ) {
         throw new ForbiddenException('You are not allowed to do this action');
       }
+      const contractSuccess = contract?.files.filter(
+        (file) => file.status === EContractStatus.ACCEPTED,
+      );
+      if (contractSuccess.length <= 0) {
+        throw new InternalServerErrorException(
+          'Hiện chưa có hợp đồng nào được chấp thuận, vui lòng kiểm tra lại',
+        );
+      }
       const result = await Promise.all(
         files.map(async (file, index) => {
           const number = index + 1;
-          const buf = await this.fileService.uploadFile(
-            file,
-            `contract/signed/${contract.id}`, //file path to upload on Firebase
-            `${contract.id} - ${number}`,
-          );
-          if (!buf) return undefined;
-          const updatedEvidence = await queryRunner.manager.insert(
-            ContractEvidenceEntity,
-            {
-              contract: contract,
-              evidenceFileName: `${contract.id} - ${number}`,
-              evidenceFileSize: buf['fileSize'],
-              evidenceFileType: buf['fileType'],
-              evidenceUrl: buf['downloadUrl'],
-              createdBy: user.id,
-            },
-          );
-          return buf;
+          switch (type) {
+            case EContractEvidenceType.CONTRACT_SIGNED:
+              if (contract.status !== EContractStatus.WAIT_FOR_SIGN) {
+                throw new BadRequestException(
+                  'Chưa có hợp đồng nào được chấp thuận để kí duyệt, vui lòng thử lại sau',
+                );
+              }
+              const bufSign = await this.fileService.uploadFile(
+                file,
+                `contract/signed/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
+                `${contractSuccess[0]?.contractCode} - ${number}`,
+              );
+              if (!bufSign) return undefined;
+              const updatedEvidenceSign = await queryRunner.manager.insert(
+                ContractEvidenceEntity,
+                {
+                  contract: contract,
+                  evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+                  evidenceFileSize: bufSign['fileSize'],
+                  evidenceFileType: bufSign['fileType'],
+                  evidenceUrl: bufSign['downloadUrl'],
+                  createdBy: user.id,
+                },
+              );
+              return bufSign;
+              break;
+            case EContractEvidenceType.CONTRACT_PAID:
+              if (contract.status !== EContractStatus.WAIT_FOR_PAID) {
+                throw new BadRequestException(
+                  'Hợp đồng này chưa thể thanh toán, vui lòng kiểm tra lại trạng thái của hợp đồng',
+                );
+              }
+              const buf = await this.fileService.uploadFile(
+                file,
+                `contract/transaction/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
+                `${contractSuccess[0]?.contractCode} - ${number}`,
+              );
+              if (!buf) return undefined;
+              const updatedEvidenceTransaction =
+                await queryRunner.manager.insert(ContractEvidenceEntity, {
+                  contract: contract,
+                  evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+                  evidenceFileSize: buf['fileSize'],
+                  evidenceFileType: buf['fileType'],
+                  evidenceUrl: buf['downloadUrl'],
+                  createdBy: user.id,
+                });
+              return buf;
+              break;
+          }
         }),
       );
       if (result.length > 0) {
-        await queryRunner.manager.update(
-          ContractEntity,
-          {
-            id: contractId,
-          },
-          {
-            dateOfSigning: moment
-              .tz('Asia/Bangkok')
-              .format('YYYY-MM-DD HH:mm:ss'),
-            updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
-            updatedBy: user.id,
-            status: EContractStatus.WAIT_FOR_PAID,
-          },
-        );
-        // await queryRunner.manager.update(
-        //   EventEntity,
-        //   {
-        //     id: contract.event.id,
-        //   },
-        //   {
-        //     updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
-        //     updatedBy: user.id,
-        //     status: EEventStatus.PREPARING,
-        //   },
-        // );
+        if (type === EContractEvidenceType.CONTRACT_SIGNED) {
+          await queryRunner.manager.update(
+            ContractEntity,
+            {
+              id: contractId,
+            },
+            {
+              dateOfSigning: moment
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+              updatedAt: moment
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+              updatedBy: user.id,
+              status: EContractStatus.WAIT_FOR_PAID,
+            },
+          );
+        } else {
+          await queryRunner.manager.update(
+            ContractEntity,
+            {
+              id: contractId,
+            },
+            {
+              updatedAt: moment
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+              updatedBy: user.id,
+              status: EContractStatus.PAID,
+            },
+          );
+          await queryRunner.manager.update(
+            CustomerContactEntity,
+            {
+              id: contract?.customerContact?.id,
+            },
+            {
+              status: EContactInformation.SUCCESS,
+            },
+          );
+        }
       }
       return result;
     } catch (err) {
@@ -510,7 +566,18 @@ export class ContractsService extends BaseService<ContractEntity> {
       if (!contractExisted) {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }
-      return contractExisted?.contract;
+      const sortedFiles = contractExisted?.contract?.files?.sort((a, b) => {
+        const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
+          moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
+        );
+      });
+      const contractResponse = {
+        ...contractExisted?.contract,
+        files: sortedFiles,
+      };
+      return contractResponse;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -618,8 +685,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       );
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const plan = dataPlan.plan;
-      console.log('PLan: ', plan);
+      const plan = dataPlan?.plan;
       if (plan.length <= 0) {
         throw new BadRequestException(
           'Quản lý vui lòng tạo kế hoạch trước khi tạo hợp đồng',

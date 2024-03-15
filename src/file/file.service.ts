@@ -37,8 +37,6 @@ export class FileService {
         action: 'read',
         expires: '9999-01-01',
       });
-      console.log('Donwload: ', downloadUrl);
-      console.log('Unique filename: ', uniqueFileName);
       const fileDownload = {
         fileName: uniqueFileName,
         fileType: data.fileType,
