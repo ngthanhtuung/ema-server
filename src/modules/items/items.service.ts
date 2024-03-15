@@ -230,7 +230,7 @@ export class ItemsService extends BaseService<ItemEntity> {
           'Thành Tiền': (value) => Number(value).toFixed(2), // Format Thành Tiền to 2 decimal places
         },
       };
-      let data = [];
+      const data = [];
       let i = 0;
       for (const value of dataPlan) {
         const originalRow = {
@@ -240,10 +240,8 @@ export class ItemsService extends BaseService<ItemEntity> {
           'ID Loại hạng mục': value.categoryId,
           'Loại hạng mục': value.categoryName,
         };
-
-        data = value.items.map((item) => {
-          i++;
-          return {
+        (value?.items || []).forEach((item) => {
+          const row = {
             ...originalRow,
             'Hạng mục': item.itemName,
             'Diễn giải': item.description,
@@ -253,6 +251,8 @@ export class ItemsService extends BaseService<ItemEntity> {
             'Đơn giá': item.plannedPrice,
             'Thành Tiền': item.plannedAmount * item.plannedPrice,
           };
+          data.push(row);
+          i++;
         });
       }
       const csv = csvFormat.parse(data, opts);
@@ -644,10 +644,10 @@ export class ItemsService extends BaseService<ItemEntity> {
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
         const categoryId = obj['Loại hạng mục'];
-        const categoryObject = categoriesMapObj.get(categoryId);
+        const categoryObject: any = categoriesMapObj.get(categoryId);
         console.log('categoryObject:', categoryObject);
         const categoryNameById = categoryObject
-          ? categoryObject?.[0]?.categoryName
+          ? categoryObject?.categoryName
           : 'Unknown';
         const itemName = obj['Hạng mục'];
         const description = obj['Diễn giải'];
