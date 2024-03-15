@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
@@ -48,6 +50,11 @@ export class ItemsService extends BaseService<ItemEntity> {
     super(itemsRepository);
   }
 
+  /**
+   * getPlanByCustomerContactId
+   * @param customerContactId
+   * @returns
+   */
   async getPlanByCustomerContactId(customerContactId: string): Promise<object> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -121,6 +128,10 @@ export class ItemsService extends BaseService<ItemEntity> {
     }
   }
 
+  /**
+   * exportTemplateToCSV
+   * @returns
+   */
   async exportTemplateToCSV(): Promise<unknown> {
     try {
       const headers = [
@@ -137,53 +148,54 @@ export class ItemsService extends BaseService<ItemEntity> {
       const columnName = [...Array(26)].map((_, index) =>
         String.fromCharCode(65 + index),
       );
-
-      // const getAllCategories = await this.categoriesService.getCategories();
-      // const listCategoriesId = getAllCategories.map((category) => category.id);
       const opts = {
         headers: false,
         fieldFormatter: {
-          'Số Lượng': (value) => Number(value).toFixed(2), // Format Số Lượng to 2 decimal places
-          'Đơn giá': (value) => Number(value).toFixed(2), // Format Đơn giá to 2 decimal places
-          'Thành Tiền': (value) => Number(value).toFixed(2), // Format Thành Tiền to 2 decimal places
+          'Số Lượng': (value) => Number(value).toFixed(2),
+          'Đơn giá': (value) => Number(value).toFixed(2),
+          'Thành Tiền': (value) => Number(value).toFixed(2),
         },
       };
-
-      const data = [];
-      const comboOptions = EPlanningUnit;
-      const moreField = ['Tổng cộng', 'Dự phòng', 'VAT (10%)', 'GRAND TOTAL'];
-      for (let i = 0; i < 50; i++) {
-        const row: Record<string, string> = {};
-        headers.forEach((header, index) => {
-          if (header === 'STT') {
-            row[header] = `=IF(${columnName[headers.indexOf('Hạng mục')]}${
-              i + 2
-            }="","",ROW()-ROW(${columnName[headers.indexOf('STT')]}$2)+1)`;
-          } else if (header === 'Độ ưu tiên') {
-            row[header] = '';
-          } else {
-            row[header] = '';
-          }
-        });
-        // Calculate Thành Tiền based on Số Lượng and Đơn giá
-        row['Thành Tiền'] = `=IF(OR(ISBLANK(${
-          columnName[headers.indexOf('Số Lượng')]
-        }${i + 2}),ISBLANK(${columnName[headers.indexOf('Đơn giá')]}${
-          i + 2
-        })),"",${columnName[headers.indexOf('Số Lượng')]}${i + 2}*${
-          columnName[headers.indexOf('Đơn giá')]
-        }${i + 2})`;
-        data.push(row);
-      }
+      const data = this.generateData(headers, columnName);
       console.log('Data at download template: ', data);
       const csv = csvFormat.parse(data, opts);
-      // Encode the CSV data in UTF-8 format
       const encodedCsv = iconv.encode(csv, 'utf8');
       return encodedCsv;
     } catch (err) {
       console.log('Error at export CSV template: ', err);
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  /**
+   * generateData
+   */
+  generateData(
+    headers: string[],
+    columnName: string[],
+  ): Record<string, string>[] {
+    const data = [];
+    for (let i = 0; i < 50; i++) {
+      const row: Record<string, string> = {};
+      headers.forEach((header) => {
+        if (header === 'STT') {
+          row[header] = `=IF(${columnName[headers.indexOf('Hạng mục')]}${
+            i + 2
+          }="","",ROW()-ROW(${columnName[headers.indexOf('STT')]}$2)+1)`;
+        } else {
+          row[header] = '';
+        }
+      });
+      row['Thành Tiền'] = `=IF(OR(ISBLANK(${
+        columnName[headers.indexOf('Số Lượng')]
+      }${i + 2}),ISBLANK(${columnName[headers.indexOf('Đơn giá')]}${
+        i + 2
+      })),"",${columnName[headers.indexOf('Số Lượng')]}${i + 2}*${
+        columnName[headers.indexOf('Đơn giá')]
+      }${i + 2})`;
+      data.push(row);
+    }
+    return data;
   }
 
   async exportPlanToCSV(customerContactId: string): Promise<unknown> {
@@ -218,10 +230,9 @@ export class ItemsService extends BaseService<ItemEntity> {
           'Thành Tiền': (value) => Number(value).toFixed(2), // Format Thành Tiền to 2 decimal places
         },
       };
-      const data = [];
-      const STT = 'STT';
+      let data = [];
       let i = 0;
-      dataPlan.map((value, index) => {
+      for (const value of dataPlan) {
         const originalRow = {
           STT: `=IF(${columnName[headers.indexOf('Hạng mục')]}${
             i + 2
@@ -229,8 +240,10 @@ export class ItemsService extends BaseService<ItemEntity> {
           'ID Loại hạng mục': value.categoryId,
           'Loại hạng mục': value.categoryName,
         };
-        value.items.map((item) => {
-          const row = {
+
+        data = value.items.map((item) => {
+          i++;
+          return {
             ...originalRow,
             'Hạng mục': item.itemName,
             'Diễn giải': item.description,
@@ -240,10 +253,8 @@ export class ItemsService extends BaseService<ItemEntity> {
             'Đơn giá': item.plannedPrice,
             'Thành Tiền': item.plannedAmount * item.plannedPrice,
           };
-          data.push(row);
-          i++;
         });
-      });
+      }
       const csv = csvFormat.parse(data, opts);
       // Encode the CSV data in UTF-8 format
       const encodedCsv = iconv.encode(csv, 'utf8');
@@ -254,98 +265,24 @@ export class ItemsService extends BaseService<ItemEntity> {
     }
   }
 
+  /**
+   * readCSVFile
+   * @param file
+   * @returns
+   */
   async readCSVFile(file: Express.Multer.File): Promise<object> {
     try {
-      if (!file.mimetype.includes('csv')) {
-        throw new BadRequestException(
-          'Invalid file format. You need to use CSV format',
-        );
-      }
-      const results = [];
-      const errors = [];
-      let lineNumber = 1;
-      let totalRecords = 0;
-      let totalErrorsRecords = 0;
-      const readableStream = new Readable();
-      readableStream.push(file.buffer);
-      readableStream.push(null);
-      const categories = await this.categoriesService.getCategories();
-      await new Promise<void>((resolve, reject) => {
-        readableStream
-          .pipe(csvParser())
-          .on('data', (data) => {
-            totalRecords++;
-            let hasErrorInRecord = false;
-            Object.entries(data).forEach(([key, value]) => {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              if (value.trim() === '') {
-                errors.push(`Lỗi tại dòng ${lineNumber} - ${key} bị bỏ trống`);
-                if (!hasErrorInRecord) {
-                  totalErrorsRecords++;
-                }
-                hasErrorInRecord = true;
-              } else if (key === 'Số Lượng' || key === 'Đơn giá') {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                if (!parseFloat(value.trim())) {
-                  errors.push(
-                    `Lỗi tại dòng ${lineNumber} - ${key} phải là một số thực`,
-                  );
-                  if (!hasErrorInRecord) {
-                    totalErrorsRecords++;
-                  }
-                  hasErrorInRecord = true;
-                }
-              } else if (key === 'Độ ưu tiên') {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const intValue = parseInt(value.trim(), 10);
-                if (isNaN(intValue) || intValue < 1 || intValue > 5) {
-                  errors.push(
-                    `Lỗi tại dòng ${lineNumber} - ${key} phải là số nguyên trong khoảng [1, 5]`,
-                  );
-                  if (!hasErrorInRecord) {
-                    totalErrorsRecords++;
-                  }
-                  hasErrorInRecord = true;
-                }
-              } else if (key === 'Loại hạng mục') {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const trimValue = value.trim();
-                if (!categories.some((category) => category.id === trimValue)) {
-                  errors.push(
-                    `Lỗi tại dòng ${lineNumber} - ID: ${trimValue} không tìm thấy trong danh sách loại hạng mục`,
-                  );
-                  if (!hasErrorInRecord) {
-                    totalErrorsRecords++;
-                  }
-                  hasErrorInRecord = true;
-                }
-              }
-            });
-            if (!hasErrorInRecord) {
-              // Only add rows without errors to results
-              results.push(data);
-            }
-            lineNumber++;
-          })
-          .on('end', () => {
-            if (errors.length > 0) {
-              errors.forEach((error) => console.log(error));
-            }
-            resolve();
-          })
-          .on('error', (error) => reject(error));
-      });
+      this.validateFileFormat(file);
+      const categories: CategoryEntity[] =
+        await this.categoriesService.getCategories();
+      const { results, errors, totalRecords, totalErrorsRecords } =
+        await this.processCSVData(file, categories);
       let convertResult = results;
       if (results.length > 0) {
-        // convert Object
-        const convert = await this.convertResultFromCSV(
+        convertResult = this.convertResultFromCSV(
           JSON.stringify(results),
+          categories,
         );
-        convertResult = convert;
       }
       return {
         TotalRecords: totalRecords,
@@ -357,6 +294,117 @@ export class ItemsService extends BaseService<ItemEntity> {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  /**
+   * validateFileFormat
+   * @param file
+   */
+  validateFileFormat(file: Express.Multer.File) {
+    if (!file?.mimetype?.includes('csv')) {
+      throw new BadRequestException(
+        'Invalid file format. You need to use CSV format',
+      );
+    }
+  }
+
+  /**
+   * processCSVData
+   * @param file
+   * @param categories
+   * @returns
+   */
+  async processCSVData(
+    file: Express.Multer.File,
+    categories: CategoryEntity[],
+  ): Promise<{
+    results: any[];
+    errors: string[];
+    totalRecords: number;
+    totalErrorsRecords: number;
+  }> {
+    const results = [];
+    const errors = [];
+    let lineNumber = 1;
+    let totalRecords = 0;
+    let totalErrorsRecords = 0;
+    const readableStream = new Readable();
+    readableStream.push(file.buffer);
+    readableStream.push(null);
+    await new Promise<void>((resolve, reject) => {
+      readableStream
+        .pipe(csvParser())
+        .on('data', (data: any) => {
+          totalRecords++;
+          const { hasErrorInRecord, errorMessages } = this.validateRecord(
+            data,
+            lineNumber,
+            categories,
+          );
+          if (hasErrorInRecord) {
+            totalErrorsRecords++;
+            errors.push(...errorMessages);
+          } else {
+            results.push(data);
+          }
+          lineNumber++;
+        })
+        .on('end', () => {
+          if (errors.length > 0) {
+            errors.forEach((error) => console.error(error));
+          }
+          resolve();
+        })
+        .on('error', (error) => reject(error));
+    });
+    return { results, errors, totalRecords, totalErrorsRecords };
+  }
+
+  /**
+   * Handle Validate Record CSV
+   * validateRecord
+   * @param data
+   * @param lineNumber
+   * @param categories
+   * @returns
+   */
+  validateRecord(
+    data: any,
+    lineNumber: number,
+    categories: CategoryEntity[],
+  ): { hasErrorInRecord: boolean; errorMessages: string[] } {
+    let hasErrorInRecord = false;
+    const errorMessages = [];
+    Object.entries(data).forEach(([key, value]) => {
+      const trimValue = (value as string).trim();
+      if (trimValue === '') {
+        errorMessages.push(`Lỗi tại dòng ${lineNumber} - ${key} bị bỏ trống`);
+        hasErrorInRecord = true;
+      } else if (key === 'Số Lượng' || key === 'Đơn giá') {
+        if (!parseFloat(trimValue)) {
+          errorMessages.push(
+            `Lỗi tại dòng ${lineNumber} - ${key} phải là một số thực`,
+          );
+          hasErrorInRecord = true;
+        }
+      } else if (key === 'Độ ưu tiên') {
+        const intValue = parseInt(trimValue, 10);
+        if (isNaN(intValue) || intValue < 1 || intValue > 5) {
+          errorMessages.push(
+            `Lỗi tại dòng ${lineNumber} - ${key} phải là số nguyên trong khoảng [1, 5]`,
+          );
+          hasErrorInRecord = true;
+        }
+      } else if (key === 'Loại hạng mục') {
+        if (!categories.some((category) => category.id === trimValue)) {
+          errorMessages.push(
+            `Lỗi tại dòng ${lineNumber} - ID: ${trimValue} không tìm thấy trong danh sách loại hạng mục`,
+          );
+          hasErrorInRecord = true;
+        }
+      }
+    });
+    return { hasErrorInRecord, errorMessages };
   }
 
   async createEventPlan(
@@ -394,34 +442,37 @@ export class ItemsService extends BaseService<ItemEntity> {
         customerContactPayload = customerInfoExisted;
         processById = customerInfoExisted.processedBy;
         //Create plan
-        await Promise.all(
-          planData.map(async (plan) => {
-            const category = await queryRunner.manager.findOne(CategoryEntity, {
-              where: { id: plan?.categoryId },
-            });
-            if (!category) {
-              throw new NotFoundException(
-                `Category with ID ${plan.categoryId} not found`,
-              );
-            }
-            await Promise.all(
-              plan.items.map(async (itemData) => {
-                const newItem = queryRunner.manager.create(ItemEntity, {
-                  itemName: itemData.itemName,
-                  description: itemData.description,
-                  priority: itemData.priority,
-                  plannedAmount: itemData.plannedAmount,
-                  plannedPrice: itemData.plannedPrice,
-                  plannedUnit: itemData.plannedUnit,
-                  category,
-                  customerInfo: customerInfoExisted,
-                  createdBy: user.id,
-                });
-                const createdItem = await queryRunner.manager.save(newItem);
-              }),
-            );
+        const categoriesPromise = planData.map((plan) =>
+          queryRunner.manager.findOne(CategoryEntity, {
+            where: { id: plan?.categoryId },
           }),
         );
+        const categories = await Promise.all(categoriesPromise);
+        console.log('categories:', categories);
+        const listPromiseItems = planData.map((plan, index) => {
+          const category = categories[index];
+          if (!category) {
+            throw new NotFoundException(
+              `Category with ID ${plan.categoryId} not found`,
+            );
+          }
+          const listNewItem = plan?.items?.map((itemData) => {
+            return {
+              itemName: itemData.itemName,
+              description: itemData.description,
+              priority: itemData.priority,
+              plannedAmount: itemData.plannedAmount,
+              plannedPrice: itemData.plannedPrice,
+              plannedUnit: itemData.plannedUnit,
+              category,
+              customerInfo: customerInfoExisted,
+              createdBy: user.id,
+            };
+          });
+          return queryRunner.manager.insert(ItemEntity, listNewItem);
+        });
+
+        await Promise.all(listPromiseItems);
       };
       await this.transaction(callback, queryRunner, false);
       // const payload = {
@@ -475,7 +526,10 @@ export class ItemsService extends BaseService<ItemEntity> {
       if (!updateCategory) {
         throw new NotFoundException('Category not found');
       }
-      if (contract.status !== EContractStatus.PENDING) {
+      if (
+        contract?.status !== EContractStatus.PENDING &&
+        contract?.status !== undefined
+      ) {
         throw new BadRequestException(
           'Hợp đồng của liên hệ này đã được xử lí, không thể thay đổi kế hoạch ngay bây giờ',
         );
@@ -514,7 +568,10 @@ export class ItemsService extends BaseService<ItemEntity> {
       if (!itemExisted) {
         throw new NotFoundException('Item not found');
       }
-      if (contract.status !== EContractStatus.PENDING) {
+      if (
+        contract?.status !== EContractStatus?.PENDING &&
+        contract?.status !== undefined
+      ) {
         throw new BadRequestException(
           'Hợp đồng của liên hệ này đã được xử lí, không thể thay đổi kế hoạch ngay bây giờ',
         );
@@ -522,7 +579,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       const result = await queryRunner.manager.delete(ItemEntity, {
         id: itemId,
       });
-      if (result.affected > 0) {
+      if (result?.affected > 0) {
         return 'Delete item successfully';
       }
       throw new BadRequestException('Delete item fail');
@@ -562,7 +619,7 @@ export class ItemsService extends BaseService<ItemEntity> {
             id: customerContactId,
           },
         });
-        const result = await this.createEventPlan(
+        await this.createEventPlan(
           planData,
           customerContactId,
           user,
@@ -578,20 +635,19 @@ export class ItemsService extends BaseService<ItemEntity> {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  private async convertResultFromCSV(dataReadResult: string): Promise<any> {
+  private convertResultFromCSV(dataReadResult: string, categoriesMap: any) {
     try {
-      const categoriesMap = await this.categoriesService.getCategories();
-      console.log('List categories: ', categoriesMap);
       const parsedResult = JSON.parse(dataReadResult);
+      const categoriesMapObj = new Map(
+        categoriesMap.map((category) => [category?.id, category]),
+      );
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
         const categoryId = obj['Loại hạng mục'];
-        const categoryObject = categoriesMap.filter(
-          (category) => category.id === categoryId,
-        );
-
+        const categoryObject = categoriesMapObj.get(categoryId);
+        console.log('categoryObject:', categoryObject);
         const categoryNameById = categoryObject
-          ? categoryObject[0]?.categoryName
+          ? categoryObject?.[0]?.categoryName
           : 'Unknown';
         const itemName = obj['Hạng mục'];
         const description = obj['Diễn giải'];
@@ -601,7 +657,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         const plannedUnit = obj['Đơn vị tính'];
 
         // Find existing category in accumulator
-        let category = acc.find((item) => item.categoryId === categoryId);
+        let category = acc.find((item) => item?.categoryId === categoryId);
 
         // If category doesn't exist, create it
         if (!category) {
@@ -621,12 +677,9 @@ export class ItemsService extends BaseService<ItemEntity> {
           plannedPrice,
           plannedUnit,
         });
+        category.items.sort((a, b) => a?.priority - b?.priority);
         return acc;
       }, []);
-      // Sort items within each category by priority ascending
-      convertResult.forEach((category) => {
-        category.items.sort((a, b) => a.priority - b.priority);
-      });
       return convertResult;
     } catch (err) {
       console.error('Error at Convert data result CSV to JSON: ', err);
