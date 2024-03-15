@@ -192,7 +192,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       );
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const dataPlan = planExisted.plan;
+      const dataPlan = planExisted?.plan;
       const headers = [
         'STT',
         'ID Loại hạng mục',
@@ -423,10 +423,10 @@ export class ItemsService extends BaseService<ItemEntity> {
         );
       };
       await this.transaction(callback, queryRunner, false);
-      const payload = {
-        ...customerContactPayload,
-        managerId: user.id,
-      };
+      // const payload = {
+      //   ...customerContactPayload,
+      //   managerId: user.id,
+      // };
       // console.log('Payload: ', payload);
       // const HOST = this.configService.get<string>('SERVER_HOST');
       // const PATH_API = this.configService.get<string>('PATH_OPEN_API');
