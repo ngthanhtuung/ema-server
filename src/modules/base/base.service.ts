@@ -47,7 +47,7 @@ export class BaseService<T extends BaseEntity> {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      if (!isRelease && isRelease === true) {
+      if (isRelease === undefined) {
         // you need to release query runner which is manually created:
         await queryRunner.release();
       }
