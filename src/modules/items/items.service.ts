@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
   Injectable,
@@ -547,7 +548,10 @@ export class ItemsService extends BaseService<ItemEntity> {
       if (!contactExisted) {
         throw new NotFoundException('Không thể tìm thấy liên hệ này');
       }
-      if (contactExisted?.contract?.status !== EContractStatus.PENDING) {
+      if (
+        contactExisted?.contract?.status !== EContractStatus.PENDING &&
+        contactExisted?.contract?.status !== undefined
+      ) {
         throw new BadRequestException(
           'Hợp đồng của liên hệ này đã được xử lí, không thể thay đổi kế hoạch ngay bây giờ',
         );
