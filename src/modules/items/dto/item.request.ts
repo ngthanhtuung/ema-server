@@ -47,6 +47,8 @@ export class CreateItemRequest {
   items: ItemArrayRequest[];
 }
 
+export class UpdatePlanRequest extends CreateItemRequest {}
+
 export class UpdateItemRequest extends ItemArrayRequest {
   @ApiProperty()
   @IsString()

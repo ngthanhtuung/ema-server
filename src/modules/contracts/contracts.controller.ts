@@ -21,7 +21,11 @@ import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { Roles } from 'src/decorators/role.decorator';
-import { EContractStatus, ERole } from 'src/common/enum/enum';
+import {
+  EContractEvidenceType,
+  EContractStatus,
+  ERole,
+} from 'src/common/enum/enum';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { ContractPagination } from './dto/contract.pagination';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -112,10 +116,16 @@ export class ContractsController {
       },
     },
   })
+  @ApiQuery({
+    name: 'type',
+    enum: EContractEvidenceType,
+    required: true,
+  })
   @UseInterceptors(FilesInterceptor('files'))
   async updateContractEvidence(
     @UploadedFiles() files: Express.Multer.File[],
     @Param('contractId') id: string,
+    @Query('type') type: EContractEvidenceType,
     @GetUser() user: string,
   ): Promise<unknown | undefined> {
     const fileDtos = files.map((file) =>
@@ -128,6 +138,7 @@ export class ContractsController {
     );
     return await this.contractService.updateContractEvidence(
       id,
+      type,
       fileDtos,
       JSON.parse(user),
     );

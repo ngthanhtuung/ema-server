@@ -3,6 +3,7 @@ import { BaseEntity } from '../base/base.entity';
 import { ContractEntity } from './contracts.entity';
 import { Transform } from 'class-transformer';
 import moment from 'moment';
+import { EContractEvidenceType } from '../../common/enum/enum';
 
 @Entity({ name: 'contract_evidences' })
 export class ContractEvidenceEntity extends BaseEntity {
@@ -18,11 +19,17 @@ export class ContractEvidenceEntity extends BaseEntity {
   @Column({ type: 'text', nullable: false })
   evidenceUrl: string;
 
+  @Column({
+    type: 'enum',
+    enum: EContractEvidenceType,
+  })
+  evidenceType: EContractEvidenceType;
+
   @CreateDateColumn()
   @Transform(({ value }) => {
     return moment(value).format('YYYY-MM-DD HH:mm:ss');
   })
-  public createdAt: Date;
+  createdAt: Date;
 
   @Column({ type: 'varchar', nullable: false })
   createdBy: string;

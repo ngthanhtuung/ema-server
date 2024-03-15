@@ -8,12 +8,20 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ItemEntity } from './items.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { CategoriesService } from '../categories/categories.service';
-import { EContactInformation, EPlanningUnit } from '../../common/enum/enum';
+import {
+  EContactInformation,
+  EContractStatus,
+  EPlanningUnit,
+} from '../../common/enum/enum';
 import * as csvFormat from 'json2csv';
 import { Readable } from 'stream';
 import * as csvParser from 'csv-parser';
 import { BaseService } from '../base/base.service';
-import { CreateItemRequest, UpdateItemRequest } from './dto/item.request';
+import {
+  CreateItemRequest,
+  UpdateItemRequest,
+  UpdatePlanRequest,
+} from './dto/item.request';
 import { CategoryEntity } from '../categories/categories.entity';
 import { UserEntity } from '../user/user.entity';
 import { BudgetsService } from '../budgets/budgets.service';
@@ -143,7 +151,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       const data = [];
       const comboOptions = EPlanningUnit;
       const moreField = ['Tổng cộng', 'Dự phòng', 'VAT (10%)', 'GRAND TOTAL'];
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 50; i++) {
         const row: Record<string, string> = {};
         headers.forEach((header, index) => {
           if (header === 'STT') {
@@ -156,7 +164,6 @@ export class ItemsService extends BaseService<ItemEntity> {
             row[header] = '';
           }
         });
-
         // Calculate Thành Tiền based on Số Lượng and Đơn giá
         row['Thành Tiền'] = `=IF(OR(ISBLANK(${
           columnName[headers.indexOf('Số Lượng')]
@@ -271,7 +278,7 @@ export class ItemsService extends BaseService<ItemEntity> {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               if (value.trim() === '') {
-                errors.push(`Error at line ${lineNumber} - ${key} is empty`);
+                errors.push(`Lỗi tại dòng ${lineNumber} - ${key} bị bỏ trống`);
                 if (!hasErrorInRecord) {
                   totalErrorsRecords++;
                 }
@@ -281,7 +288,7 @@ export class ItemsService extends BaseService<ItemEntity> {
                 // @ts-ignore
                 if (!parseFloat(value.trim())) {
                   errors.push(
-                    `Error at line ${lineNumber} - ${key} is not a float`,
+                    `Lỗi tại dòng ${lineNumber} - ${key} phải là một số thực`,
                   );
                   if (!hasErrorInRecord) {
                     totalErrorsRecords++;
@@ -294,7 +301,7 @@ export class ItemsService extends BaseService<ItemEntity> {
                 const intValue = parseInt(value.trim(), 10);
                 if (isNaN(intValue) || intValue < 1 || intValue > 5) {
                   errors.push(
-                    `Error at line ${lineNumber} - ${key} is not a number in range [1, 5]`,
+                    `Lỗi tại dòng ${lineNumber} - ${key} phải là số nguyên trong khoảng [1, 5]`,
                   );
                   if (!hasErrorInRecord) {
                     totalErrorsRecords++;
@@ -337,82 +344,95 @@ export class ItemsService extends BaseService<ItemEntity> {
     planData: CreateItemRequest[],
     customerContactId: string,
     user: UserEntity,
+    queryRunnerExisted?: QueryRunner,
   ): Promise<string> {
-    // const { itemName, description, eventId, categoryId, budget } = planData;
-    const queryRunner = this.dataSource.createQueryRunner();
-    let customerContactPayload;
-    let processById;
-    const callback = async (queryRunner: QueryRunner): Promise<void> => {
-      const customerInfoExisted = await queryRunner.manager.findOne(
-        CustomerContactEntity,
-        {
-          where: { id: customerContactId },
-        },
-      );
-
-      if (!customerInfoExisted) {
-        throw new NotFoundException('Customer contact not found');
-      }
-      if (customerInfoExisted.status !== EContactInformation.ACCEPT) {
-        throw new NotFoundException(
-          'Thông tin khách hàng cần được chấp nhận trước khi lên kế hoạch cho sự kiện',
+    let queryRunner: QueryRunner;
+    if (queryRunnerExisted) {
+      queryRunner = queryRunnerExisted;
+    } else {
+      queryRunner = this.dataSource.createQueryRunner();
+    }
+    try {
+      // const { itemName, description, eventId, categoryId, budget } = planData;
+      let customerContactPayload;
+      let processById;
+      const callback = async (queryRunner: QueryRunner): Promise<void> => {
+        const customerInfoExisted = await queryRunner.manager.findOne(
+          CustomerContactEntity,
+          {
+            where: { id: customerContactId },
+          },
         );
-      }
-      customerContactPayload = customerInfoExisted;
-      processById = customerInfoExisted.processedBy;
-      //Create plan
-      await Promise.all(
-        planData.map(async (plan) => {
-          const category = await queryRunner.manager.findOne(CategoryEntity, {
-            where: { id: plan?.categoryId },
-          });
-          if (!category) {
-            throw new NotFoundException(
-              `Category with ID ${plan.categoryId} not found`,
-            );
-          }
-          await Promise.all(
-            plan.items.map(async (itemData) => {
-              const newItem = queryRunner.manager.create(ItemEntity, {
-                itemName: itemData.itemName,
-                description: itemData.description,
-                priority: itemData.priority,
-                plannedAmount: itemData.plannedAmount,
-                plannedPrice: itemData.plannedPrice,
-                plannedUnit: itemData.plannedUnit,
-                category,
-                customerInfo: customerInfoExisted,
-                createdBy: user.id,
-              });
-              const createdItem = await queryRunner.manager.save(newItem);
-            }),
-          );
-        }),
-      );
-    };
-    await this.transaction(callback, queryRunner);
-    const payload = {
-      ...customerContactPayload,
-      managerId: user.id,
-    };
 
-    console.log('Payload: ', payload);
-    const HOST = this.configService.get<string>('SERVER_HOST');
-    const PATH_API = this.configService.get<string>('PATH_OPEN_API');
-    const PORT = this.configService.get<string>('PORT');
-    const token = await this.sharedService.generateJWTTokenForAnHour(payload);
-    const url = `${HOST}:${PORT}/customer_contract_info.html?token=${token}`;
-    console.log('URL: ', url);
-    const processBy = await this.userService.findByIdV2(processById);
-    await this.sharedService.sendConfirmContract(
-      customerContactPayload.customerEmail,
-      customerContactPayload.fullName,
-      url,
-      processBy.fullName,
-      processBy.email,
-      processBy.phoneNumber,
-    );
-    return 'Create planning successfully';
+        if (!customerInfoExisted) {
+          throw new NotFoundException('Customer contact not found');
+        }
+        if (customerInfoExisted.status !== EContactInformation.ACCEPT) {
+          throw new NotFoundException(
+            'Thông tin khách hàng cần được chấp nhận trước khi lên kế hoạch cho sự kiện',
+          );
+        }
+        customerContactPayload = customerInfoExisted;
+        processById = customerInfoExisted.processedBy;
+        //Create plan
+        await Promise.all(
+          planData.map(async (plan) => {
+            const category = await queryRunner.manager.findOne(CategoryEntity, {
+              where: { id: plan?.categoryId },
+            });
+            if (!category) {
+              throw new NotFoundException(
+                `Category with ID ${plan.categoryId} not found`,
+              );
+            }
+            await Promise.all(
+              plan.items.map(async (itemData) => {
+                const newItem = queryRunner.manager.create(ItemEntity, {
+                  itemName: itemData.itemName,
+                  description: itemData.description,
+                  priority: itemData.priority,
+                  plannedAmount: itemData.plannedAmount,
+                  plannedPrice: itemData.plannedPrice,
+                  plannedUnit: itemData.plannedUnit,
+                  category,
+                  customerInfo: customerInfoExisted,
+                  createdBy: user.id,
+                });
+                const createdItem = await queryRunner.manager.save(newItem);
+              }),
+            );
+          }),
+        );
+      };
+      await this.transaction(callback, queryRunner, false);
+      const payload = {
+        ...customerContactPayload,
+        managerId: user.id,
+      };
+      // console.log('Payload: ', payload);
+      // const HOST = this.configService.get<string>('SERVER_HOST');
+      // const PATH_API = this.configService.get<string>('PATH_OPEN_API');
+      // const PORT = this.configService.get<string>('PORT');
+      // const token = await this.sharedService.generateJWTTokenForAnHour(payload);
+      // const url = `${HOST}:${PORT}/customer_contract_info.html?token=${token}`;
+      // console.log('URL: ', url);
+      // const processBy = await this.userService.findByIdV2(processById);
+      // await this.sharedService.sendConfirmContract(
+      //   customerContactPayload.customerEmail,
+      //   customerContactPayload.fullName,
+      //   url,
+      //   processBy.fullName,
+      //   processBy.email,
+      //   processBy.phoneNumber,
+      // );
+      return 'Create planning successfully';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    } finally {
+      if (!queryRunnerExisted) {
+        await queryRunner.release();
+      }
+    }
   }
 
   async updateItem(
@@ -424,7 +444,9 @@ export class ItemsService extends BaseService<ItemEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       const itemExisted = await this.itemsRepository.findOne({
         where: { id: itemId },
+        relations: ['customerInfo', 'customerInfo.contract'],
       });
+      const contract = itemExisted?.customerInfo?.contract;
       if (!itemExisted) {
         throw new NotFoundException('Item not found');
       }
@@ -433,6 +455,11 @@ export class ItemsService extends BaseService<ItemEntity> {
       });
       if (!updateCategory) {
         throw new NotFoundException('Category not found');
+      }
+      if (contract.status !== EContractStatus.PENDING) {
+        throw new BadRequestException(
+          'Hợp đồng của liên hệ này đã được xử lí, không thể thay đổi kế hoạch ngay bây giờ',
+        );
       }
       const updateItem = await queryRunner.manager.update(
         ItemEntity,
@@ -462,9 +489,16 @@ export class ItemsService extends BaseService<ItemEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       const itemExisted = await this.itemsRepository.findOne({
         where: { id: itemId },
+        relations: ['customerInfo', 'customerInfo.contract'],
       });
+      const contract = itemExisted?.customerInfo?.contract;
       if (!itemExisted) {
         throw new NotFoundException('Item not found');
+      }
+      if (contract.status !== EContractStatus.PENDING) {
+        throw new BadRequestException(
+          'Hợp đồng của liên hệ này đã được xử lí, không thể thay đổi kế hoạch ngay bây giờ',
+        );
       }
       const result = await queryRunner.manager.delete(ItemEntity, {
         id: itemId,
@@ -478,12 +512,65 @@ export class ItemsService extends BaseService<ItemEntity> {
     }
   }
 
-  private convertResultFromCSV(dataReadResult: string): Promise<never> {
+  async updatePlan(
+    planData: UpdatePlanRequest[],
+    customerContactId: string,
+    user: UserEntity,
+  ): Promise<string> {
     try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contactExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: customerContactId },
+          relations: ['contract'],
+        },
+      );
+      if (!contactExisted) {
+        throw new NotFoundException('Không thể tìm thấy liên hệ này');
+      }
+      if (contactExisted?.contract?.status !== EContractStatus.PENDING) {
+        throw new BadRequestException(
+          'Hợp đồng của liên hệ này đã được xử lí, không thể thay đổi kế hoạch ngay bây giờ',
+        );
+      }
+      const callback = async (queryRunner: QueryRunner): Promise<void> => {
+        await queryRunner.manager.delete(ItemEntity, {
+          customerInfo: {
+            id: customerContactId,
+          },
+        });
+        const result = await this.createEventPlan(
+          planData,
+          customerContactId,
+          user,
+          queryRunner,
+        );
+      };
+      await this.transaction(callback, queryRunner);
+      return 'Update plan successfully';
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  private async convertResultFromCSV(dataReadResult: string): Promise<any> {
+    try {
+      const categoriesMap = await this.categoriesService.getCategories();
+      console.log('List categories: ', categoriesMap);
       const parsedResult = JSON.parse(dataReadResult);
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
         const categoryId = obj['Loại hạng mục'];
+        const categoryObject = categoriesMap.filter(
+          (category) => category.id === categoryId,
+        );
+
+        const categoryNameById = categoryObject
+          ? categoryObject[0].categoryName
+          : 'Unknown';
         const itemName = obj['Hạng mục'];
         const description = obj['Diễn giải'];
         const priority = parseInt(obj['Độ ưu tiên']);
@@ -498,6 +585,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         if (!category) {
           category = {
             categoryId,
+            categoryName: categoryNameById,
             items: [],
           };
           acc.push(category);
@@ -513,7 +601,6 @@ export class ItemsService extends BaseService<ItemEntity> {
         });
         return acc;
       }, []);
-
       // Sort items within each category by priority ascending
       convertResult.forEach((category) => {
         category.items.sort((a, b) => a.priority - b.priority);
