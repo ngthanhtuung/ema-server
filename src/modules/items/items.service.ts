@@ -268,6 +268,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       const readableStream = new Readable();
       readableStream.push(file.buffer);
       readableStream.push(null);
+      const categories = await this.categoriesService.getCategories();
       await new Promise<void>((resolve, reject) => {
         readableStream
           .pipe(csvParser())
@@ -308,6 +309,19 @@ export class ItemsService extends BaseService<ItemEntity> {
                   }
                   hasErrorInRecord = true;
                 }
+              } else if (key === 'Loại hạng mục') {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const trimValue = value.trim();
+                if (!categories.some((category) => category.id === trimValue)) {
+                  errors.push(
+                    `Lỗi tại dòng ${lineNumber} - ID: ${trimValue} không tìm thấy trong danh sách loại hạng mục`,
+                  );
+                  if (!hasErrorInRecord) {
+                    totalErrorsRecords++;
+                  }
+                  hasErrorInRecord = true;
+                }
               }
             });
             if (!hasErrorInRecord) {
@@ -324,10 +338,14 @@ export class ItemsService extends BaseService<ItemEntity> {
           })
           .on('error', (error) => reject(error));
       });
-      // convert Object
-      const convertResult = await this.convertResultFromCSV(
-        JSON.stringify(results),
-      );
+      let convertResult = results;
+      if (results.length > 0) {
+        // convert Object
+        const convert = await this.convertResultFromCSV(
+          JSON.stringify(results),
+        );
+        convertResult = convert;
+      }
       return {
         TotalRecords: totalRecords,
         TotalSuccessRecords: results.length,
@@ -569,7 +587,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         );
 
         const categoryNameById = categoryObject
-          ? categoryObject[0].categoryName
+          ? categoryObject[0]?.categoryName
           : 'Unknown';
         const itemName = obj['Hạng mục'];
         const description = obj['Diễn giải'];
@@ -608,6 +626,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       return convertResult;
     } catch (err) {
       console.error('Error at Convert data result CSV to JSON: ', err);
+      throw new InternalServerErrorException(err.message);
     }
   }
 }
