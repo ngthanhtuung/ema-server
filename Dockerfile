@@ -1,5 +1,5 @@
 # Base image
-FROM node:18-alpine
+FROM node:18-alpine3.18
 
 # Install LibreOffice
 RUN apt-get update \
