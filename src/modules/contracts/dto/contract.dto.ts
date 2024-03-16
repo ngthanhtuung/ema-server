@@ -1,4 +1,3 @@
-import { StringColorFormat } from '@faker-js/faker';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -8,10 +7,11 @@ import {
   IsString,
 } from 'class-validator';
 import {
-  EContactInformation,
   EContractPaymentMethod,
   EContractStatus,
+  SortEnum,
 } from 'src/common/enum/enum';
+import { EventCreateRequestContract } from '../../event/dto/event.request';
 
 export class ContractCreateRequest {
   @IsString()
@@ -88,6 +88,21 @@ export class ContractRejectNote {
 }
 
 export class FilterContract {
+  @IsString()
+  @ApiProperty({
+    required: false,
+    default: 'createdAt',
+  })
+  sortProperty: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+    default: SortEnum.ASC,
+  })
+  sort: SortEnum;
+
   @ApiProperty({
     required: false,
     type: 'enum',
@@ -96,3 +111,5 @@ export class FilterContract {
   })
   status: EContractStatus;
 }
+
+export class UpdateContractInfo extends EventCreateRequestContract {}

@@ -61,11 +61,6 @@ export class EventCreateRequestContract {
   @ApiProperty({ default: 'Sự kiện 10 năm thành lập FBT' })
   eventName: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // @ApiProperty({ default: 'Test desc' })
-  // description: string;
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ default: '2023-10-10' })
@@ -85,19 +80,6 @@ export class EventCreateRequestContract {
   @IsNotEmpty()
   @ApiProperty({ default: 'Quận 12' })
   location: string;
-
-  // @IsString()
-  // @IsNotEmpty()
-  // @ApiProperty({
-  //   default:
-  //     'https://img.freepik.com/free-psd/saturday-party-social-media-template_505751-2935.jpg?w=740&t=st=1696662680~exp=1696663280~hmac=30be138e6333ca7cbd4ea46fc39296aed44c5b3247173cab7bd45c230b65bfec',
-  // })
-  // coverUrl: string;
-
-  // @IsNumber()
-  // @IsNotEmpty()
-  // @ApiProperty({ default: '120000000' })
-  // estBudget: number;
 
   @ApiProperty()
   eventTypeId?: string;
@@ -155,7 +137,7 @@ export class EventCreateRequestContract {
   @IsNotEmpty()
   @ApiProperty({
     required: true,
-    default: '2021-10-10',
+    default: '2024-10-10',
   })
   paymentDate: string;
 }

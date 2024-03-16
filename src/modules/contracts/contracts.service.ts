@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContractRejectNote } from './dto/contract.dto';
+import {
+  ContractRejectNote,
+  FilterContract,
+  UpdateContractInfo,
+} from './dto/contract.dto';
 import {
   BadRequestException,
   ForbiddenException,
@@ -74,8 +78,10 @@ export class ContractsService extends BaseService<ContractEntity> {
           },
         },
       );
+      let contractCode;
       const callback = async (queryRunner: QueryRunner): Promise<void> => {
         const generateCode = await this.sharedService.generateContractCode();
+        contractCode = generateCode;
         const buf = await this.generateContractDocs(
           customerInfo,
           contactId,
@@ -99,6 +105,12 @@ export class ContractsService extends BaseService<ContractEntity> {
             companyRepresentative: user.id,
             createdBy: user.id,
             paymentMethod: customerInfo.paymentMethod,
+            eventName: customerInfo.eventName,
+            startDate: customerInfo.startDate,
+            processingDate: customerInfo.processingDate,
+            endDate: customerInfo.endDate,
+            location: customerInfo.location,
+            paymentDate: customerInfo.paymentDate,
             customerContact: {
               id: contactId,
             },
@@ -115,7 +127,16 @@ export class ContractsService extends BaseService<ContractEntity> {
           },
         });
       };
-      await this.transaction(callback, queryRunner);
+      await await this.transaction(callback, queryRunner);
+      const userProcess = await this.userService.findByIdV2(user.id);
+      await this.sharedService.sendContractAlert(
+        customerInfo.customerEmail,
+        customerInfo.customerName,
+        contractCode,
+        userProcess.fullName,
+        userProcess.email,
+        userProcess.phoneNumber,
+      );
       return downloadObject;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -156,14 +177,17 @@ export class ContractsService extends BaseService<ContractEntity> {
   }
 
   async getAllContracts(
+    filter: FilterContract,
     contractPagination: ContractPagination,
     user: UserEntity,
   ): Promise<IPaginateResponse<unknown> | undefined> {
     try {
       const { currentPage, sizePage } = contractPagination;
+      const { sortProperty, sort, status } = filter;
       const query = this.generalBuilderContracts();
       query.leftJoinAndSelect('contracts.event', 'event');
       query.leftJoinAndSelect('contracts.files', 'files');
+      query.leftJoinAndSelect('contracts.customerContact', 'customerContact');
       query.select([
         'contracts.id as id',
         'contracts.customerName as customerName',
@@ -178,6 +202,8 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.createdBy as createdBy',
         'contracts.updatedAt as updateAt',
         'contracts.updatedBy as updateBy',
+        'contracts.status as contractStatus',
+        'customerContact.id as customerContactId',
         'event.id as eventId',
         'event.eventName as eventName',
         'event.startDate as startDate',
@@ -188,19 +214,25 @@ export class ContractsService extends BaseService<ContractEntity> {
         'event.eventType as eventType',
         'event.createdAt as eventCreatedAt',
         'event.createdBy as eventCreatedBy',
+        'files.id as contractFileId',
         'files.contractCode as contractCode',
         'files.contractFileName as contractFileName',
         'files.contractFileSize as contractFile',
         'files.contractFileUrl as contractFileUrl',
         'files.rejectNote as rejectNote',
-        'files.status as contractStatus',
+        'files.status as contractFileStatus',
       ]);
       if (user.role.toString() !== ERole.ADMIN) {
         query.where('contracts.companyRepresentative = :userId', {
           userId: user.id,
         });
       }
-      query.orderBy('contracts.createdAt', 'DESC');
+      if (status !== EContractStatus.ALL) {
+        query.andWhere('contracts.status= :status', { status: status });
+      }
+      if (sortProperty) {
+        query.orderBy(`contracts.${sortProperty}`, sort);
+      }
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
@@ -229,8 +261,11 @@ export class ContractsService extends BaseService<ContractEntity> {
           return contract;
         }),
       );
+      const formatData = this.formattedDataGetAllContract(
+        contractWithCompanyRepresentative,
+      );
       return paginateResponse<unknown>(
-        [contractWithCompanyRepresentative, total],
+        [formatData, total],
         currentPage as number,
         sizePage as number,
       );
@@ -524,12 +559,14 @@ export class ContractsService extends BaseService<ContractEntity> {
           'Đang có hợp đồng trong trạng thái chờ hoặc đã được đồng ý. Không thể tạo hợp đồng khác, vui lòng kiểm tra lại',
         );
       }
-      const contractExisted = contactExisted.contract;
+      const contractExisted = contactExisted?.contract;
       const dataObject: EventCreateRequestContract = {
-        eventName: 'Sự kiện 10 năm thành lập FBT',
-        startDate: moment(contactExisted.startDate).format('YYYY - MM - DD'),
-        processingDate: '2023-11-09',
-        endDate: moment(contactExisted.endDate).format('YYYY - MM - DD'),
+        eventName: contractExisted.eventName,
+        startDate: moment(contractExisted.startDate).format('YYYY - MM - DD'),
+        processingDate: moment(contractExisted.processingDate).format(
+          'YYYY - MM - DD',
+        ),
+        endDate: moment(contractExisted.endDate).format('YYYY - MM - DD'),
         location: contactExisted.address,
         eventTypeId: contactExisted.eventType.id,
         customerName: contractExisted.customerName,
@@ -538,7 +575,9 @@ export class ContractsService extends BaseService<ContractEntity> {
         customerEmail: contractExisted.customerEmail,
         customerPhoneNumber: contractExisted.customerPhoneNumber,
         paymentMethod: contractExisted.paymentMethod,
-        paymentDate: '2021-10-10',
+        paymentDate: moment(contractExisted.paymentDate).format(
+          'YYYY - MM - DD',
+        ),
       };
       const newContract = await this.generateNewContract(
         dataObject,
@@ -578,6 +617,81 @@ export class ContractsService extends BaseService<ContractEntity> {
         files: sortedFiles,
       };
       return contractResponse;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async updateContractInfo(
+    contractId: string,
+    data: UpdateContractInfo,
+    user: UserEntity,
+  ): Promise<string> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contractExisted = await queryRunner.manager.findOne(
+        ContractEntity,
+        {
+          where: { id: contractId },
+          relations: ['files'],
+        },
+      );
+      if (!contractExisted) {
+        throw new InternalServerErrorException('Hợp đồng này không tồn tại');
+      }
+      const hasPendingOrAcceptedFiles = contractExisted?.files.some(
+        (file) =>
+          file.status === EContractStatus.PENDING ||
+          file.status === EContractStatus.ACCEPTED,
+      );
+      if (hasPendingOrAcceptedFiles) {
+        throw new BadRequestException(
+          'Đang có hợp đồng trong trạng thái chờ hoặc đã được đồng ý. Bạn không thể nào cập nhậ thông tin hợp đồng, vui lòng kiểm tra lại sau',
+        );
+      }
+      if (contractExisted.status !== EContractStatus.PENDING) {
+        let errorMessage;
+        if (contractExisted.status === EContractStatus.WAIT_FOR_SIGN) {
+          errorMessage = 'kí kết';
+        } else if (contractExisted.status === EContractStatus.PAID) {
+          throw new BadRequestException(
+            `Hợp đồng này đã được thanh toán, không thể cập nhật thông tin hợp đồng`,
+          );
+        } else {
+          errorMessage = 'thanh toán';
+        }
+        throw new BadRequestException(
+          `Hợp đồng này đang được tiến hành ${errorMessage}. Không thể thực hiện cập nhật thông tin hợp đồng`,
+        );
+      }
+      const updatedContractInfo = await queryRunner.manager.update(
+        ContractEntity,
+        {
+          id: contractId,
+        },
+        {
+          customerName: data.customerName,
+          customerNationalId: data.customerNationalId,
+          customerEmail: data.customerEmail,
+          customerPhoneNumber: data.customerPhoneNumber,
+          customerAddress: data.customerAddress,
+          paymentMethod: data.paymentMethod,
+          eventName: data.eventName,
+          startDate: data.startDate,
+          processingDate: data.startDate,
+          endDate: data.endDate,
+          location: data.location,
+          paymentDate: data.paymentDate,
+          updatedBy: user.id,
+          updatedAt: moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
+        },
+      );
+      if (updatedContractInfo.affected > 0) {
+        return 'Cập nhật thành công thông tin hợp đồng';
+      }
+      throw new InternalServerErrorException(
+        'Cập nhật thông tin hợp đồng thất bại',
+      );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -758,5 +872,75 @@ export class ContractsService extends BaseService<ContractEntity> {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  private formattedDataGetAllContract(rawData: any) {
+    const groupedData = {};
+    rawData.forEach((item) => {
+      if (!groupedData[item.id]) {
+        groupedData[item.id] = {
+          contractId: item.id,
+          customerName: item.customerName,
+          customerNationalId: item.customerNationalId,
+          customerEmail: item.customerEmail,
+          customerPhoneNumber: item.customerPhoneNumber,
+          customerAddress: item.customerAddress,
+          dateOfSigning: item.dateOfSigning,
+          customerContactId: item.customerContactId,
+          paymentMethod: item.paymentMethod,
+          createdAt: item.createdAt,
+          createdBy: item.createdBy,
+          updateAt: item.updateAt,
+          updateBy: item.updateBy,
+          contractStatus: item.contractStatus,
+          companyRepresentative: item.companyRepresentative,
+          event: {},
+          files: [],
+        };
+      }
+      if (
+        item.eventId === null &&
+        item.eventName === null &&
+        item.startDate === null &&
+        item.endDate === null &&
+        item.location === null &&
+        item.processingDate === null &&
+        item.status === null &&
+        item.eventType === null &&
+        item.eventCreatedAt === null &&
+        item.eventCreatedBy === null
+      ) {
+        groupedData[item.id].event = null;
+      } else {
+        groupedData[item.id].event = {
+          eventId: item.eventId,
+          eventName: item.eventName,
+          startDate: item.startDate,
+          endDate: item.endDate,
+          location: item.location,
+          processingDate: item.processingDate,
+          status: item.status,
+          eventType: item.eventType,
+          eventCreatedAt: item.eventCreatedAt,
+          eventCreatedBy: item.eventCreatedBy,
+        };
+      }
+      if (
+        !Object.values(item).every((value) => value === null) &&
+        item.contractCode
+      ) {
+        groupedData[item.id].files.push({
+          contractFileId: item.contractFileId,
+          contractCode: item.contractCode,
+          contractFileName: item.contractFileName,
+          contractFile: item.contractFile,
+          contractFileUrl: item.contractFileUrl,
+          rejectNote: item.rejectNote,
+          contractFileStatus: item.contractFileStatus,
+        });
+      }
+    });
+    return Object.values(groupedData);
   }
 }
