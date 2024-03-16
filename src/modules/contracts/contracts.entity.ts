@@ -43,6 +43,24 @@ export class ContractEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   paymentMethod: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  eventName: string;
+
+  @Column({ type: 'date', nullable: true })
+  startDate: Date;
+
+  @Column({ type: 'date', nullable: true })
+  processingDate: Date;
+
+  @Column({ type: 'date', nullable: true })
+  endDate: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  location: string;
+
+  @Column({ type: 'date', nullable: false })
+  paymentDate: Date;
+
   @CreateDateColumn()
   @Transform(({ value }) => {
     return moment(value).format('YYYY-MM-DD HH:mm:ss');

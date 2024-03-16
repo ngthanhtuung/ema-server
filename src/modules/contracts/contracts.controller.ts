@@ -33,7 +33,11 @@ import { plainToInstance } from 'class-transformer';
 import { FileRequest } from 'src/file/dto/file.request';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
 import { EventCreateRequestContract } from '../event/dto/event.request';
-import { ContractRejectNote, FilterContract } from './dto/contract.dto';
+import {
+  ContractRejectNote,
+  FilterContract,
+  UpdateContractInfo,
+} from './dto/contract.dto';
 
 @Controller('contracts')
 @ApiBearerAuth()
@@ -176,6 +180,20 @@ export class ContractsController {
       contractFileId,
       rejectNote,
       status,
+      JSON.parse(user),
+    );
+  }
+
+  @Put('/info/:contractId')
+  @Roles(ERole.MANAGER)
+  async updateContractInfo(
+    @Param('contractId') contractId: string,
+    @Body() data: UpdateContractInfo,
+    @GetUser() user: string,
+  ): Promise<string> {
+    return await this.contractService.updateContractInfo(
+      contractId,
+      data,
       JSON.parse(user),
     );
   }

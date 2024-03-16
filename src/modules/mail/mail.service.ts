@@ -100,10 +100,10 @@ export class MailService {
     }
   }
 
-  async sendConfirmContractEmail(
+  async sendContractAlert(
     toUser: string,
     customerName: string,
-    emailConfirm: string,
+    contractCode: string,
     companyRepresentativeName: string,
     companyRepresentativeEmail: string,
     companyRepresentativePhoneNumber: string,
@@ -114,17 +114,21 @@ export class MailService {
       const mailData = await this.mailRepository.getDetailMailTemplate(3);
       const htmlMail = mailData?.mailText
         ?.replace('{customerName}', customerName)
-        ?.replace('{emailConfirm}', emailConfirm)
+        ?.replace('{contractCode}', contractCode)
         ?.replace('{companyRepresentativeName}', companyRepresentativeName)
         ?.replace('{companyRepresentativeEmail}', companyRepresentativeEmail)
         ?.replace(
           '{companyRepresentativePhoneNumber}',
           companyRepresentativePhoneNumber,
         );
+      const newMailTitle = mailData?.mailTitle?.replace(
+        '{contractCode}',
+        contractCode,
+      );
       const data = {
         from: 'EMA System <ema.event@gmail.com>',
         to: [toUser],
-        subject: mailData?.mailTitle,
+        subject: newMailTitle,
         html: htmlMail,
       };
       const response = await mg.messages.create(

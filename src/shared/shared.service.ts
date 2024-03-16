@@ -123,19 +123,19 @@ export class SharedService {
     }
   }
 
-  public async sendConfirmContract(
+  public async sendContractAlert(
     email: string,
     customerName: string,
-    emailConfirm: string,
+    contractCode: string,
     companyRepresentativeName: string,
     companyRepresentativeEmail: string,
     companyRepresentativePhoneNumber: string,
   ): Promise<boolean> {
     try {
-      const response = await this.mailService.sendConfirmContractEmail(
+      const response = await this.mailService.sendContractAlert(
         email,
         customerName,
-        emailConfirm,
+        contractCode,
         companyRepresentativeName,
         companyRepresentativeEmail,
         companyRepresentativePhoneNumber,
