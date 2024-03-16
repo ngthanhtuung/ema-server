@@ -53,9 +53,11 @@ export class ContractsController {
   @Roles(ERole.ADMIN, ERole.MANAGER)
   async getAllContracts(
     @Query() contractPagination: ContractPagination,
+    @Query() filter: FilterContract,
     @GetUser() user: string,
   ): Promise<IPaginateResponse<unknown>> {
     return await this.contractService.getAllContracts(
+      filter,
       contractPagination,
       JSON.parse(user),
     );

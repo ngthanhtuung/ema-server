@@ -6,7 +6,11 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { EContractPaymentMethod, EContractStatus } from 'src/common/enum/enum';
+import {
+  EContractPaymentMethod,
+  EContractStatus,
+  SortEnum,
+} from 'src/common/enum/enum';
 import { EventCreateRequestContract } from '../../event/dto/event.request';
 
 export class ContractCreateRequest {
@@ -84,6 +88,21 @@ export class ContractRejectNote {
 }
 
 export class FilterContract {
+  @IsString()
+  @ApiProperty({
+    required: false,
+    default: 'createdAt',
+  })
+  sortProperty: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+    default: SortEnum.ASC,
+  })
+  sort: SortEnum;
+
   @ApiProperty({
     required: false,
     type: 'enum',

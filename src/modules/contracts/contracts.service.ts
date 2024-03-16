@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContractRejectNote, UpdateContractInfo } from './dto/contract.dto';
-import common_1, {
+import {
+  ContractRejectNote,
+  FilterContract,
+  UpdateContractInfo,
+} from './dto/contract.dto';
+import {
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -173,14 +177,17 @@ export class ContractsService extends BaseService<ContractEntity> {
   }
 
   async getAllContracts(
+    filter: FilterContract,
     contractPagination: ContractPagination,
     user: UserEntity,
   ): Promise<IPaginateResponse<unknown> | undefined> {
     try {
       const { currentPage, sizePage } = contractPagination;
+      const { sortProperty, sort, status } = filter;
       const query = this.generalBuilderContracts();
       query.leftJoinAndSelect('contracts.event', 'event');
       query.leftJoinAndSelect('contracts.files', 'files');
+      query.leftJoinAndSelect('contracts.customerContact', 'customerContact');
       query.select([
         'contracts.id as id',
         'contracts.customerName as customerName',
@@ -195,6 +202,8 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.createdBy as createdBy',
         'contracts.updatedAt as updateAt',
         'contracts.updatedBy as updateBy',
+        'contracts.status as contractStatus',
+        'customerContact.id as customerContactId',
         'event.id as eventId',
         'event.eventName as eventName',
         'event.startDate as startDate',
@@ -205,19 +214,25 @@ export class ContractsService extends BaseService<ContractEntity> {
         'event.eventType as eventType',
         'event.createdAt as eventCreatedAt',
         'event.createdBy as eventCreatedBy',
+        'files.id as contractFileId',
         'files.contractCode as contractCode',
         'files.contractFileName as contractFileName',
         'files.contractFileSize as contractFile',
         'files.contractFileUrl as contractFileUrl',
         'files.rejectNote as rejectNote',
-        'files.status as contractStatus',
+        'files.status as contractFileStatus',
       ]);
       if (user.role.toString() !== ERole.ADMIN) {
         query.where('contracts.companyRepresentative = :userId', {
           userId: user.id,
         });
       }
-      query.orderBy('contracts.createdAt', 'DESC');
+      if (status !== EContractStatus.ALL) {
+        query.andWhere('contracts.status= :status', { status: status });
+      }
+      if (sortProperty) {
+        query.orderBy(`contracts.${sortProperty}`, sort);
+      }
       const [result, total] = await Promise.all([
         query
           .offset((sizePage as number) * ((currentPage as number) - 1))
@@ -865,25 +880,38 @@ export class ContractsService extends BaseService<ContractEntity> {
     rawData.forEach((item) => {
       if (!groupedData[item.id]) {
         groupedData[item.id] = {
-          id: item.id,
+          contractId: item.id,
           customerName: item.customerName,
           customerNationalId: item.customerNationalId,
           customerEmail: item.customerEmail,
           customerPhoneNumber: item.customerPhoneNumber,
           customerAddress: item.customerAddress,
           dateOfSigning: item.dateOfSigning,
-          companyRepresentative: item.companyRepresentative,
+          customerContactId: item.customerContactId,
           paymentMethod: item.paymentMethod,
           createdAt: item.createdAt,
           createdBy: item.createdBy,
           updateAt: item.updateAt,
           updateBy: item.updateBy,
+          contractStatus: item.contractStatus,
+          companyRepresentative: item.companyRepresentative,
           event: {},
           files: [],
         };
       }
-      if (Object.values(item).every((value) => value === null)) {
-        groupedData[item.id].event = {};
+      if (
+        item.eventId === null &&
+        item.eventName === null &&
+        item.startDate === null &&
+        item.endDate === null &&
+        item.location === null &&
+        item.processingDate === null &&
+        item.status === null &&
+        item.eventType === null &&
+        item.eventCreatedAt === null &&
+        item.eventCreatedBy === null
+      ) {
+        groupedData[item.id].event = null;
       } else {
         groupedData[item.id].event = {
           eventId: item.eventId,
@@ -903,12 +931,13 @@ export class ContractsService extends BaseService<ContractEntity> {
         item.contractCode
       ) {
         groupedData[item.id].files.push({
+          contractFileId: item.contractFileId,
           contractCode: item.contractCode,
           contractFileName: item.contractFileName,
           contractFile: item.contractFile,
           contractFileUrl: item.contractFileUrl,
           rejectNote: item.rejectNote,
-          contractStatus: item.contractStatus,
+          contractFileStatus: item.contractFileStatus,
         });
       }
     });
