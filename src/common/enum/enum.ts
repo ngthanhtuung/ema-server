@@ -161,3 +161,9 @@ export enum EContractEvidenceType {
   CONTRACT_SIGNED = 'CONTRACT_SIGNED',
   CONTRACT_PAID = 'CONTRACT_PAID',
 }
+
+export enum ETransaction {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}

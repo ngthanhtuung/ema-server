@@ -5,6 +5,7 @@ import { CommentEntity } from '../comment/comment.entity';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { TaskFileEntity } from '../taskfile/taskfile.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
+import { BudgetEntity } from '../budgets/budgets.entity';
 
 @Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
@@ -84,4 +85,9 @@ export class TaskEntity extends BaseEntity {
 
   @Column({ type: 'boolean', default: false })
   isTemplate: boolean;
+
+  @OneToMany(() => BudgetEntity, (budgets) => budgets.task, {
+    onDelete: 'CASCADE',
+  })
+  budgets: BudgetEntity[];
 }
