@@ -1,4 +1,3 @@
-import { TaskEntity } from './../task/task.entity';
 import {
   Column,
   CreateDateColumn,
@@ -15,7 +14,6 @@ import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import { FeedbackEntity } from '../feedbacks/feedbacks.entity';
 import { ContractEntity } from '../contracts/contracts.entity';
 import { EventTypeEntity } from '../event_types/event_types.entity';
-import { ItemEntity } from '../items/items.entity';
 import { Transform } from 'class-transformer';
 import * as moment from 'moment-timezone';
 
@@ -90,7 +88,4 @@ export class EventEntity extends BaseEntity {
 
   @ManyToOne(() => EventTypeEntity, (type) => type.events)
   eventType: EventTypeEntity;
-
-  // @OneToMany(() => ItemEntity, (item) => item.event)
-  // items: ItemEntity[];
 }

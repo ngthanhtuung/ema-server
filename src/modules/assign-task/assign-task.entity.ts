@@ -4,6 +4,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
@@ -12,6 +13,7 @@ import { UserEntity } from '../user/user.entity';
 import { EStatusAssignee } from 'src/common/enum/enum';
 import * as moment from 'moment-timezone';
 import { Transform } from 'class-transformer';
+import { TransactionEntity } from '../budgets/transactions.entity';
 
 @Entity({ name: 'assign_tasks' })
 export class AssignTaskEntity extends BaseEntity {
@@ -57,4 +59,11 @@ export class AssignTaskEntity extends BaseEntity {
     return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
   updatedAt: Date;
+
+  @OneToMany(
+    () => TransactionEntity,
+    (transactions) => transactions.taskAssign,
+    { onDelete: 'CASCADE' },
+  )
+  transactions: TransactionEntity[];
 }

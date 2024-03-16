@@ -11,11 +11,7 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ItemEntity } from './items.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { CategoriesService } from '../categories/categories.service';
-import {
-  EContactInformation,
-  EContractStatus,
-  EPlanningUnit,
-} from '../../common/enum/enum';
+import { EContactInformation, EContractStatus } from '../../common/enum/enum';
 import * as csvFormat from 'json2csv';
 import { Readable } from 'stream';
 import * as csvParser from 'csv-parser';
