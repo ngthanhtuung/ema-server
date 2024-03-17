@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   IsArray,
   IsEnum,
@@ -21,19 +21,16 @@ export class NotificationCreateRequest {
   content: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({ default: 'Test desc' })
-  eventID: string;
+  eventID?: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({ default: 'Test desc' })
-  parentTaskId: string;
+  parentTaskId?: string;
 
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({ default: 'Test desc' })
-  commonId: string;
+  commonId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -54,11 +51,51 @@ export class NotificationCreateRequest {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ApiProperty({ type: [String], default: ['string'] })
-  userIdAssignee: string[];
+  userIdAssignee?: string[];
 
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @ApiProperty({ type: [String], default: ['string'] })
-  userIdTaskMaster: string[];
+  userIdTaskMaster?: string[];
+}
+
+export class NotificationContractRequest {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Sự kiện 10 năm thành lập FBT' })
+  title: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  content: string;
+
+  @IsString()
+  @ApiProperty({ default: 'Test desc' })
+  commonId?: string;
+
+  @IsString()
+  @ApiProperty({ default: 'Test desc' })
+  contractId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  avatar: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: 'Test desc' })
+  messageSocket: string;
+
+  @IsEnum(ETypeNotification)
+  @IsNotEmpty()
+  @ApiProperty({ default: ETypeNotification.CONTRACT })
+  type: ETypeNotification;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  receiveUser: string;
 }

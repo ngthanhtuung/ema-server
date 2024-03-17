@@ -22,6 +22,9 @@ export class NotificationEntity extends BaseEntity {
   parentTaskId: string;
 
   @Column({ type: 'varchar', nullable: true })
+  contractId: string;
+
+  @Column({ type: 'varchar', nullable: true })
   avatarSender: string;
 
   @Column({

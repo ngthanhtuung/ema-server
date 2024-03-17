@@ -19,7 +19,10 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { BaseService } from '../base/base.service';
-import { NotificationCreateRequest } from './dto/notification.request';
+import {
+  NotificationContractRequest,
+  NotificationCreateRequest,
+} from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
@@ -29,6 +32,7 @@ import { FirebaseNotificationRequest } from 'src/providers/firebase/message/dto/
 import { AppGateway } from 'src/sockets/app.gateway';
 import { Services } from 'src/utils/constants';
 import { IGatewaySessionManager } from 'src/sockets/gateway.session';
+
 @Injectable()
 export class NotificationService extends BaseService<NotificationEntity> {
   constructor(
@@ -148,8 +152,6 @@ export class NotificationService extends BaseService<NotificationEntity> {
         content: notification?.content,
         type: notification?.type,
         commonId: notification?.commonId,
-        parentTaskId: notification?.parentTaskId,
-        eventID: notification?.eventID,
         avatarSender: notification?.avatar,
       });
 
@@ -220,6 +222,64 @@ export class NotificationService extends BaseService<NotificationEntity> {
       }
       // Insert data in UserNotificationsEntity
       await Promise.all(createNotification);
+      const firebaseNotificationPayload: FirebaseNotificationRequest = {
+        title: notification?.title,
+        body: notification?.content,
+        listUser: listUserPushNoti,
+      };
+      await this.firebaseCustomService.sendCustomNotificationFirebase(
+        firebaseNotificationPayload,
+      );
+      if (newNoti?.raw?.affectedRows > 0) {
+        return 'Create notification successfully!';
+      }
+      throw new InternalServerErrorException('Create notification failed!');
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+  }
+
+  async createContractNotfication(
+    notification: NotificationContractRequest,
+    senderUser: string,
+    queryRunner: QueryRunner,
+  ): Promise<unknown> {
+    try {
+      const client = this.appGateWay.server;
+      const newNoti = await queryRunner.manager.insert(NotificationEntity, {
+        title: notification?.title,
+        content: notification?.content,
+        type: notification?.type,
+        commonId: notification?.commonId,
+        contractId: notification?.contractId,
+        avatarSender: notification?.avatar,
+      });
+
+      const listUserPushNoti = [notification?.receiveUser];
+      const dataNotification = {
+        title: notification?.title,
+        content: notification?.content,
+        readFlag: false,
+        type: notification?.type,
+        userId: notification?.receiveUser,
+        contractId: notification?.contractId,
+        commonId: notification?.commonId,
+        avatarSender: notification?.avatar,
+      };
+      const socket = this.sessions.getUserSocket(notification?.receiveUser);
+      if (socket !== null) {
+        client
+          .to(socket?.id)
+          .emit(notification.messageSocket, dataNotification);
+      }
+      const createNotification = await queryRunner.manager.insert(
+        UserNotificationsEntity,
+        {
+          user: { id: notification?.receiveUser },
+          notification: { id: newNoti?.identifiers[0]?.id },
+        },
+      );
+
       const firebaseNotificationPayload: FirebaseNotificationRequest = {
         title: notification?.title,
         body: notification?.content,

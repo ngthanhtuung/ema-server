@@ -31,6 +31,7 @@ import {
   EContractEvidenceType,
   EContractStatus,
   ERole,
+  ETypeNotification,
 } from 'src/common/enum/enum';
 import { UserService } from '../user/user.service';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
@@ -44,6 +45,11 @@ import { EventCreateRequestContract } from '../event/dto/event.request';
 import { ItemsService } from '../items/items.service';
 import { ContractFileEntity } from './contract_files.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
+import { NotificationService } from '../notification/notification.service';
+import {
+  NotificationContractRequest,
+  NotificationCreateRequest,
+} from '../notification/dto/notification.request';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
@@ -56,6 +62,7 @@ export class ContractsService extends BaseService<ContractEntity> {
     private readonly userService: UserService,
     private readonly fileService: FileService,
     private readonly planService: ItemsService,
+    private notificationService: NotificationService,
   ) {
     super(contractRepository);
   }
@@ -436,10 +443,11 @@ export class ContractsService extends BaseService<ContractEntity> {
     contractFileId: string,
     rejectReason: ContractRejectNote,
     status: EContractStatus,
-    user: UserEntity,
+    user: string,
   ): Promise<string> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
+      const oUser = JSON.parse(user);
       const contractFileExisted = await queryRunner.manager.findOne(
         ContractFileEntity,
         {
@@ -447,10 +455,13 @@ export class ContractsService extends BaseService<ContractEntity> {
           relations: ['contract'],
         },
       );
-      console.log('Contract File: ', contractFileExisted);
       if (!contractFileExisted) {
         throw new NotFoundException('Không tìm thấy hợp đồng này');
       }
+
+      const processedUser = await this.userService.findByIdV2(
+        contractFileExisted?.contract?.companyRepresentative,
+      );
       if (contractFileExisted.status === EContractStatus.PENDING) {
         switch (status) {
           case EContractStatus.ACCEPTED:
@@ -479,6 +490,22 @@ export class ContractsService extends BaseService<ContractEntity> {
                     .format('YYYY-MM-DD HH:mm:ss'),
                 },
               );
+              // Send Notification
+              const dataNotification: NotificationContractRequest = {
+                title: `Hợp đồng được chấp thuận`,
+                content: `Hợp đồng ${contractFileExisted?.contractCode} đã được khách hàng ${oUser?.fullName} chấp thuận`,
+                type: ETypeNotification.CONTRACT,
+                receiveUser: processedUser?.id,
+                commonId: contractFileExisted?.contract?.id,
+                contractId: contractFileExisted?.contract?.id,
+                avatar: oUser?.avatar,
+                messageSocket: 'notification',
+              };
+              await this.notificationService.createContractNotfication(
+                dataNotification,
+                oUser?.id,
+                queryRunner,
+              );
               return 'Hợp đồng được chấp thuận';
             } else {
               return 'Cập nhật hợp đồng thất bại, vui lòng thử lại';
@@ -502,6 +529,22 @@ export class ContractsService extends BaseService<ContractEntity> {
                   .tz('Asia/Bangkok')
                   .format('YYYY-MM-DD HH:mm:ss'),
               },
+            );
+            // Send Notification
+            const dataNotification: NotificationContractRequest = {
+              title: `Hợp đồng bị từ chối`,
+              content: `Hợp đồng ${contractFileExisted?.contractCode} đã bị khách hàng ${oUser?.fullName} từ chối`,
+              type: ETypeNotification.CONTRACT,
+              receiveUser: processedUser?.id,
+              commonId: contractFileExisted?.contract?.id,
+              contractId: contractFileExisted?.contract?.id,
+              avatar: oUser?.avatar,
+              messageSocket: 'notification',
+            };
+            await this.notificationService.createContractNotfication(
+              dataNotification,
+              oUser?.id,
+              queryRunner,
             );
             return `Hợp đồng bị từ chối vì lí do: ${rejectReason.rejectNote}`;
             break;
