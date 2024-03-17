@@ -150,14 +150,10 @@ export class ContractsController {
     );
   }
 
-  @Get('file/:customerContactId')
+  @Get('file')
   @Roles(ERole.CUSTOMER, ERole.MANAGER)
-  async getContractFileByContractId(
-    @Param('customerContactId') contractId: string,
-  ): Promise<object | undefined> {
-    return await this.contractService.getContractFileByCustomerContactId(
-      contractId,
-    );
+  async getAllContractFile(): Promise<object | undefined> {
+    return await this.contractService.getAllContractFile();
   }
 
   @Put('file/:contractFileId/status')

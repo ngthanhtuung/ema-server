@@ -633,33 +633,26 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
-  async getContractFileByCustomerContactId(
-    customerContactId: string,
-  ): Promise<object | undefined> {
+  async getAllContractFile(): Promise<object | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const contractExisted = await queryRunner.manager.findOne(
-        CustomerContactEntity,
-        {
-          where: { id: customerContactId },
-          relations: ['contract', 'contract.files'],
-        },
-      );
+      const contractExisted = await queryRunner.manager.find(ContractEntity, {
+        relations: ['contract', 'contract.files'],
+      });
       if (!contractExisted) {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }
-      const sortedFiles = contractExisted?.contract?.files?.sort((a, b) => {
-        const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
-        const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
-        return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
-          moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
-        );
+      const dataFinal = contractExisted?.map((item) => {
+        item.files?.sort((a, b) => {
+          const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
+            moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
+          );
+        });
+        return item;
       });
-      const contractResponse = {
-        ...contractExisted?.contract,
-        files: sortedFiles,
-      };
-      return contractResponse;
+      return dataFinal;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

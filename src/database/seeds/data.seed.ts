@@ -366,31 +366,25 @@ export class DataSeed implements Seeder {
       .execute();
     const listEventType = [
       {
-        typeName: 'Sự kiện ra mắt sản phẩm mới, giới thiệu dịch vụ',
+        typeName: 'Triển lãm thương mại (Trade Shows)',
       },
       {
-        typeName: 'Sự kiện họp báo, các hoạt động thông cáo báo chí',
+        typeName: 'Buổi hội thảo (Seminars)',
       },
       {
-        typeName: 'Sự kiện khai trương/khánh thành',
+        typeName: 'Lễ ra mắt sản phẩm (Product Launches)',
       },
       {
-        typeName: 'Sự kiện gây quỹ',
+        typeName: 'Sự kiện từ thiện (Charity Events)',
       },
       {
-        typeName: 'Sự kiện tuyển dụng',
+        typeName: 'Các chương trình khuyến mãi (Promotional Events)',
       },
       {
-        typeName: 'Sự kiện team building',
+        typeName: 'Sự kiện thể thao và văn hóa (Sports and Cultural Events)',
       },
       {
-        typeName: 'Sự kiện kỷ niệm công ty',
-      },
-      {
-        typeName: 'Sự kiện tri ân khách hàng',
-      },
-      {
-        typeName: 'Sự kiện đào tạo nội bộ',
+        typeName: 'Sự kiện truyền thông (Media Events)',
       },
     ];
     const eventType = await connection
