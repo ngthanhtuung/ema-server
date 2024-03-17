@@ -8,6 +8,9 @@ export class EventTypeEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   typeName: string;
 
+  @Column({ type: 'text', nullable: true })
+  linkTemplate: string;
+
   @OneToMany(() => EventEntity, (event) => event.eventType)
   events: EventEntity[];
 

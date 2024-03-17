@@ -40,14 +40,12 @@ export class ItemsController {
 
   @Get('/download-template')
   @Roles(ERole.MANAGER)
-  async exportTemplate(@Res() res: Response): Promise<void> {
+  async exportTemplate(
+    @Param('eventTypeId') eventTypeId: string,
+  ): Promise<string> {
     try {
-      const csvData = await this.itemsService.exportTemplateToCSV();
-      res.set({
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename=template.csv',
-      });
-      res.send(csvData);
+      const csvData = await this.itemsService.exportTemplateToCSV(eventTypeId);
+      return csvData;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

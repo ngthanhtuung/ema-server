@@ -30,6 +30,7 @@ import { SharedService } from '../../shared/shared.service';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
 import { CreateCategoryRequest } from '../categories/dto/categories.request';
+import { EventTypesService } from '../event_types/event_types.service';
 
 @Injectable()
 export class ItemsService extends BaseService<ItemEntity> {
@@ -43,6 +44,7 @@ export class ItemsService extends BaseService<ItemEntity> {
     private readonly sharedService: SharedService,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
+    private readonly eventTypesService: EventTypesService,
   ) {
     super(itemsRepository);
   }
@@ -128,35 +130,10 @@ export class ItemsService extends BaseService<ItemEntity> {
    * exportTemplateToCSV
    * @returns
    */
-  async exportTemplateToCSV(): Promise<unknown> {
+  async exportTemplateToCSV(eventTypeID: string): Promise<string> {
     try {
-      const headers = [
-        'STT',
-        'Loại hạng mục',
-        'Hạng mục',
-        'Diễn giải',
-        'Độ ưu tiên',
-        'Đơn vị tính',
-        'Số Lượng',
-        'Đơn giá',
-        'Thành Tiền',
-      ];
-      const columnName = [...Array(26)].map((_, index) =>
-        String.fromCharCode(65 + index),
-      );
-      const opts = {
-        headers: false,
-        fieldFormatter: {
-          'Số Lượng': (value) => Number(value).toFixed(2),
-          'Đơn giá': (value) => Number(value).toFixed(2),
-          'Thành Tiền': (value) => Number(value).toFixed(2),
-        },
-      };
-      const data = this.generateData(headers, columnName);
-      console.log('Data at download template: ', data);
-      const csv = csvFormat.parse(data, opts);
-      const encodedCsv = iconv.encode(csv, 'utf8');
-      return encodedCsv;
+      const eventType = await this.eventTypesService.findById(eventTypeID);
+      return eventType?.linkTemplate;
     } catch (err) {
       console.log('Error at export CSV template: ', err);
       throw new InternalServerErrorException(err.message);
@@ -204,7 +181,6 @@ export class ItemsService extends BaseService<ItemEntity> {
       const dataPlan = planExisted?.plan;
       const headers = [
         'STT',
-        'ID Loại hạng mục',
         'Loại hạng mục',
         'Hạng mục',
         'Diễn giải',
@@ -233,7 +209,6 @@ export class ItemsService extends BaseService<ItemEntity> {
           STT: `=IF(${columnName[headers.indexOf('Hạng mục')]}${
             i + 2
           }="","",ROW()-ROW(${columnName[headers.indexOf('STT')]}$2)+1)`,
-          'ID Loại hạng mục': value.categoryId,
           'Loại hạng mục': value.categoryName,
         };
         (value?.items || []).forEach((item) => {
@@ -269,11 +244,14 @@ export class ItemsService extends BaseService<ItemEntity> {
   async readCSVFile(file: Express.Multer.File): Promise<object> {
     try {
       this.validateFileFormat(file);
+      console.log('file:', file);
       const categories: CategoryEntity[] =
         await this.categoriesService.getCategories();
       const { results, errors, totalRecords, totalErrorsRecords } =
         await this.processCSVData(file, categories);
       let convertResult = results;
+      console.log('results:', results);
+
       if (results.length > 0) {
         convertResult = await this.convertResultFromCSV(
           JSON.stringify(results),
@@ -633,6 +611,9 @@ export class ItemsService extends BaseService<ItemEntity> {
   ) {
     try {
       const parsedResult = JSON.parse(dataReadResult);
+      console.log('parsedResult:', parsedResult);
+      console.log('dataReadResult:', dataReadResult);
+
       const categoriesMapObj = new Map(
         categoriesMap.map((category) => [category?.categoryName, category]),
       );
@@ -655,6 +636,8 @@ export class ItemsService extends BaseService<ItemEntity> {
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
         const categoryName = obj['Loại hạng mục'];
+        console.log('categoryName:', categoryName);
+
         const categoryObject: any = categoriesMapObj.get(categoryName);
         console.log('categoryObject:', categoryObject);
         const itemName = obj['Hạng mục'];

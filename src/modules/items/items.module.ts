@@ -10,6 +10,7 @@ import { forwardRef } from '@nestjs/common/utils';
 import { ContractsModule } from '../contracts/contracts.module';
 import { SharedModule } from '../../shared/shared.module';
 import { UserModule } from '../user/user.module';
+import { EventTypesModule } from '../event_types/event_types.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UserModule } from '../user/user.module';
     BudgetsModule,
     SharedModule,
     UserModule,
+    EventTypesModule,
   ],
   providers: [ItemsService],
   controllers: [ItemsController],

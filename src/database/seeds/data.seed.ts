@@ -367,6 +367,7 @@ export class DataSeed implements Seeder {
     const listEventType = [
       {
         typeName: 'Triển lãm thương mại (Trade Shows)',
+        typeName: 'https://storage.googleapis.com/hrea-8d10b.appspot.com/template-csv/template-excel-media?GoogleAccessId=firebase-adminsdk-sen9c%40hrea-8d10b.iam.gserviceaccount.com&Expires=253370764800&Signature=Z9mh1ryCV6c60GjOahwFTGF8jZwdKa3EqROv3t%2Bep2pgrE0vRKCECnY8ur7UKpMLpiWlpYbv8h4kwZ1oE%2BQWrMxCyvmOztQkP9ifP6D8HwD5ci96OL36OQAy7M83EORCUsRWL4pLOYdak%2BggameQF%2FA4GpsKTXxY1LAz0gtylZqTONEW0WWyTajNtkm8yrZAWbNtJHVV7Hz3MWQTsuBkiAlVn4Mea1pgbt95tRMrsUI%2FOfli2edcuyyFabDs6mvV4chyTAdBU6s8tOIWbNmLx8T6JHR%2FB3xZaVXGUEN1OSMlrP8y6APZeG3a3YLPg6avWaWEXGAKg8W%2FichQb%2FtGkg%3D%3D',
       },
       {
         typeName: 'Buổi hội thảo (Seminars)',

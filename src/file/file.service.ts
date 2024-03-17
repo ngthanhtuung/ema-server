@@ -22,7 +22,7 @@ export class FileService {
       const bucket = firebaseAdmin.storage().bucket();
       let uniqueFileName;
       if (!customizeFileName) {
-        uniqueFileName = uuidv4();
+        uniqueFileName = 'template-excel-media';
       } else {
         uniqueFileName = customizeFileName;
       }
