@@ -735,7 +735,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       const contractExisted = await queryRunner.manager.find(ContractEntity, {
         where: {
-          createdBy: oUser.id,
+          customerEmail: oUser?.email,
         },
         relations: {
           files: true,

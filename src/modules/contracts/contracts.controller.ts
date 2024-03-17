@@ -70,7 +70,7 @@ export class ContractsController {
     return await this.contractService.getAllContractFile();
   }
 
-  @Get('file/customber')
+  @Get('file/customer')
   @Roles(ERole.CUSTOMER)
   async getAllContractFileByCustomer(
     @GetUser() user: string,

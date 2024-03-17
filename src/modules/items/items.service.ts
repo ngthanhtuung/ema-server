@@ -128,7 +128,7 @@ export class ItemsService extends BaseService<ItemEntity> {
    * exportTemplateToCSV
    * @returns
    */
-  async exportTemplateToCSV(): Promise<unknown> {
+  async exportTemplateToCSV(eventTypeID: string): Promise<unknown> {
     try {
       const headers = [
         'STT',
