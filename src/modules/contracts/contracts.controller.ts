@@ -182,7 +182,7 @@ export class ContractsController {
       contractFileId,
       rejectNote,
       status,
-      JSON.parse(user),
+      user,
     );
   }
 

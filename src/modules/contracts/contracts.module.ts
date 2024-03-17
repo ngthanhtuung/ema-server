@@ -8,6 +8,7 @@ import { UserModule } from '../user/user.module';
 import { FileModule } from 'src/file/file.module';
 import { forwardRef } from '@nestjs/common/utils';
 import { ItemsModule } from '../items/items.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ItemsModule } from '../items/items.module';
     SharedModule,
     UserModule,
     FileModule,
+    NotificationModule,
     forwardRef(() => ItemsModule),
   ],
   providers: [ContractsService],
