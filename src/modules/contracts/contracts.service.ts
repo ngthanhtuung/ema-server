@@ -147,6 +147,11 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * getContractByEventId
+   * @param eventId
+   * @returns
+   */
   async getContractByEventId(eventId: string): Promise<unknown | undefined> {
     try {
       const contract = await this.contractRepository.findOne({
@@ -180,6 +185,13 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * getAllContracts
+   * @param filter
+   * @param contractPagination
+   * @param user
+   * @returns
+   */
   async getAllContracts(
     filter: FilterContract,
     contractPagination: ContractPagination,
@@ -332,19 +344,15 @@ export class ContractsService extends BaseService<ContractEntity> {
                 `${contractSuccess[0]?.contractCode} - ${number}`,
               );
               if (!bufSign) return undefined;
-              const updatedEvidenceSign = await queryRunner.manager.insert(
-                ContractEvidenceEntity,
-                {
-                  contract: contract,
-                  evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
-                  evidenceFileSize: bufSign['fileSize'],
-                  evidenceFileType: bufSign['fileType'],
-                  evidenceUrl: bufSign['downloadUrl'],
-                  createdBy: user.id,
-                },
-              );
+              await queryRunner.manager.insert(ContractEvidenceEntity, {
+                contract: contract,
+                evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+                evidenceFileSize: bufSign['fileSize'],
+                evidenceFileType: bufSign['fileType'],
+                evidenceUrl: bufSign['downloadUrl'],
+                createdBy: user.id,
+              });
               return bufSign;
-              break;
             case EContractEvidenceType.CONTRACT_PAID:
               if (contract.status !== EContractStatus.WAIT_FOR_PAID) {
                 throw new BadRequestException(
@@ -357,17 +365,15 @@ export class ContractsService extends BaseService<ContractEntity> {
                 `${contractSuccess[0]?.contractCode} - ${number}`,
               );
               if (!buf) return undefined;
-              const updatedEvidenceTransaction =
-                await queryRunner.manager.insert(ContractEvidenceEntity, {
-                  contract: contract,
-                  evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
-                  evidenceFileSize: buf['fileSize'],
-                  evidenceFileType: buf['fileType'],
-                  evidenceUrl: buf['downloadUrl'],
-                  createdBy: user.id,
-                });
+              await queryRunner.manager.insert(ContractEvidenceEntity, {
+                contract: contract,
+                evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+                evidenceFileSize: buf['fileSize'],
+                evidenceFileType: buf['fileType'],
+                evidenceUrl: buf['downloadUrl'],
+                createdBy: user.id,
+              });
               return buf;
-              break;
           }
         }),
       );
@@ -420,6 +426,11 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * getEvidenceByContractId
+   * @param contactId
+   * @returns
+   */
   async getEvidenceByContractId(
     contactId: string,
   ): Promise<ContractEvidenceEntity[]> {
@@ -436,6 +447,14 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * updateStatusContractFile
+   * @param contractFileId
+   * @param rejectReason
+   * @param status
+   * @param user
+   * @returns
+   */
   async updateStatusContractFile(
     contractFileId: string,
     rejectReason: ContractRejectNote,
@@ -559,6 +578,12 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * recreateContract
+   * @param customerContactId
+   * @param user
+   * @returns
+   */
   async recreateContract(
     customerContactId: string,
     user: UserEntity,
@@ -630,6 +655,11 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * getContractFileByCustomerContactId
+   * @param customerContactId
+   * @returns
+   */
   async getContractFileByCustomerContactId(
     customerContactId: string,
   ): Promise<object | undefined> {
@@ -662,10 +692,51 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  /**
+   * getAllContractFile
+   * @returns
+   */
   async getAllContractFile(): Promise<ContractEntity[]> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       const contractExisted = await queryRunner.manager.find(ContractEntity, {
+        relations: {
+          files: true,
+        },
+      });
+      console.log('contractExisted:', contractExisted);
+      if (!contractExisted) {
+        throw new NotFoundException('Hợp đồng này không tồn tại');
+      }
+      const dataFinal = contractExisted?.map((item) => {
+        item.files?.sort((a, b) => {
+          const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
+            moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
+          );
+        });
+        return item;
+      });
+      return dataFinal;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * getAllContractFileByCustomer
+   * @param user
+   * @returns
+   */
+  async getAllContractFileByCustomer(user: string): Promise<ContractEntity[]> {
+    try {
+      const oUser = JSON.parse(user);
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contractExisted = await queryRunner.manager.find(ContractEntity, {
+        where: {
+          createdBy: oUser.id,
+        },
         relations: {
           files: true,
         },

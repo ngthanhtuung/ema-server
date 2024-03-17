@@ -65,9 +65,17 @@ export class ContractsController {
   }
 
   @Get('file')
-  @Roles(ERole.CUSTOMER, ERole.MANAGER)
+  @Roles(ERole.MANAGER)
   async getAllContractFile(): Promise<ContractEntity[]> {
     return await this.contractService.getAllContractFile();
+  }
+
+  @Get('file/customber')
+  @Roles(ERole.CUSTOMER)
+  async getAllContractFileByCustomer(
+    @GetUser() user: string,
+  ): Promise<ContractEntity[]> {
+    return await this.contractService.getAllContractFileByCustomer(user);
   }
 
   @Get('file/:customerContactId')

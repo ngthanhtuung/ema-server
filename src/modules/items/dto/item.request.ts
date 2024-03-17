@@ -35,9 +35,9 @@ export class ItemArrayRequest {
 }
 
 export class CreateItemRequest {
-  @ApiProperty()
+  @ApiProperty({ required: true })
   @IsString()
-  categoryId: string;
+  categoryName: string;
 
   @ApiProperty({
     type: [ItemArrayRequest],
@@ -52,5 +52,5 @@ export class UpdatePlanRequest extends CreateItemRequest {}
 export class UpdateItemRequest extends ItemArrayRequest {
   @ApiProperty()
   @IsString()
-  categoryId: string;
+  categoryName: string;
 }

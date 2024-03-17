@@ -87,30 +87,29 @@ export class ItemsService extends BaseService<ItemEntity> {
       const groupedItems = planning.reduce((acc, currentItem) => {
         // Find existing category in accumulator
         let category = acc.find(
-          (item) => item.categoryId === currentItem.category.id,
+          (item) => item?.categoryName === currentItem?.category?.categoryName,
         );
         // If category doesn't exist, create it
         if (!category) {
           category = {
-            categoryId: currentItem.category.id,
-            categoryName: currentItem.category.categoryName,
+            categoryName: currentItem?.category?.categoryName,
             items: [],
           };
           acc.push(category);
         }
         // Add current item to category's items array
         category.items.push({
-          id: currentItem.id,
-          createdAt: currentItem.createdAt,
-          updatedAt: currentItem.updatedAt,
-          itemName: currentItem.itemName,
-          description: currentItem.description,
-          priority: currentItem.priority,
-          plannedAmount: currentItem.plannedAmount,
-          plannedPrice: currentItem.plannedPrice,
-          plannedUnit: currentItem.plannedUnit,
-          createdBy: currentItem.createdBy,
-          updatedBy: currentItem.updatedBy,
+          id: currentItem?.id,
+          createdAt: currentItem?.createdAt,
+          updatedAt: currentItem?.updatedAt,
+          itemName: currentItem?.itemName,
+          description: currentItem?.description,
+          priority: currentItem?.priority,
+          plannedAmount: currentItem?.plannedAmount,
+          plannedPrice: currentItem?.plannedPrice,
+          plannedUnit: currentItem?.plannedUnit,
+          createdBy: currentItem?.createdBy,
+          updatedBy: currentItem?.updatedBy,
         });
 
         return acc;
@@ -437,7 +436,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         //Create plan
         const categoriesPromise = planData.map((plan) =>
           queryRunner.manager.findOne(CategoryEntity, {
-            where: { id: plan?.categoryId },
+            where: { categoryName: plan?.categoryName },
           }),
         );
         const categories = await Promise.all(categoriesPromise);
@@ -446,7 +445,7 @@ export class ItemsService extends BaseService<ItemEntity> {
           const category = categories[index];
           if (!category) {
             throw new NotFoundException(
-              `Category with ID ${plan.categoryId} not found`,
+              `Category name ${plan.categoryName} not found`,
             );
           }
           const listNewItem = plan?.items?.map((itemData) => {
@@ -459,7 +458,7 @@ export class ItemsService extends BaseService<ItemEntity> {
               plannedUnit: itemData.plannedUnit,
               category,
               customerInfo: customerInfoExisted,
-              createdBy: user.id,
+              createdBy: user?.id,
             };
           });
           return queryRunner.manager.insert(ItemEntity, listNewItem);
@@ -514,7 +513,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         throw new NotFoundException('Item not found');
       }
       const updateCategory = await queryRunner.manager.findOne(CategoryEntity, {
-        where: { id: data.categoryId },
+        where: { id: data?.categoryName },
       });
       if (!updateCategory) {
         throw new NotFoundException('Category not found');
