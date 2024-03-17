@@ -38,6 +38,7 @@ import {
   FilterContract,
   UpdateContractInfo,
 } from './dto/contract.dto';
+import { ContractEntity } from './contracts.entity';
 
 @Controller('contracts')
 @ApiBearerAuth()
@@ -60,6 +61,22 @@ export class ContractsController {
       filter,
       contractPagination,
       JSON.parse(user),
+    );
+  }
+
+  @Get('file')
+  @Roles(ERole.CUSTOMER, ERole.MANAGER)
+  async getAllContractFile(): Promise<ContractEntity[]> {
+    return await this.contractService.getAllContractFile();
+  }
+
+  @Get('file/:customerContactId')
+  @Roles(ERole.CUSTOMER, ERole.MANAGER)
+  async getContractFileByContractId(
+    @Param('customerContactId') contractId: string,
+  ): Promise<object | undefined> {
+    return await this.contractService.getContractFileByCustomerContactId(
+      contractId,
     );
   }
 
@@ -148,12 +165,6 @@ export class ContractsController {
       fileDtos,
       JSON.parse(user),
     );
-  }
-
-  @Get('file')
-  @Roles(ERole.CUSTOMER, ERole.MANAGER)
-  async getAllContractFile(): Promise<object | undefined> {
-    return await this.contractService.getAllContractFile();
   }
 
   @Put('file/:contractFileId/status')

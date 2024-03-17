@@ -125,7 +125,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           contractCode: generateCode,
           contractFileName: fileName,
           contractFileSize: buf.length,
-          contractFileUrl: download['downloadUrl'],
+          contractFileUrl: download?.['downloadUrl'],
           contract: {
             id: contractId,
           },
@@ -662,12 +662,15 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
-  async getAllContractFile(): Promise<object | undefined> {
+  async getAllContractFile(): Promise<ContractEntity[]> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       const contractExisted = await queryRunner.manager.find(ContractEntity, {
-        relations: ['contract', 'contract.files'],
+        relations: {
+          files: true,
+        },
       });
+      console.log('contractExisted:', contractExisted);
       if (!contractExisted) {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }

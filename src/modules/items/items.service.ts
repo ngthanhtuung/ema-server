@@ -29,6 +29,7 @@ import { CustomerContactEntity } from '../customer_contacts/customer_contacts.en
 import { SharedService } from '../../shared/shared.service';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
+import { CreateCategoryRequest } from '../categories/dto/categories.request';
 
 @Injectable()
 export class ItemsService extends BaseService<ItemEntity> {
@@ -275,7 +276,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         await this.processCSVData(file, categories);
       let convertResult = results;
       if (results.length > 0) {
-        convertResult = this.convertResultFromCSV(
+        convertResult = await this.convertResultFromCSV(
           JSON.stringify(results),
           categories,
         );
@@ -391,14 +392,17 @@ export class ItemsService extends BaseService<ItemEntity> {
           );
           hasErrorInRecord = true;
         }
-      } else if (key === 'Loại hạng mục') {
-        if (!categories.some((category) => category.id === trimValue)) {
-          errorMessages.push(
-            `Lỗi tại dòng ${lineNumber} - ID: ${trimValue} không tìm thấy trong danh sách loại hạng mục`,
-          );
-          hasErrorInRecord = true;
-        }
       }
+      // else if (key === 'Loại hạng mục') {
+      //   if (
+      //     !categories.some((category) => category.categoryName === trimValue)
+      //   ) {
+      //     errorMessages.push(
+      //       `Lỗi tại dòng ${lineNumber} - Tên danh mục: ${trimValue} không tìm thấy trong danh sách loại hạng mục`,
+      //     );
+      //     hasErrorInRecord = true;
+      //   }
+      // }
     });
     return { hasErrorInRecord, errorMessages };
   }
@@ -631,35 +635,46 @@ export class ItemsService extends BaseService<ItemEntity> {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  private convertResultFromCSV(dataReadResult: string, categoriesMap: any) {
+  private async convertResultFromCSV(
+    dataReadResult: string,
+    categoriesMap: any,
+  ) {
     try {
       const parsedResult = JSON.parse(dataReadResult);
       const categoriesMapObj = new Map(
-        categoriesMap.map((category) => [category?.id, category]),
+        categoriesMap.map((category) => [category?.categoryName, category]),
       );
+      for (const item of parsedResult) {
+        const categoryName = item?.['Loại hạng mục'];
+        const categoryObject: any = categoriesMapObj.get(categoryName);
+        // Create category if not existed
+        if (!categoryObject) {
+          const dataCreateCategory: CreateCategoryRequest = {
+            categoryName,
+          };
+          await this.categoriesService.createCategory(dataCreateCategory);
+        }
+      }
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
-        const categoryId = obj['Loại hạng mục'];
-        const categoryObject: any = categoriesMapObj.get(categoryId);
+        const categoryName = obj['Loại hạng mục'];
+        const categoryObject: any = categoriesMapObj.get(categoryName);
         console.log('categoryObject:', categoryObject);
-        const categoryNameById = categoryObject
-          ? categoryObject?.categoryName
-          : 'Unknown';
         const itemName = obj['Hạng mục'];
         const description = obj['Diễn giải'];
         const priority = parseInt(obj['Độ ưu tiên']);
         const plannedAmount = parseFloat(obj['Số Lượng']);
         const plannedPrice = parseFloat(obj['Đơn giá']);
         const plannedUnit = obj['Đơn vị tính'];
-
         // Find existing category in accumulator
-        let category = acc.find((item) => item?.categoryId === categoryId);
-
+        let category = acc.find(
+          (item) => item?.categoryName === categoryObject?.categoryName,
+        );
         // If category doesn't exist, create it
         if (!category) {
           category = {
-            categoryId,
-            categoryName: categoryNameById,
+            categoryId: categoryObject?.id,
+            categoryName: categoryObject?.categoryName,
             items: [],
           };
           acc.push(category);
