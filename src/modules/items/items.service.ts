@@ -393,16 +393,6 @@ export class ItemsService extends BaseService<ItemEntity> {
           hasErrorInRecord = true;
         }
       }
-      // else if (key === 'Loại hạng mục') {
-      //   if (
-      //     !categories.some((category) => category.categoryName === trimValue)
-      //   ) {
-      //     errorMessages.push(
-      //       `Lỗi tại dòng ${lineNumber} - Tên danh mục: ${trimValue} không tìm thấy trong danh sách loại hạng mục`,
-      //     );
-      //     hasErrorInRecord = true;
-      //   }
-      // }
     });
     return { hasErrorInRecord, errorMessages };
   }
@@ -441,6 +431,9 @@ export class ItemsService extends BaseService<ItemEntity> {
         }
         customerContactPayload = customerInfoExisted;
         processById = customerInfoExisted.processedBy;
+        console.log('processById:', processById);
+        console.log('customerContactPayload:', customerContactPayload);
+
         //Create plan
         const categoriesPromise = planData.map((plan) =>
           queryRunner.manager.findOne(CategoryEntity, {
@@ -644,17 +637,22 @@ export class ItemsService extends BaseService<ItemEntity> {
       const categoriesMapObj = new Map(
         categoriesMap.map((category) => [category?.categoryName, category]),
       );
+      const listPromiseAll = [];
       for (const item of parsedResult) {
-        const categoryName = item?.['Loại hạng mục'];
+        const categoryName = item?.['Loại hạng mục'] || '';
         const categoryObject: any = categoriesMapObj.get(categoryName);
         // Create category if not existed
         if (!categoryObject) {
           const dataCreateCategory: CreateCategoryRequest = {
             categoryName,
           };
-          await this.categoriesService.createCategory(dataCreateCategory);
+          listPromiseAll.push(
+            this.categoriesService.createCategory(dataCreateCategory),
+          );
+          categoriesMapObj.set(categoryName, dataCreateCategory);
         }
       }
+      await Promise.all(listPromiseAll);
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
         const categoryName = obj['Loại hạng mục'];
@@ -670,10 +668,10 @@ export class ItemsService extends BaseService<ItemEntity> {
         let category = acc.find(
           (item) => item?.categoryName === categoryObject?.categoryName,
         );
+        console.log('category:', category);
         // If category doesn't exist, create it
         if (!category) {
           category = {
-            categoryId: categoryObject?.id,
             categoryName: categoryObject?.categoryName,
             items: [],
           };

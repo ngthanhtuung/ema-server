@@ -30,10 +30,7 @@ export class CategoriesService extends BaseService<CategoryEntity> {
   async getCategories(): Promise<CategoryEntity[]> {
     try {
       const result = await this.categoriesRepository.find({});
-      if (result.length > 0) {
-        return result;
-      }
-      throw new NotFoundException('Categories is empty');
+      return result;
     } catch (err) {
       throw new InternalServerErrorException(err.messages);
     }
