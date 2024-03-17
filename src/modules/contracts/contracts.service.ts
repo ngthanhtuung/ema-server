@@ -46,10 +46,7 @@ import { ItemsService } from '../items/items.service';
 import { ContractFileEntity } from './contract_files.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { NotificationService } from '../notification/notification.service';
-import {
-  NotificationContractRequest,
-  NotificationCreateRequest,
-} from '../notification/dto/notification.request';
+import { NotificationContractRequest } from '../notification/dto/notification.request';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
@@ -628,6 +625,38 @@ export class ContractsService extends BaseService<ContractEntity> {
         user,
       );
       return newContract;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getContractFileByCustomerContactId(
+    customerContactId: string,
+  ): Promise<object | undefined> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const contractExisted = await queryRunner.manager.findOne(
+        CustomerContactEntity,
+        {
+          where: { id: customerContactId },
+          relations: ['contract', 'contract.files'],
+        },
+      );
+      if (!contractExisted) {
+        throw new NotFoundException('Hợp đồng này không tồn tại');
+      }
+      const sortedFiles = contractExisted?.contract?.files?.sort((a, b) => {
+        const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
+        return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
+          moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
+        );
+      });
+      const contractResponse = {
+        ...contractExisted?.contract,
+        files: sortedFiles,
+      };
+      return contractResponse;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
