@@ -445,26 +445,6 @@ export class ItemsService extends BaseService<ItemEntity> {
         await Promise.all(listPromiseItems);
       };
       await this.transaction(callback, queryRunner, false);
-      // const payload = {
-      //   ...customerContactPayload,
-      //   managerId: user.id,
-      // };
-      // console.log('Payload: ', payload);
-      // const HOST = this.configService.get<string>('SERVER_HOST');
-      // const PATH_API = this.configService.get<string>('PATH_OPEN_API');
-      // const PORT = this.configService.get<string>('PORT');
-      // const token = await this.sharedService.generateJWTTokenForAnHour(payload);
-      // const url = `${HOST}:${PORT}/customer_contract_info.html?token=${token}`;
-      // console.log('URL: ', url);
-      // const processBy = await this.userService.findByIdV2(processById);
-      // await this.sharedService.sendConfirmContract(
-      //   customerContactPayload.customerEmail,
-      //   customerContactPayload.fullName,
-      //   url,
-      //   processBy.fullName,
-      //   processBy.email,
-      //   processBy.phoneNumber,
-      // );
       return 'Create planning successfully';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
