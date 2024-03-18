@@ -126,12 +126,7 @@ export class AuthService {
         throw new BadRequestException('Old password is not match');
       }
       const hashPassword = await this.sharedService.hashPassword(newPassword);
-      const currentDate = moment().tz('Asia/Bangkok').toDate();
-      await this.userService.updatePassword(
-        hashPassword,
-        currentDate,
-        loginUser.id,
-      );
+      await this.userService.updatePassword(hashPassword, loginUser.id);
       return 'Change password successfully';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -216,11 +211,7 @@ export class AuthService {
       }
       const hashPassword = await this.sharedService.hashPassword(password);
       const currentDate = moment().tz('Asia/Bangkok').toDate();
-      await this.userService.updatePassword(
-        hashPassword,
-        currentDate,
-        loginUser.id,
-      );
+      await this.userService.updatePassword(hashPassword, loginUser.id);
       return 'Update password successfully!!';
     } catch (error) {
       throw new InternalServerErrorException(error.message);

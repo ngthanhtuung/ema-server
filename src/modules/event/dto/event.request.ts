@@ -6,6 +6,7 @@ import {
   EEventStatus,
   SortEnum,
 } from 'src/common/enum/enum';
+import { TaskCreateReq } from 'src/modules/task/dto/task.request';
 
 export class EventCreateRequest {
   @IsString()
@@ -53,6 +54,9 @@ export class EventCreateRequest {
 
   @ApiProperty()
   eventTypeId?: string;
+
+  @ApiProperty()
+  listTask?: TaskCreateReq[];
 }
 
 export class EventCreateRequestContract {

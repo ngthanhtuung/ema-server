@@ -42,7 +42,6 @@ import { TaskService } from '../task/task.service';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { ContractEntity } from '../contracts/contracts.entity';
-import { TaskCreateReq } from '../task/dto/task.request';
 import { TaskEntity } from '../task/task.entity';
 
 @Injectable()
@@ -443,7 +442,6 @@ export class EventService extends BaseService<EventEntity> {
     event: EventCreateRequest,
     user: UserEntity,
     contactId: string,
-    listTask: TaskCreateReq[],
   ): Promise<string> {
     console.log('contactId:', contactId);
     const queryRunner = this.dataSource.createQueryRunner();
@@ -502,7 +500,7 @@ export class EventService extends BaseService<EventEntity> {
         },
       );
     };
-    const listInsertTask = listTask.map((task) => {
+    const listInsertTask = event.listTask.map((task) => {
       const {
         title,
         startDate,
