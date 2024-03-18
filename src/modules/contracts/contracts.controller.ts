@@ -123,7 +123,7 @@ export class ContractsController {
   }
 
   @Get('/:contractId/evidence')
-  @Roles(ERole.MANAGER, ERole.ADMIN)
+  @Roles(ERole.MANAGER, ERole.ADMIN, ERole.CUSTOMER)
   async getEvidenceByContractId(
     @Param('contractId') contractId: string,
   ): Promise<ContractEvidenceEntity[]> {
