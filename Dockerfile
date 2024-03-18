@@ -1,10 +1,19 @@
+## Base image
+#FROM node:18
+#
+## Install LibreOffice
+#RUN apt-get update \
+#    && apt-get install -y libreoffice \
+#    && rm -rf /var/lib/apt/lists/*
+
 # Base image
-FROM node:18
+FROM node:18-alpine
 
 # Install LibreOffice
-RUN apt-get update \
-    && apt-get install -y libreoffice \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk add --no-cache libreoffice \
+    && rm -rf /var/cache/apk/*
+
 
 # Create app directory
 WORKDIR /usr/src/app
