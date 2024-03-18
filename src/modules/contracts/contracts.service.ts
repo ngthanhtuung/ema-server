@@ -669,7 +669,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         CustomerContactEntity,
         {
           where: { id: customerContactId },
-          relations: ['contract', 'contract.files'],
+          relations: ['contract', 'contract.files', 'eventType'],
         },
       );
       if (!contractExisted) {
@@ -683,6 +683,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         );
       });
       const contractResponse = {
+        eventTypeId: contractExisted?.eventType?.id,
         ...contractExisted?.contract,
         files: sortedFiles,
       };
@@ -741,7 +742,6 @@ export class ContractsService extends BaseService<ContractEntity> {
           files: true,
         },
       });
-      console.log('contractExisted:', contractExisted);
       if (!contractExisted) {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }
