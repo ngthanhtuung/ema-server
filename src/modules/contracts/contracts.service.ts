@@ -409,15 +409,6 @@ export class ContractsService extends BaseService<ContractEntity> {
               status: EContractStatus.PAID,
             },
           );
-          await queryRunner.manager.update(
-            CustomerContactEntity,
-            {
-              id: contract?.customerContact?.id,
-            },
-            {
-              status: EContactInformation.SUCCESS,
-            },
-          );
         }
       }
       return result;

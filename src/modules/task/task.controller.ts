@@ -40,7 +40,7 @@ export class TaskController {
   @Get('/filterByAssignee')
   async filterTaskByCondition(
     @Query() filter: FilterTask,
-  ): Promise<TaskEntity> {
+  ): Promise<TaskEntity[]> {
     return await this.taskService.filterTaskByAssignee(filter);
   }
 
