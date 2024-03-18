@@ -947,11 +947,14 @@ export class TaskService extends BaseService<TaskEntity> {
           return task;
         }
       });
+      console.log('overdueTasks:', overdueTasks);
       if (overdueTasks.length > 0) {
         await Promise.all(
           overdueTasks.map((task) => {
-            task.status = ETaskStatus.OVERDUE;
-            return this.taskRepository.save(task);
+            return this.taskRepository.update(
+              { id: task.id },
+              { status: ETaskStatus.OVERDUE },
+            );
           }),
         );
       }

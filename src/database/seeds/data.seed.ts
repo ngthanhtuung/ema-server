@@ -242,7 +242,7 @@ export class DataSeed implements Seeder {
         gender: faker.person.sex().toUpperCase() as EGender,
         address: faker.location.street(),
         phoneNumber: faker.phone.number(),
-        avatar: 'https://picsum.photos/200/300',
+        avatar: 'https://i.pravatar.cc/300',
       },
     ];
     await connection
@@ -324,7 +324,8 @@ export class DataSeed implements Seeder {
         gender: faker.person.sex().toUpperCase() as EGender,
         address: faker.location.street(),
         phoneNumber: faker.phone.number(),
-        avatar: 'https://picsum.photos/200/300',
+        avatar:
+          'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/76/76f731c937b02b3f72fd9b9a09fd7f69e35443de_full.jpg',
       };
 
       dataProfile.push(staffProfile);
@@ -347,7 +348,8 @@ export class DataSeed implements Seeder {
         gender: faker.person.sex().toUpperCase() as EGender,
         address: faker.location.street(),
         phoneNumber: faker.phone.number(),
-        avatar: 'https://picsum.photos/200/300',
+        avatar:
+          'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2015/03/John_Cena.jpg?quality=86&strip=all',
       };
       dataProfile.push(employeeProfile);
     };
