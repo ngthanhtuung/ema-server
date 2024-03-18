@@ -701,6 +701,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       const contractExisted = await queryRunner.manager.find(ContractEntity, {
         relations: {
           files: true,
+          customerContact: true,
         },
       });
       if (!contractExisted) {
@@ -714,7 +715,9 @@ export class ContractsService extends BaseService<ContractEntity> {
             moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
           );
         });
-        return item;
+        const customerContactId = item?.customerContact?.id;
+        delete item.customerContact;
+        return { customerContactId, ...item };
       });
       return dataFinal;
     } catch (err) {

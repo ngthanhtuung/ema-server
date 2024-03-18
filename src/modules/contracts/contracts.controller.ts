@@ -132,7 +132,7 @@ export class ContractsController {
 
   @Post('/:contractId/evidence')
   @ApiConsumes('multipart/form-data')
-  @Roles(ERole.MANAGER, ERole.ADMIN)
+  @Roles(ERole.MANAGER, ERole.ADMIN, ERole.CUSTOMER)
   @ApiBody({
     schema: {
       type: 'object',
