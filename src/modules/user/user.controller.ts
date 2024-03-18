@@ -24,7 +24,7 @@ export class UserController {
   }
 
   @Get('/:userId')
-  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.ADMIN, ERole.EMPLOYEE)
   async getUserById(@Param('userId') userId: string): Promise<UserProfile> {
     return await this.userService.findByIdV2(userId);
   }

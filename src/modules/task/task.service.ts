@@ -942,12 +942,16 @@ export class TaskService extends BaseService<TaskEntity> {
           { status: ETaskStatus.PROCESSING },
         ],
       });
-      const overdueTasks = tasks.filter((task) => task.endDate <= currentDate);
+      const overdueTasks = tasks.filter((task) => {
+        if (task?.endDate !== undefined && task?.endDate <= currentDate) {
+          return task;
+        }
+      });
       if (overdueTasks.length > 0) {
         await Promise.all(
-          overdueTasks.map(async (task) => {
+          overdueTasks.map((task) => {
             task.status = ETaskStatus.OVERDUE;
-            return await this.taskRepository.save(task);
+            return this.taskRepository.save(task);
           }),
         );
       }
