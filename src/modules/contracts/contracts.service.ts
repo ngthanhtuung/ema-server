@@ -663,17 +663,20 @@ export class ContractsService extends BaseService<ContractEntity> {
   ): Promise<object | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const contractExisted = await queryRunner.manager.findOne(
+      const contactExisted = await queryRunner.manager.findOne(
         CustomerContactEntity,
         {
           where: { id: customerContactId },
           relations: ['contract', 'contract.files', 'eventType'],
         },
       );
-      if (!contractExisted) {
+      const contractTotalBudget = await this.planService.getTotalPriceOfPlan(
+        customerContactId,
+      );
+      if (!contactExisted) {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }
-      const sortedFiles = contractExisted?.contract?.files?.sort((a, b) => {
+      const sortedFiles = contactExisted?.contract?.files?.sort((a, b) => {
         const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
         const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
         return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
@@ -681,8 +684,10 @@ export class ContractsService extends BaseService<ContractEntity> {
         );
       });
       const contractResponse = {
-        eventTypeId: contractExisted?.eventType?.id,
-        ...contractExisted?.contract,
+        eventTypeId: contactExisted?.eventType?.id,
+        contractTotalBudget: contractTotalBudget,
+        description: contactExisted?.note,
+        ...contactExisted?.contract,
         files: sortedFiles,
       };
       return contractResponse;
@@ -962,7 +967,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           item.index = index++;
         }
       }
-      const plannedBackup = plannedTotalPrice * 0.5;
+      const plannedBackup = plannedTotalPrice * 0.05;
       const plannedVAT = (plannedTotalPrice + plannedBackup) * 0.1;
       const plannedTotal = plannedTotalPrice + plannedBackup + plannedVAT;
       const plannedTotalPriceFormatted =

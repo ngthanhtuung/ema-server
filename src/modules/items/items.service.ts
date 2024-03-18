@@ -584,6 +584,35 @@ export class ItemsService extends BaseService<ItemEntity> {
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
+  async getTotalPriceOfPlan(customerContactId: string): Promise<number> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      const listPlan = await queryRunner.manager.find(ItemEntity, {
+        where: {
+          customerInfo: {
+            id: customerContactId,
+          },
+        },
+      });
+      let totalPrice = 0;
+      if (listPlan.length > 0) {
+        for (const item of listPlan) {
+          totalPrice += item.plannedPrice * item.plannedAmount;
+        }
+        const backupPrice = totalPrice * 0.05;
+        const taxPrice = (totalPrice + backupPrice) * 0.1;
+        const grandTotalPrice = totalPrice + backupPrice + taxPrice;
+        return grandTotalPrice;
+      }
+      throw new BadRequestException(
+        'Hợp đồng này chưua có kế hoạch, vui lòng tạo kế hoạch',
+      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
   // @ts-ignore
   private async convertResultFromCSV(
     dataReadResult: string,
