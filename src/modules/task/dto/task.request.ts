@@ -42,6 +42,9 @@ export class TaskCreateReq {
   @ApiProperty({ required: false })
   leader: string;
 
+  @ApiProperty({ required: false })
+  itemId: string;
+
   @ApiProperty({
     type: [TaskFileRequest],
     required: false,

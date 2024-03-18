@@ -11,9 +11,6 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
 import { DataSource, QueryRunner } from 'typeorm';
 import { FilterTask, TaskCreateReq } from './dto/task.request';
-import { TaskfileService } from '../taskfile/taskfile.service';
-import { Inject } from '@nestjs/common/decorators';
-import { forwardRef } from '@nestjs/common/utils';
 import { EventEntity } from '../event/event.entity';
 import {
   EVENT_ERROR_MESSAGE,

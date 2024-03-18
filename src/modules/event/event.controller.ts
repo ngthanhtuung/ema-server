@@ -7,16 +7,14 @@ import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   EventAssignRequest,
   EventCreateRequest,
-  EventCreateRequestContract,
   EventUpdateRequest,
   FilterEvent,
   GetListEvent,
 } from './dto/event.request';
-import { EEventDate, EEventStatus, ERole } from 'src/common/enum/enum';
+import { EEventStatus, ERole } from 'src/common/enum/enum';
 import { Roles } from 'src/decorators/role.decorator';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { EventEntity } from './event.entity';
-import { ContractCreateRequest } from '../contracts/dto/contract.dto';
 
 @Controller('event')
 @ApiBearerAuth()

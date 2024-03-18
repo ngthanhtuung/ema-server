@@ -1,5 +1,4 @@
 import { Request } from 'express';
-import { IPaginateResponse } from 'src/modules/base/filter.pagination';
 import { ConversationsEntity } from 'src/modules/conversations/conversations.entity';
 import { GroupsEntity } from 'src/modules/groups/groups.entity';
 import { GroupsMessageEntity } from 'src/modules/groups_messages/groups_messages.entity';

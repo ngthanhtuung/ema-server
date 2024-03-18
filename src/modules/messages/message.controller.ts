@@ -13,16 +13,9 @@ import {
   ParseIntPipe,
   Put,
   Post,
-  // UploadedFiles,
-  UseInterceptors,
   Query,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-// import {
-//   FileFieldsInterceptor,
-//   FilesInterceptor,
-// } from '@nestjs/platform-express';
-// import { Attachment } from 'src/utils/types';
 import { UserEntity } from '../user/user.entity';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CreateMessageDto } from './dtos/CreateMessage.dto';
@@ -40,39 +33,13 @@ export class MessageController {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  // @UseInterceptors(
-  //   FileFieldsInterceptor([
-  //     {
-  //       name: 'attachments',
-  //       maxCount: 5,
-  //     },
-  //   ]),
-  // )
   @Post()
-  // @ApiConsumes('multipart/form-data')
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       files: {
-  //         type: 'array',
-  //         items: {
-  //           type: 'string',
-  //           format: 'binary',
-  //         },
-  //       },
-  //     },
-  //   },
-  // })
-  // @UseInterceptors(FilesInterceptor('files'))
   async createMessage(
     @GetUser() user: string,
-    // @UploadedFiles() { attachments }: { attachments: Attachment[] },
     @Param('id') id: string,
     @Body()
     { content }: CreateMessageDto,
   ) {
-    // if (!attachments && !content) throw new EmptyMessageException();
     if (!content)
       throw new BadRequestException(
         'Message must contain content or at least 1 attachment',

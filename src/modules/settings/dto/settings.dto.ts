@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { EGroupSetting } from 'src/common/enum/enum';
+import { IsString } from 'class-validator';
 
 export class SettingRequestDto {
   @IsString()

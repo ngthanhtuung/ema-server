@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { instanceToPlain } from 'class-transformer';
 import { Repository } from 'typeorm';
@@ -25,7 +19,6 @@ import { CannotDeleteMessage } from './exceptions/CannotDeleteMessage';
 import { ConversationsEntity } from '../conversations/conversations.entity';
 import { MessagesPagination } from './dtos/messages.pagination';
 import { IPaginateResponse } from '../base/filter.pagination';
-import { ConservationsPagination } from '../conversations/dtos/conversations.pagination';
 @Injectable()
 export class MessageService implements IMessageService {
   constructor(

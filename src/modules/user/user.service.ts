@@ -17,7 +17,6 @@ import {
 import { UserEntity } from 'src/modules/user/user.entity';
 import {
   CustomerCreateRequest,
-  FilterFreeEmployee,
   UserCreateRequest,
   UserPagination,
   UserProfileUpdateRequest,
@@ -34,8 +33,6 @@ import { ProfileEntity } from 'src/modules/profile/profile.entity';
 import { SharedService } from 'src/shared/shared.service';
 import {
   DataSource,
-  LessThanOrEqual,
-  MoreThanOrEqual,
   QueryRunner,
   Repository,
   SelectQueryBuilder,
@@ -53,7 +50,7 @@ export class UserService extends BaseService<UserEntity> {
     private readonly userRepository: Repository<UserEntity>,
     @InjectDataSource()
     private dataSource: DataSource,
-    private shareService: SharedService, // private taskService: TaskService,
+    private shareService: SharedService,
   ) {
     super(userRepository);
   }
@@ -487,11 +484,7 @@ export class UserService extends BaseService<UserEntity> {
    * @param loginUserId
    * @returns
    */
-  async updatePassword(
-    password: string,
-    modifiedDate: Date,
-    loginUserId: string,
-  ): Promise<void> {
+  async updatePassword(password: string, loginUserId: string): Promise<void> {
     try {
       await this.userRepository.update(
         { id: loginUserId },

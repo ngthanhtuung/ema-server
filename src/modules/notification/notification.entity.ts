@@ -1,6 +1,5 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
-import { UserEntity } from '../user/user.entity';
 import { ETypeNotification } from 'src/common/enum/enum';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
 

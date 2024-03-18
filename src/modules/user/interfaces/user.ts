@@ -1,8 +1,4 @@
-import {
-  CreateUserDetails,
-  FindUserOptions,
-  FindUserParams,
-} from 'src/utils/types';
+import { FindUserOptions, FindUserParams } from 'src/utils/types';
 import { UserEntity } from '../user.entity';
 
 export interface IUserService {

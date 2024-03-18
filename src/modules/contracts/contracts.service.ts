@@ -7,7 +7,6 @@ import {
 } from './dto/contract.dto';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -68,7 +67,6 @@ export class ContractsService extends BaseService<ContractEntity> {
     customerInfo: EventCreateRequestContract,
     contactId: string,
     user: UserEntity,
-    // queryRunner?: any,
   ): Promise<object | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -131,7 +129,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           },
         });
       };
-      await await this.transaction(callback, queryRunner);
+      await this.transaction(callback, queryRunner);
       const userProcess = await this.userService.findByIdV2(user.id);
       await this.sharedService.sendContractAlert(
         customerInfo.customerEmail,
@@ -524,7 +522,7 @@ export class ContractsService extends BaseService<ContractEntity> {
                 'Bạn cần phải nhập lý do từ chối hợp đồng này',
               );
             }
-            const updateContractFileReject = await queryRunner.manager.update(
+            await queryRunner.manager.update(
               ContractFileEntity,
               {
                 id: contractFileId,
@@ -554,7 +552,6 @@ export class ContractsService extends BaseService<ContractEntity> {
               queryRunner,
             );
             return `Hợp đồng bị từ chối vì lí do: ${rejectReason.rejectNote}`;
-            break;
         }
       }
       throw new InternalServerErrorException(

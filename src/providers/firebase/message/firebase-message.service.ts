@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { FirebaseNotificationRequest } from './dto/firebase-notification.dto';
 import * as admin from 'firebase-admin';
-import { InjectDataSource } from '@nestjs/typeorm';
 import { DeviceService } from 'src/modules/device/device.service';
 
 @Injectable()

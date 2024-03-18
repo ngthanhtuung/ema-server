@@ -1,10 +1,7 @@
-import { OmitType } from '@nestjs/swagger';
 import { BaseEntity } from '../base/base.entity';
-import { Column, Entity, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { NotificationEntity } from '../notification/notification.entity';
-import * as moment from 'moment-timezone';
-import { Transform } from 'class-transformer';
 
 @Entity({ name: 'user_notifications' })
 export class UserNotificationsEntity extends BaseEntity {

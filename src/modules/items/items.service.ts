@@ -313,7 +313,6 @@ export class ItemsService extends BaseService<ItemEntity> {
           const { hasErrorInRecord, errorMessages } = this.validateRecord(
             data,
             lineNumber,
-            categories,
           );
           if (hasErrorInRecord) {
             totalErrorsRecords++;
@@ -339,13 +338,11 @@ export class ItemsService extends BaseService<ItemEntity> {
    * validateRecord
    * @param data
    * @param lineNumber
-   * @param categories
    * @returns
    */
   validateRecord(
     data: any,
     lineNumber: number,
-    categories: CategoryEntity[],
   ): { hasErrorInRecord: boolean; errorMessages: string[] } {
     let hasErrorInRecord = false;
     const errorMessages = [];
@@ -613,7 +610,6 @@ export class ItemsService extends BaseService<ItemEntity> {
     }
   }
 
-  // @ts-ignore
   private async convertResultFromCSV(
     dataReadResult: string,
     categoriesMap: any,

@@ -8,8 +8,6 @@ import { FileModule } from 'src/file/file.module';
 import { TaskModule } from '../task/task.module';
 import { ContractsModule } from '../contracts/contracts.module';
 import { CustomerContactsModule } from '../customer_contacts/customer_contacts.module';
-import { forwardRef } from '@nestjs/common/utils';
-import { ItemsModule } from '../items/items.module';
 
 @Module({
   imports: [
