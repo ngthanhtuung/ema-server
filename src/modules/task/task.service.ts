@@ -675,6 +675,12 @@ export class TaskService extends BaseService<TaskEntity> {
                   eventName: true,
                 },
               },
+              item: {
+                id: true,
+                plannedAmount: true,
+                plannedPrice: true,
+                plannedUnit: true,
+              },
             },
             where: {
               priority,
@@ -730,6 +736,12 @@ export class TaskService extends BaseService<TaskEntity> {
                 id: true,
                 eventName: true,
               },
+            },
+            item: {
+              id: true,
+              plannedAmount: true,
+              plannedPrice: true,
+              plannedUnit: true,
             },
           },
           where: {

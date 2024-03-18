@@ -19,4 +19,16 @@ export class CreatePlanBudgetRequest {
   description: string;
 }
 
-export class CreateTransactionRequest {}
+export class CreateTransactionRequest {
+  @IsString()
+  @ApiProperty()
+  transactionName: string;
+
+  @ApiProperty()
+  @IsString()
+  description: string;
+
+  @IsDecimal()
+  @ApiProperty()
+  amount: number;
+}

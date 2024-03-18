@@ -6,21 +6,28 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
-import { ItemEntity } from '../items/items.entity';
-import { TaskEntity } from '../task/task.entity';
-import { BudgetEntity } from './budgets.entity';
 import { ETransaction } from '../../common/enum/enum';
 import { Transform } from 'class-transformer';
 import * as moment from 'moment-timezone';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
+import { TaskEntity } from '../task/task.entity';
 
 @Entity({ name: 'transactions' })
 export class TransactionEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: false })
   transactionCode: string;
 
+  @Column({ type: 'varchar', nullable: false })
+  transactionName: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  description: string;
+
   @Column({ type: 'float', nullable: false })
   amount: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  processedBy: string;
 
   @Column({
     type: 'enum',
@@ -33,7 +40,7 @@ export class TransactionEntity extends BaseEntity {
   @Transform(({ value }) => {
     return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
-  public createdAt: Date;
+  createdAt: Date;
 
   @Column({ type: 'varchar', nullable: false })
   createdBy: string;
@@ -47,13 +54,8 @@ export class TransactionEntity extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   updatedBy: string;
 
-  @ManyToOne(() => BudgetEntity, (budget) => budget.transactions, {
+  @ManyToOne(() => TaskEntity, (task) => task.transactions, {
     onDelete: 'CASCADE',
   })
-  budget: BudgetEntity;
-
-  @ManyToOne(() => AssignTaskEntity, (taskAssign) => taskAssign.transactions, {
-    onDelete: 'CASCADE',
-  })
-  taskAssign: AssignTaskEntity;
+  task: TaskEntity;
 }

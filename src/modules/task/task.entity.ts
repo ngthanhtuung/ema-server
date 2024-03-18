@@ -5,7 +5,8 @@ import { CommentEntity } from '../comment/comment.entity';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { TaskFileEntity } from '../taskfile/taskfile.entity';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { BudgetEntity } from '../budgets/budgets.entity';
+import { ItemEntity } from '../items/items.entity';
+import { TransactionEntity } from '../budgets/transactions.entity';
 
 @Entity({ name: 'tasks' })
 export class TaskEntity extends BaseEntity {
@@ -21,7 +22,7 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'datetime', nullable: true })
   endDate: Date;
 
-  @Column({ type: 'varchar', nullable: true, length: 15000 })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @Column({ type: 'enum', enum: EPriority, nullable: true })
@@ -86,8 +87,14 @@ export class TaskEntity extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   isTemplate: boolean;
 
-  @OneToMany(() => BudgetEntity, (budgets) => budgets.task, {
+  @ManyToOne(() => ItemEntity, (item) => item.tasks, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  item: ItemEntity;
+
+  @OneToMany(() => TransactionEntity, (transactions) => transactions.task, {
     onDelete: 'CASCADE',
   })
-  budgets: BudgetEntity[];
+  transactions: TransactionEntity[];
 }

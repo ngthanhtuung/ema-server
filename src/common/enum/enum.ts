@@ -155,6 +155,7 @@ export enum EContractStatus {
   PAID = 'PAID',
   WAIT_FOR_SIGN = 'WAIT_FOR_SIGN',
   WAIT_FOR_PAID = 'WAIT_FOR_PAID',
+  SUCCESS = 'SUCCESS',
 }
 
 export enum EContractEvidenceType {

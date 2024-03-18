@@ -1,8 +1,8 @@
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { CategoryEntity } from '../categories/categories.entity';
-import { BudgetEntity } from '../budgets/budgets.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
+import { TaskEntity } from '../task/task.entity';
 
 @Entity({ name: 'items' })
 export class ItemEntity extends BaseEntity {
@@ -40,8 +40,6 @@ export class ItemEntity extends BaseEntity {
   @ManyToOne(() => CategoryEntity, (category) => category.items)
   category: CategoryEntity;
 
-  @OneToMany(() => BudgetEntity, (budget) => budget.item, {
-    onDelete: 'CASCADE',
-  })
-  budgets: BudgetEntity[];
+  @OneToMany(() => TaskEntity, (tasks) => tasks.item, { onDelete: 'CASCADE' })
+  tasks: TaskEntity[];
 }
