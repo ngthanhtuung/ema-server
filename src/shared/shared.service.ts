@@ -241,6 +241,20 @@ export class SharedService {
     }
   }
 
+  public async generateTransactionCode(): Promise<string | undefined> {
+    try {
+      const randomPart = Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase();
+      const contractCode = `#T-${randomPart}`;
+
+      return contractCode;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
   async generateJWTTokenForAnHour(payload: object): Promise<string> {
     try {
       const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60; // Current time in seconds + 1 hour

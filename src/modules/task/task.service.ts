@@ -641,7 +641,7 @@ export class TaskService extends BaseService<TaskEntity> {
    * @param filter
    * @returns
    */
-  async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity> {
+  async filterTaskByAssignee(filter: FilterTask): Promise<TaskEntity[]> {
     const { assignee, priority, sort, status, eventID } = filter;
     let result;
     try {
@@ -675,12 +675,6 @@ export class TaskService extends BaseService<TaskEntity> {
                   eventName: true,
                 },
               },
-              item: {
-                id: true,
-                plannedAmount: true,
-                plannedPrice: true,
-                plannedUnit: true,
-              },
             },
             where: {
               priority,
@@ -704,6 +698,7 @@ export class TaskService extends BaseService<TaskEntity> {
                 event: true,
               },
               taskFiles: true,
+              item: true,
             },
             order: {
               createdAt: { direction: sort },
@@ -737,12 +732,6 @@ export class TaskService extends BaseService<TaskEntity> {
                 eventName: true,
               },
             },
-            item: {
-              id: true,
-              plannedAmount: true,
-              plannedPrice: true,
-              plannedUnit: true,
-            },
           },
           where: {
             priority,
@@ -763,6 +752,7 @@ export class TaskService extends BaseService<TaskEntity> {
               event: true,
             },
             taskFiles: true,
+            item: true,
           },
           order: {
             createdAt: { direction: sort },

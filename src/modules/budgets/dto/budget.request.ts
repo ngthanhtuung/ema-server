@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsNumber, IsString, IsDecimal } from 'class-validator';
+import { FilterTask } from '../../task/dto/task.request';
 
 export class CreatePlanBudgetRequest {
   @ApiProperty()
@@ -28,7 +29,9 @@ export class CreateTransactionRequest {
   @IsString()
   description: string;
 
-  @IsDecimal()
   @ApiProperty()
+  @IsNumber()
   amount: number;
 }
+
+export class FilterBigTaskAndItem extends FilterTask {}
