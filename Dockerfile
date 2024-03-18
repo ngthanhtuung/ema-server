@@ -9,11 +9,10 @@
 # Base image
 FROM node:18-alpine
 
-# Install LibreOffice
+# Install LibreOffice and fonts
 RUN apk update \
-    && apk add --no-cache libreoffice \
+    && apk add --no-cache libreoffice ttf-dejavu ttf-droid ttf-freefont ttf-liberation \
     && rm -rf /var/cache/apk/*
-
 
 # Create app directory
 WORKDIR /usr/src/app
