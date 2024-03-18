@@ -314,12 +314,12 @@ export class ContractsService extends BaseService<ContractEntity> {
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
       }
-      if (
-        contract.companyRepresentative !== user.id &&
-        user.role.toString() !== ERole.ADMIN
-      ) {
-        throw new ForbiddenException('You are not allowed to do this action');
-      }
+      // if (
+      //   contract.companyRepresentative !== user.id &&
+      //   user.role.toString() !== ERole.ADMIN
+      // ) {
+      //   throw new ForbiddenException('You are not allowed to do this action');
+      // }
       const contractSuccess = contract?.files.filter(
         (file) => file.status === EContractStatus.ACCEPTED,
       );
