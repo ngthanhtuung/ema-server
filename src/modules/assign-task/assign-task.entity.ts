@@ -59,11 +59,4 @@ export class AssignTaskEntity extends BaseEntity {
     return moment(value).tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss');
   })
   updatedAt: Date;
-
-  @OneToMany(
-    () => TransactionEntity,
-    (transactions) => transactions.taskAssign,
-    { onDelete: 'CASCADE' },
-  )
-  transactions: TransactionEntity[];
 }

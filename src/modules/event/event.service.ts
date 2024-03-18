@@ -33,6 +33,7 @@ import {
   EEventDate,
   EStatusAssignee,
   EContractStatus,
+  EContactInformation,
 } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
@@ -40,6 +41,7 @@ import { UserEntity } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
+import { ContractEntity } from '../contracts/contracts.entity';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -482,19 +484,20 @@ export class EventService extends BaseService<EventEntity> {
         "createEvent.generatedMaps[0]['id']:",
         createEvent.generatedMaps[0]['id'],
       );
-      // await this.contractsService.generateNewContract(
-      //   event,
-      //   createEvent.generatedMaps[0]['id'],
-      //   user,
-      //   queryRunner,
-      // );
-      // const empty: unknown = '';
-      // this.customerContactsService.updateStatus(
-      //   user,
-      //   contactId,
-      //   EContactInformation.SUCCESS,
-      //   empty,
-      // );
+      await queryRunner.manager.update(
+        ContractEntity,
+        { id: customerContact?.contract?.id },
+        {
+          status: EContractStatus.SUCCESS,
+        },
+      );
+      await queryRunner.manager.update(
+        CustomerContactEntity,
+        { id: contactId },
+        {
+          status: EContactInformation.SUCCESS,
+        },
+      );
     };
     await this.transaction(callback, queryRunner);
     return `Created event successfully`;
