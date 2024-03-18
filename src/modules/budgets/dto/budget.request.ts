@@ -18,3 +18,5 @@ export class CreatePlanBudgetRequest {
   @IsString()
   description: string;
 }
+
+export class CreateTransactionRequest {}
