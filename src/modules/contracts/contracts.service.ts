@@ -59,7 +59,7 @@ export class ContractsService extends BaseService<ContractEntity> {
     private readonly userService: UserService,
     private readonly fileService: FileService,
     private readonly planService: ItemsService,
-    private notificationService: NotificationService,
+    private readonly notificationService: NotificationService,
   ) {
     super(contractRepository);
   }
@@ -627,11 +627,11 @@ export class ContractsService extends BaseService<ContractEntity> {
       const contractExisted = contactExisted?.contract;
       const dataObject: EventCreateRequestContract = {
         eventName: contractExisted.eventName,
-        startDate: moment(contractExisted.startDate).format('YYYY - MM - DD'),
+        startDate: moment(contractExisted.startDate).format('YYYY-MM-DD'),
         processingDate: moment(contractExisted.processingDate).format(
-          'YYYY - MM - DD',
+          'YYYY-MM-DD',
         ),
-        endDate: moment(contractExisted.endDate).format('YYYY - MM - DD'),
+        endDate: moment(contractExisted.endDate).format('YYYY-MM-DD'),
         location: contactExisted.address,
         eventTypeId: contactExisted.eventType.id,
         customerName: contractExisted.customerName,
@@ -640,9 +640,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         customerEmail: contractExisted.customerEmail,
         customerPhoneNumber: contractExisted.customerPhoneNumber,
         paymentMethod: contractExisted.paymentMethod,
-        paymentDate: moment(contractExisted.paymentDate).format(
-          'YYYY - MM - DD',
-        ),
+        paymentDate: moment(contractExisted.paymentDate).format('YYYY-MM-DD'),
       };
       const newContract = await this.generateNewContract(
         dataObject,
@@ -705,7 +703,6 @@ export class ContractsService extends BaseService<ContractEntity> {
           files: true,
         },
       });
-      console.log('contractExisted:', contractExisted);
       if (!contractExisted) {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }
