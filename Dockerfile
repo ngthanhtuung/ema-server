@@ -1,17 +1,9 @@
-## Base image
-#FROM node:18
-#
-## Install LibreOffice
-#RUN apt-get update \
-#    && apt-get install -y libreoffice \
-#    && rm -rf /var/lib/apt/lists/*
-
 # Base image
 FROM node:18-alpine
 
 # Install LibreOffice and fonts
 RUN apk update \
-    && apk add --no-cache libreoffice ttf-dejavu ttf-droid ttf-freefont ttf-liberation \
+    && apk add --no-cache libreoffice ttf-dejavu \
     && rm -rf /var/cache/apk/*
 
 # Create app directory
