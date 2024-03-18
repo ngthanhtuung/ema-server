@@ -502,15 +502,20 @@ export class EventService extends BaseService<EventEntity> {
         },
       );
       // Assigne divsion into event
-      const dataEditDivision: EventAssignRequest = {
-        eventId: createEvent.generatedMaps[0]['id'],
-        divisionId: event.listDivision,
-      };
-      await this.editDivisionIntoEvent(dataEditDivision, queryRunner);
-      const listIdEventDivison =
-        await this.assignEventService.getListIdEventDivision(
-          createEvent.generatedMaps[0]['id'],
-        );
+      const dataEditDivision = event.listDivision.map((item) => {
+        return {
+          event: { id: createEvent.generatedMaps[0]['id'] },
+          division: { id: item },
+        };
+      });
+      const data = await queryRunner.manager
+        .createQueryBuilder()
+        .insert()
+        .into(AssignEventEntity)
+        .values(dataEditDivision)
+        .execute();
+      console.log('data:', data);
+
       const listInsertTask = event.listTask.map((task) => {
         const {
           title,
@@ -527,7 +532,7 @@ export class EventService extends BaseService<EventEntity> {
           title: title,
           createdBy: user.id,
           eventDivision: {
-            id: listIdEventDivison?.[0]?.id,
+            id: data?.generatedMaps?.[0]?.id,
           },
           startDate: startDate
             ? moment(startDate).tz('Asia/Bangkok').toDate()

@@ -14,6 +14,7 @@ import { RoleEntity } from 'src/modules/roles/roles.entity';
 import { EventTypeEntity } from 'src/modules/event_types/event_types.entity';
 import * as moment from 'moment-timezone';
 import { CategoryEntity } from '../../modules/categories/categories.entity';
+import { CustomerContactEntity } from 'src/modules/customer_contacts/customer_contacts.entity';
 
 const maleFirstName = [
   'An',
@@ -551,13 +552,6 @@ export class DataSeed implements Seeder {
           id: (await findIdRole(ERole.CUSTOMER))?.id,
         },
       },
-      {
-        email: 'quanghuy0610.dev@gmail.com',
-        password: hashPassword,
-        role: {
-          id: (await findIdRole(ERole.CUSTOMER))?.id,
-        },
-      },
     ];
     const customer = await connection
       .createQueryBuilder()
@@ -577,16 +571,6 @@ export class DataSeed implements Seeder {
         avatar:
           'https://lh3.googleusercontent.com/a/ACg8ocL6T3CA_2x6IlROu1V3eLu8qCjEzDUdy5Ut6BVSaB_W=s96-c',
       },
-      {
-        fullName: 'Nguyễn Thị Hồng Gấm',
-        id: customer['identifiers'][1]['id'],
-        dob: faker.date.anytime(),
-        nationalId: faker.string.numeric(12).toString(),
-        gender: faker.person.sex().toUpperCase() as EGender,
-        address: faker.location.street(),
-        phoneNumber: faker.phone.number(),
-        avatar: 'https://picsum.photos/200/300',
-      },
     ];
     await connection
       .createQueryBuilder()
@@ -594,7 +578,57 @@ export class DataSeed implements Seeder {
       .into(ProfileEntity)
       .values(dataProfileCustomer)
       .execute();
-    const event1 = await connection
+    const listContact = [
+      {
+        fullName: 'Nguyễn Quốc Sỹ',
+        email: 'quocsy25112@gmail.com',
+        address: 'FPT Shop, 495A Trương Định, Tân Mai, Hoàng Mai, Hà Nội',
+        note: '[{"insert":"sân cầu lông quận 9\nSự kiện khánh thành cầu lông quận 9 là một dịp trọng đại và phấn khích đối với cộng đồng vùng này. Dưới đây là một mô tả sự kiện này:\nNgày hôm đó, không khí trong quận 9 được sôi động và phấn khích hơn bao giờ hết, khi cộng đồng địa phương và các quan khách quốc gia đến tham dự sự kiện khánh thành cầu lông mới. Buổi lễ bắt đầu từ sáng sớm với các hoạt động văn hóa và giải trí để chào đón khách mời và những người dân tò mò.\nKhung cảnh tại địa điểm khánh thành rực rỡ với các biểu tượng và trang trí đặc biệt, tôn vinh sự kiện quan trọng này. Bên cạnh đó, sân cầu lông mới được thiết kế với kiến trúc hiện đại và tiện nghi, đặc biệt thu hút sự chú ý của mọi người.\nBuổi lễ khai mạc bắt đầu bằng lễ rước đuốc và lời chào từ các quan chức địa phương, đồng thời nhấn mạnh vai trò quan trọng của cầu lông trong việc thúc đẩy sự phát triển văn hóa và thể thao trong cộng đồng. Các nghệ sĩ địa phương biểu diễn các tiết mục nghệ thuật, tạo ra một không gian ấm áp và gần gũi.\nSau đó, lễ cắt băng chính thức được diễn ra, thể hiện sự khai mạc chính thức của cầu lông. Các quan khách và người dân đều cùng nhau chia sẻ niềm vui và hứng khởi khi chứng kiến bước ngoặt lịch sử này cho quận 9.\nSau buổi lễ khánh thành, sân cầu lông mới đã mở cửa cho công chúng tham quan và tham gia các hoạt động thể thao. Đây không chỉ là một kỷ niệm đẹp, mà còn là một bước quan trọng trong việc nâng cao chất lượng cuộc sống và tạo ra cơ hội cho các hoạt động văn hóa và thể thao trong cộng đồng.\n"}]',
+        phoneNumber: '0983709791',
+        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        budget: 100000000,
+        eventType: {
+          id: eventType['identifiers'][3]['id'],
+        },
+        createdBy: customer['identifiers'][0]['id'],
+      },
+      {
+        fullName: 'Nguyễn Quốc Sỹ',
+        email: 'quocsy25112@gmail.com',
+        address: 'FPT Shop, 1 Vĩnh Hưng, Vĩnh Hưng, Hoàng Mai, Hà Nội',
+        note: '[{"insert":"sân cầu lông quận 9\nSự kiện khánh thành cầu lông quận 9 là một dịp trọng đại và phấn khích đối với cộng đồng vùng này. Dưới đây là một mô tả sự kiện này:\nNgày hôm đó, không khí trong quận 9 được sôi động và phấn khích hơn bao giờ hết, khi cộng đồng địa phương và các quan khách quốc gia đến tham dự sự kiện khánh thành cầu lông mới. Buổi lễ bắt đầu từ sáng sớm với các hoạt động văn hóa và giải trí để chào đón khách mời và những người dân tò mò.\nKhung cảnh tại địa điểm khánh thành rực rỡ với các biểu tượng và trang trí đặc biệt, tôn vinh sự kiện quan trọng này. Bên cạnh đó, sân cầu lông mới được thiết kế với kiến trúc hiện đại và tiện nghi, đặc biệt thu hút sự chú ý của mọi người.\nBuổi lễ khai mạc bắt đầu bằng lễ rước đuốc và lời chào từ các quan chức địa phương, đồng thời nhấn mạnh vai trò quan trọng của cầu lông trong việc thúc đẩy sự phát triển văn hóa và thể thao trong cộng đồng. Các nghệ sĩ địa phương biểu diễn các tiết mục nghệ thuật, tạo ra một không gian ấm áp và gần gũi.\nSau đó, lễ cắt băng chính thức được diễn ra, thể hiện sự khai mạc chính thức của cầu lông. Các quan khách và người dân đều cùng nhau chia sẻ niềm vui và hứng khởi khi chứng kiến bước ngoặt lịch sử này cho quận 9.\nSau buổi lễ khánh thành, sân cầu lông mới đã mở cửa cho công chúng tham quan và tham gia các hoạt động thể thao. Đây không chỉ là một kỷ niệm đẹp, mà còn là một bước quan trọng trong việc nâng cao chất lượng cuộc sống và tạo ra cơ hội cho các hoạt động văn hóa và thể thao trong cộng đồng.\n"}]',
+        phoneNumber: '0983709791',
+        startDate: moment().add(6, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(13, 'days').format('YYYY-MM-DD'),
+        budget: 100000000,
+        eventType: {
+          id: eventType['identifiers'][2]['id'],
+        },
+        createdBy: customer['identifiers'][0]['id'],
+      },
+      {
+        fullName: 'Nguyễn Quốc Sỹ',
+        email: 'quocsy25112@gmail.com',
+        address: 'Nhà Văn Hóa Sinh Viên ĐHQG TPHCM',
+        note: '[{"insert":"sân cầu lông quận 9\nSự kiện khánh thành cầu lông quận 9 là một dịp trọng đại và phấn khích đối với cộng đồng vùng này. Dưới đây là một mô tả sự kiện này:\nNgày hôm đó, không khí trong quận 9 được sôi động và phấn khích hơn bao giờ hết, khi cộng đồng địa phương và các quan khách quốc gia đến tham dự sự kiện khánh thành cầu lông mới. Buổi lễ bắt đầu từ sáng sớm với các hoạt động văn hóa và giải trí để chào đón khách mời và những người dân tò mò.\nKhung cảnh tại địa điểm khánh thành rực rỡ với các biểu tượng và trang trí đặc biệt, tôn vinh sự kiện quan trọng này. Bên cạnh đó, sân cầu lông mới được thiết kế với kiến trúc hiện đại và tiện nghi, đặc biệt thu hút sự chú ý của mọi người.\nBuổi lễ khai mạc bắt đầu bằng lễ rước đuốc và lời chào từ các quan chức địa phương, đồng thời nhấn mạnh vai trò quan trọng của cầu lông trong việc thúc đẩy sự phát triển văn hóa và thể thao trong cộng đồng. Các nghệ sĩ địa phương biểu diễn các tiết mục nghệ thuật, tạo ra một không gian ấm áp và gần gũi.\nSau đó, lễ cắt băng chính thức được diễn ra, thể hiện sự khai mạc chính thức của cầu lông. Các quan khách và người dân đều cùng nhau chia sẻ niềm vui và hứng khởi khi chứng kiến bước ngoặt lịch sử này cho quận 9.\nSau buổi lễ khánh thành, sân cầu lông mới đã mở cửa cho công chúng tham quan và tham gia các hoạt động thể thao. Đây không chỉ là một kỷ niệm đẹp, mà còn là một bước quan trọng trong việc nâng cao chất lượng cuộc sống và tạo ra cơ hội cho các hoạt động văn hóa và thể thao trong cộng đồng.\n"}]',
+        phoneNumber: '0983709791',
+        startDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(4, 'days').format('YYYY-MM-DD'),
+        budget: 100000000,
+        eventType: {
+          id: eventType['identifiers'][4]['id'],
+        },
+        createdBy: customer['identifiers'][0]['id'],
+      },
+    ];
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(CustomerContactEntity)
+      .values(listContact)
+      .execute();
+    await connection
       .createQueryBuilder()
       .insert()
       .into(EventEntity)
