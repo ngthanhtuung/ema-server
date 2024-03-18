@@ -542,7 +542,58 @@ export class DataSeed implements Seeder {
       .into(CategoryEntity)
       .values(listCategories)
       .execute();
-
+    // =============================== Account Customer ===============================
+    const listCustomer = [
+      {
+        email: 'quocsy25112@gmail.com',
+        password: hashPassword,
+        role: {
+          id: (await findIdRole(ERole.CUSTOMER))?.id,
+        },
+      },
+      {
+        email: 'quanghuy0610.dev@gmail.com',
+        password: hashPassword,
+        role: {
+          id: (await findIdRole(ERole.CUSTOMER))?.id,
+        },
+      },
+    ];
+    const customer = await connection
+      .createQueryBuilder()
+      .insert()
+      .into(UserEntity)
+      .values(listCustomer)
+      .execute();
+    const dataProfileCustomer = [
+      {
+        fullName: 'Nguyễn Quốc Sỹ',
+        id: customer['identifiers'][0]['id'],
+        dob: faker.date.anytime(),
+        nationalId: faker.string.numeric(12).toString(),
+        gender: faker.person.sex().toUpperCase() as EGender,
+        address: faker.location.street(),
+        phoneNumber: faker.phone.number(),
+        avatar:
+          'https://lh3.googleusercontent.com/a/ACg8ocL6T3CA_2x6IlROu1V3eLu8qCjEzDUdy5Ut6BVSaB_W=s96-c',
+      },
+      {
+        fullName: 'Nguyễn Thị Hồng Gấm',
+        id: customer['identifiers'][1]['id'],
+        dob: faker.date.anytime(),
+        nationalId: faker.string.numeric(12).toString(),
+        gender: faker.person.sex().toUpperCase() as EGender,
+        address: faker.location.street(),
+        phoneNumber: faker.phone.number(),
+        avatar: 'https://picsum.photos/200/300',
+      },
+    ];
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(ProfileEntity)
+      .values(dataProfileCustomer)
+      .execute();
     const event1 = await connection
       .createQueryBuilder()
       .insert()

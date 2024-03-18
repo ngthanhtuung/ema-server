@@ -7,7 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ServiceAccount } from 'firebase-admin';
 import * as firebaseAdmin from 'firebase-admin';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { join } from 'path';
+import * as compression from 'compression';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -61,7 +61,7 @@ async function bootstrap(): Promise<void> {
   });
 
   //end set up firebase
-
+  app.use(compression());
   app.useGlobalPipes(new ValidationPipe({ transform: true })); // apply pipe validation
   await app.listen(port, () => {
     console.info(`Server is running at ${server_host}:${port}/${pathOpenApi}`);

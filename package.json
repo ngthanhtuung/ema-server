@@ -55,6 +55,7 @@
     "bcrypt": "^5.1.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "compression": "^1.7.4",
     "csv-parser": "^3.0.0",
     "docxtemplater": "^3.44.0",
     "dotenv": "^16.3.1",

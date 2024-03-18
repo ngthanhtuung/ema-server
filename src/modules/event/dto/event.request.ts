@@ -55,8 +55,21 @@ export class EventCreateRequest {
   @ApiProperty()
   eventTypeId?: string;
 
-  @ApiProperty()
-  listTask?: TaskCreateReq[];
+  @ApiProperty({
+    default: [
+      {
+        title: 'Test create task',
+        desc: 'Test create task',
+        priority: 'low',
+        itemId: 'test',
+      },
+    ],
+  })
+  listTask: TaskCreateReq[];
+
+  @IsArray()
+  @ApiProperty({ default: ['1a73eb86-99ee-46c4-92c3-a9ae091c0caf'] })
+  listDivision: Array<string>;
 }
 
 export class EventCreateRequestContract {

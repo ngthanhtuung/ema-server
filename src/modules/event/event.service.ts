@@ -485,6 +485,7 @@ export class EventService extends BaseService<EventEntity> {
         "createEvent.generatedMaps[0]['id']:",
         createEvent.generatedMaps[0]['id'],
       );
+      // Update Contract Status
       await queryRunner.manager.update(
         ContractEntity,
         { id: customerContact?.contract?.id },
@@ -492,6 +493,7 @@ export class EventService extends BaseService<EventEntity> {
           status: EContractStatus.SUCCESS,
         },
       );
+      // Update Customer Contact Status
       await queryRunner.manager.update(
         CustomerContactEntity,
         { id: contactId },
@@ -499,41 +501,54 @@ export class EventService extends BaseService<EventEntity> {
           status: EContactInformation.SUCCESS,
         },
       );
-    };
-    const listInsertTask = event.listTask.map((task) => {
-      const {
-        title,
-        startDate,
-        endDate,
-        desc,
-        priority,
-        parentTask,
-        estimationTime,
-        isTemplate,
-        itemId,
-      } = task;
-      return {
-        title: title,
-        createdBy: user.id,
-        startDate: startDate
-          ? moment(startDate).tz('Asia/Bangkok').toDate()
-          : undefined,
-        endDate: endDate
-          ? moment(endDate).tz('Asia/Bangkok').toDate()
-          : undefined,
-        description: desc,
-        estimationTime: estimationTime,
-        priority: priority,
-        parent: {
-          id: parentTask,
-        },
-        isTemplate: isTemplate,
-        itemId: {
-          id: itemId,
-        },
+      // Assigne divsion into event
+      const dataEditDivision: EventAssignRequest = {
+        eventId: createEvent.generatedMaps[0]['id'],
+        divisionId: event.listDivision,
       };
-    });
-    await queryRunner.manager.insert(TaskEntity, listInsertTask);
+      await this.editDivisionIntoEvent(dataEditDivision, queryRunner);
+      const listIdEventDivison =
+        await this.assignEventService.getListIdEventDivision(
+          createEvent.generatedMaps[0]['id'],
+        );
+      const listInsertTask = event.listTask.map((task) => {
+        const {
+          title,
+          startDate,
+          endDate,
+          desc,
+          priority,
+          parentTask,
+          estimationTime,
+          isTemplate,
+          itemId,
+        } = task;
+        return {
+          title: title,
+          createdBy: user.id,
+          eventDivision: {
+            id: listIdEventDivison?.[0]?.id,
+          },
+          startDate: startDate
+            ? moment(startDate).tz('Asia/Bangkok').toDate()
+            : undefined,
+          endDate: endDate
+            ? moment(endDate).tz('Asia/Bangkok').toDate()
+            : undefined,
+          description: desc,
+          estimationTime: estimationTime,
+          priority: priority,
+          parent: {
+            id: parentTask,
+          },
+          isTemplate: isTemplate,
+          itemId: {
+            id: itemId,
+          },
+        };
+      });
+      await queryRunner.manager.insert(TaskEntity, listInsertTask);
+    };
     await this.transaction(callback, queryRunner);
     return `Created event successfully`;
   }
