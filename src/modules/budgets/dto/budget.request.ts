@@ -1,6 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNumber, IsString, IsDecimal } from 'class-validator';
+import {
+  IsInt,
+  IsNumber,
+  IsString,
+  IsDecimal,
+  IsOptional,
+} from 'class-validator';
 import { FilterTask } from '../../task/dto/task.request';
+import {
+  EContractStatus,
+  ETransaction,
+  SortEnum,
+} from '../../../common/enum/enum';
 
 export class CreatePlanBudgetRequest {
   @ApiProperty()
@@ -35,3 +46,35 @@ export class CreateTransactionRequest {
 }
 
 export class FilterBigTaskAndItem extends FilterTask {}
+
+export class TransactionRejectNote {
+  @IsOptional()
+  @IsString()
+  @ApiProperty()
+  rejectNote?: string;
+}
+
+export class FilterTransaction {
+  @IsString()
+  @ApiProperty({
+    required: false,
+    default: 'createdAt',
+  })
+  sortProperty: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: SortEnum,
+    required: false,
+    default: SortEnum.ASC,
+  })
+  sort: SortEnum;
+
+  @ApiProperty({
+    required: false,
+    type: 'enum',
+    enum: ETransaction,
+    default: ETransaction.ALL,
+  })
+  status: ETransaction;
+}

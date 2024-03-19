@@ -62,6 +62,7 @@ export class EventCreateRequest {
         desc: 'Test create task',
         priority: 'low',
         itemId: 'test',
+        itemPercentage: 80,
       },
     ],
   })

@@ -3,6 +3,7 @@ import { BaseEntity } from '../base/base.entity';
 import { CategoryEntity } from '../categories/categories.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { TaskEntity } from '../task/task.entity';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
 @Entity({ name: 'items' })
 export class ItemEntity extends BaseEntity {
@@ -27,6 +28,16 @@ export class ItemEntity extends BaseEntity {
     default: 5,
   })
   priority: number;
+
+  @Column({
+    type: 'integer',
+    nullable: true,
+  })
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  @Max(100)
+  percentage: number;
 
   @ManyToOne(() => CustomerContactEntity, (customerInfo) => customerInfo.items)
   customerInfo: CustomerContactEntity;

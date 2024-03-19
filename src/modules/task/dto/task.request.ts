@@ -45,6 +45,9 @@ export class TaskCreateReq {
   @ApiProperty({ required: false })
   itemId: string;
 
+  @ApiProperty({ required: false })
+  itemPercentage: number;
+
   @ApiProperty({
     type: [TaskFileRequest],
     required: false,

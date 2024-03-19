@@ -43,6 +43,7 @@ import { CustomerContactsService } from '../customer_contacts/customer_contacts.
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { ContractEntity } from '../contracts/contracts.entity';
 import { TaskEntity } from '../task/task.entity';
+import { ItemEntity } from '../items/items.entity';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -527,6 +528,7 @@ export class EventService extends BaseService<EventEntity> {
           estimationTime,
           isTemplate,
           itemId,
+          itemPercentage,
         } = task;
         return {
           title: title,
@@ -551,6 +553,13 @@ export class EventService extends BaseService<EventEntity> {
             id: itemId,
           },
         };
+        const updatePercentage = queryRunner.manager.update(
+          ItemEntity,
+          { id: itemId },
+          {
+            percentage: itemPercentage,
+          },
+        );
       });
       await queryRunner.manager.insert(TaskEntity, listInsertTask);
     };
