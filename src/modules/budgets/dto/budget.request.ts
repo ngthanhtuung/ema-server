@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
   IsInt,
   IsNumber,
@@ -45,7 +45,11 @@ export class CreateTransactionRequest {
   amount: number;
 }
 
-export class FilterBigTaskAndItem extends FilterTask {}
+export class FilterBigTaskAndItem extends OmitType(FilterTask, [
+  'priority',
+  'sort',
+  'status',
+]) {}
 
 export class TransactionRejectNote {
   @IsOptional()
