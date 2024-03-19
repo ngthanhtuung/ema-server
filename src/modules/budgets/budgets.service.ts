@@ -323,14 +323,22 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
         relations: ['tasks', 'tasks.transactions'],
       });
+      const budgetAvailable =
+        itemExisted?.plannedAmount *
+        itemExisted?.plannedPrice *
+        (itemExisted?.percentage / 100);
       if (!itemExisted) {
         throw new NotFoundException('Không tìm thấy giao dịch nào');
       }
       let totalAcceptedTransaction = 0;
-      const listTask = itemExisted?.tasks;
+      const listTask = itemExisted?.tasks.filter(
+        (task) => task.transactions.length > 0,
+      );
       for (const task of listTask) {
         const acceptedTransaction = task?.transactions.filter(
-          (transaction) => transaction.status === ETransaction.ACCEPTED,
+          (transaction) =>
+            transaction.status === ETransaction.ACCEPTED ||
+            transaction.status === ETransaction.SUCCESS,
         );
         if (acceptedTransaction.length > 0) {
           for (const transaction of acceptedTransaction) {
@@ -338,8 +346,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           }
         }
       }
-
-      return { totalTransactionUsed: totalAcceptedTransaction, listTask };
+      return {
+        totalBudget: budgetAvailable,
+        totalTransactionUsed: totalAcceptedTransaction,
+        remainBudget: budgetAvailable - totalAcceptedTransaction,
+        listTask,
+      };
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -452,6 +464,23 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         );
       }
       return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getEvidenceByTransactionId(
+    transactionId: string,
+  ): Promise<TransactionEvidenceEntity[]> {
+    try {
+      const queryRunner = await this.createQueryRunner();
+      const evidence = await queryRunner.manager.find(
+        TransactionEvidenceEntity,
+        {
+          where: { transaction: { id: transactionId } },
+        },
+      );
+      return evidence;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

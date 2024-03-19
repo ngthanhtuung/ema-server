@@ -9,7 +9,7 @@ import { BaseService } from '../base/base.service';
 import { TaskEntity } from './task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource, IsNull, Not, QueryRunner } from 'typeorm';
 import { FilterTask, TaskCreateReq } from './dto/task.request';
 import { EventEntity } from '../event/event.entity';
 import {
@@ -940,6 +940,7 @@ export class TaskService extends BaseService<TaskEntity> {
         where: [
           { status: ETaskStatus.PENDING },
           { status: ETaskStatus.PROCESSING },
+          { startDate: Not(IsNull()), endDate: Not(IsNull()) },
         ],
       });
       const overdueTasks = tasks.filter((task) => {

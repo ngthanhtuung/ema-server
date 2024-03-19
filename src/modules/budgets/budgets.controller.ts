@@ -31,6 +31,7 @@ import { IPaginateResponse } from '../base/filter.pagination';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { plainToInstance } from 'class-transformer';
 import { FileRequest } from '../../file/dto/file.request';
+import { TransactionEvidenceEntity } from './transaction_evidence.entity';
 
 @Controller('budget')
 @ApiBearerAuth()
@@ -102,6 +103,14 @@ export class BudgetsController {
       JSON.parse(user),
       rejectNote,
     );
+  }
+
+  @Get('/:transactionId/evidence')
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
+  async getEvidenceByContractId(
+    @Param('transactionId') transactionId: string,
+  ): Promise<TransactionEvidenceEntity[]> {
+    return await this.budgetService.getEvidenceByTransactionId(transactionId);
   }
 
   @Post('/:transactionId/evidence')
