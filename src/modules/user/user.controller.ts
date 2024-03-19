@@ -16,6 +16,8 @@ import { IPaginateResponse } from '../base/filter.pagination';
 @Controller('user')
 @ApiTags('User')
 export class UserController {
+  a;
+
   constructor(private readonly userService: UserService) {}
 
   @Get('profile')

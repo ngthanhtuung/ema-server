@@ -291,12 +291,18 @@ export class BudgetsService extends BaseService<TransactionEntity> {
 
   async getListBugdetForTask(filter: FilterBigTaskAndItem): Promise<unknown> {
     try {
-      const { assignee, priority, sort, status, eventID } = filter;
-      const listTaskAndItem = await this.taskService.filterTaskByAssignee(
-        filter,
+      const listTaskAndItem = await this.taskService.filterTaskByAssignee({
+        assignee: filter?.assignee,
+        eventID: filter?.eventID,
+        priority: undefined,
+        sort: undefined,
+        status: undefined,
+      });
+      const bigTask = listTaskAndItem.filter(
+        (task) => task.parentTask === null,
       );
       const extractedData = [];
-      for (const task of listTaskAndItem) {
+      for (const task of bigTask) {
         const { id, title, code, parentTask, status, item } = task;
         extractedData.push({
           id,
@@ -307,7 +313,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           item,
         });
       }
-      console.log(extractedData);
       return extractedData;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -464,6 +469,35 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         );
       }
       return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getAllTransactionRequest(
+    filter: FilterBigTaskAndItem,
+  ): Promise<unknown> {
+    try {
+      const listItems = [];
+      const items = await this.getListBugdetForTask(filter);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      for (const item of items) {
+        listItems.push(item.item);
+      }
+      const transactionPromises = listItems.map((item) =>
+        this.getTransactionOfItem(item.id),
+      );
+      const listTransactions = await Promise.all(transactionPromises);
+      const listTransactionArray = [];
+      for (const task of listTransactions) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        for (const transaction of task.listTask[0].transactions) {
+          listTransactionArray.push(transaction);
+        }
+      }
+      return listTransactionArray;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
