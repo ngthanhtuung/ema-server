@@ -3,14 +3,15 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 import { BaseEntity } from '../base/base.entity';
 import { ETransaction } from '../../common/enum/enum';
 import { Transform } from 'class-transformer';
 import * as moment from 'moment-timezone';
-import { AssignTaskEntity } from '../assign-task/assign-task.entity';
 import { TaskEntity } from '../task/task.entity';
+import { TransactionEvidenceEntity } from './transaction_evidence.entity';
 
 @Entity({ name: 'transactions' })
 export class TransactionEntity extends BaseEntity {
@@ -28,6 +29,9 @@ export class TransactionEntity extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: true })
   processedBy: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  rejectNote: string;
 
   @Column({
     type: 'enum',
@@ -58,4 +62,11 @@ export class TransactionEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   task: TaskEntity;
+
+  @OneToMany(
+    () => TransactionEvidenceEntity,
+    (evidences) => evidences.transaction,
+    { onDelete: 'CASCADE' },
+  )
+  evidences: TransactionEvidenceEntity[];
 }

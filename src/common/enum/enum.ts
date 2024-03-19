@@ -167,4 +167,12 @@ export enum ETransaction {
   PENDING = 'PENDING',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
+  ALL = 'ALL',
+  SUCCESS = 'SUCESS',
+}
+
+export enum ECheckUserInTask {
+  TASK_MASTER = 'TASK_MASTER',
+  ASSIGNEE = 'ASSIGNEE',
+  ALL = 'ALL',
 }
