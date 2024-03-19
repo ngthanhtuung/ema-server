@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Query, Put, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/role.decorator';
@@ -54,7 +54,7 @@ export class TaskController {
   }
 
   @Put('updateTask')
-  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE, ERole.ADMIN)
   async updateTask(
     @Query() taskIDReq: TaskIDReq,
     @Body() req: TaskUpdateReq,
@@ -84,7 +84,7 @@ export class TaskController {
   }
 
   @Put('updateTaskStatus')
-  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE, ERole.ADMIN)
   async updateTaskStatus(
     @Query() req: TaskUpdateStatusReq,
     @GetUser() user: string,
