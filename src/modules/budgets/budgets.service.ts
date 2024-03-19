@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
   ForbiddenException,
@@ -27,19 +28,15 @@ import { TaskService } from '../task/task.service';
 import { SharedService } from '../../shared/shared.service';
 import {
   ECheckUserInTask,
-  EContractEvidenceType,
-  EContractStatus,
   ERole,
   ETaskStatus,
   ETransaction,
 } from '../../common/enum/enum';
 import * as moment from 'moment-timezone';
 import { BudgetPagination } from './dto/budgets.pagination';
-import { ContractEntity } from '../contracts/contracts.entity';
 import { UserService } from '../user/user.service';
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { FileRequest } from '../../file/dto/file.request';
-import { ContractEvidenceEntity } from '../contracts/contract_evidence.entity';
 import { FileService } from '../../file/file.service';
 import { TransactionEvidenceEntity } from './transaction_evidence.entity';
 
@@ -157,11 +154,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       ]);
       const transactionWithProcessBy = await Promise.all(
         result.map(async (item) => {
+          const res = { ...item };
           if (item.processedBy) {
             const userDetails = await this.userService.findByIdV2(
               item.processedBy,
             );
-            const processedBy = {
+            res.processedBy = {
               id: userDetails.id,
               fullName: userDetails.fullName,
               email: userDetails.email,
@@ -170,7 +168,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
               avatar: userDetails.avatar,
               status: userDetails.status,
             };
-            return { ...item, processedBy };
           }
           return item;
         }),
@@ -258,7 +255,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             return `Giao dịch này được duyệt thành công`;
           }
           throw new BadRequestException('Giao dịch này được duyệt thất bại');
-          break;
         case ETransaction.REJECTED:
           if (rejectReason.rejectNote.length <= 0) {
             throw new BadRequestException(
@@ -282,7 +278,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             return `Từ chối giao dịch ${transactionExisted.transactionCode} thành công. Lý do: ${rejectReason.rejectNote}`;
           }
           throw new BadRequestException('Giao dịch này được duyệt thất bại');
-          break;
       }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -298,21 +293,20 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         sort: undefined,
         status: undefined,
       });
-      const bigTask = listTaskAndItem.filter(
-        (task) => task.parentTask === null,
-      );
-      const extractedData = [];
-      for (const task of bigTask) {
+      const extractedData = listTaskAndItem.reduce((acc, task) => {
         const { id, title, code, parentTask, status, item } = task;
-        extractedData.push({
-          id,
-          title,
-          code,
-          parentTask,
-          status,
-          item,
-        });
-      }
+        if (parentTask === null) {
+          acc.push({
+            id,
+            title,
+            code,
+            parentTask,
+            status,
+            item,
+          });
+        }
+        return acc;
+      }, []);
       return extractedData;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -340,15 +334,16 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         (task) => task.transactions.length > 0,
       );
       for (const task of listTask) {
-        const acceptedTransaction = task?.transactions.filter(
-          (transaction) =>
-            transaction.status === ETransaction.ACCEPTED ||
-            transaction.status === ETransaction.SUCCESS,
+        const acceptedTransaction = task?.transactions.filter((transaction) =>
+          [ETransaction.ACCEPTED, ETransaction.SUCCESS].includes(
+            transaction.status,
+          ),
         );
         if (acceptedTransaction.length > 0) {
-          for (const transaction of acceptedTransaction) {
-            totalAcceptedTransaction += transaction.amount;
-          }
+          totalAcceptedTransaction = acceptedTransaction.reduce(
+            (total, transaction) => (total += transaction.amount),
+            0,
+          );
         }
       }
       return {
@@ -435,27 +430,32 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           }`,
         );
       }
-      const result = await Promise.all(
-        files.map(async (file, index) => {
-          const number = index + 1;
-          const bufSign = await this.fileService.uploadFile(
-            file,
-            `transaction/${transaction?.transactionCode}`, //file path to upload on Firebase
-            `${transaction?.transactionCode} - ${number}`,
-          );
-          if (!bufSign) return undefined;
-          await queryRunner.manager.insert(TransactionEvidenceEntity, {
+      const listPromiseAllUploadFile = files.map((files, index) => {
+        return this.fileService.uploadFile(
+          files,
+          `transaction/${transaction?.transactionCode}`, //file path to upload on Firebase
+          `${transaction?.transactionCode} - ${index + 1}`,
+        );
+      });
+      const listBufSign = await Promise.all(listPromiseAllUploadFile);
+      console.log('listBufSign', listBufSign);
+      const dataMapTransactionEvidenceEntityInsert = listBufSign.map(
+        (bufSign, index) => {
+          return {
             transaction: transaction,
-            evidenceFileName: `${transaction?.transactionCode} - ${number}`,
+            evidenceFileName: `${transaction?.transactionCode} - ${index + 1}`,
             evidenceFileSize: bufSign['fileSize'],
             evidenceFileType: bufSign['fileType'],
             evidenceUrl: bufSign['downloadUrl'],
             createdBy: user.id,
-          });
-          return bufSign;
-        }),
+          };
+        },
       );
-      if (result.length > 0) {
+      await queryRunner.manager.insert(
+        TransactionEvidenceEntity,
+        dataMapTransactionEvidenceEntityInsert,
+      );
+      if (listBufSign.length > 0) {
         await queryRunner.manager.update(
           TransactionEntity,
           {
@@ -468,7 +468,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           },
         );
       }
-      return result;
+      return listBufSign;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

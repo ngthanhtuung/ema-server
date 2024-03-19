@@ -332,7 +332,7 @@ export class DivisionService extends BaseService<DivisionEntity> {
         );
         console.log('listEvent:', listEvent);
 
-        const totalTask = listEvent.reduce(
+        const totalTask = listEvent?.reduce(
           (total, data) => (total += data?.totalTaskInEvent),
           0,
         );

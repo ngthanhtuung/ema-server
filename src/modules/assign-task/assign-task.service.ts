@@ -54,6 +54,9 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
             parent: {
               id: true,
             },
+            subTask: {
+              id: true,
+            },
             eventDivision: {
               id: true,
               event: {
@@ -63,12 +66,31 @@ export class AssignTaskService extends BaseService<AssignTaskEntity> {
           },
           relations: {
             parent: true,
+            subTask: true,
             eventDivision: {
               event: true,
             },
           },
         });
         task = taskExisted;
+      }
+      console.log('task:', task);
+      // Delete all user in active
+      if (task && task?.parent === null) {
+        const listInactiveUser = task.subTask.map((item) => {
+          return queryRunner.manager.update(
+            AssignTaskEntity,
+            { taskID: item.id },
+            {
+              status: EStatusAssignee.INACTIVE,
+              updatedAt: moment()
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+            },
+          );
+        });
+        await Promise.all(listInactiveUser);
+        console.log('Inactive user successfully!!');
       }
       console.log('eventID:', task?.eventDivision?.event?.id);
       if (assignee?.length > 0 && leader?.length == 0) {
