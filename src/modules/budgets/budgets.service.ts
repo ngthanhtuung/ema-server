@@ -85,6 +85,20 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           'Bạn không thể tạo yêu cầu giao dịch cho công việc này',
         );
       }
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (user.role === ERole.STAFF && taskExisted?.parentTask !== null) {
+        throw new ForbiddenException(
+          'Bạn chỉ được quyền tạo yêu cầu giao dịch cho hạng mục và gửi đến cho quản lý',
+        );
+      }
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (user.role === ERole.EMPLOYEE && taskExisted?.parentTask === null) {
+        throw new ForbiddenException(
+          'Bạn chỉ được quyền tạo yêu cầu giao dịch cho công việc này',
+        );
+      }
       const transactionCode =
         await this.sharedService.generateTransactionCode();
       const newTransaction = await queryRunner.manager.insert(
@@ -293,21 +307,29 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         sort: undefined,
         status: undefined,
       });
-      const extractedData = listTaskAndItem.reduce((acc, task) => {
-        const { id, title, code, parentTask, status, item } = task;
-        if (parentTask === null) {
-          acc.push({
-            id,
-            title,
-            code,
-            parentTask,
-            status,
-            item,
-          });
-        }
-        return acc;
-      }, []);
-      return extractedData;
+      const extractedData = await Promise.all(
+        listTaskAndItem.map(async (task) => {
+          const { id, title, code, parentTask, status, item } = task;
+          if (parentTask === null) {
+            const budgetOfItem = await this.getTransactionOfItem(item?.id);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const totalPriceUsed = budgetOfItem?.totalTransactionUsed || 0;
+            return {
+              id,
+              title,
+              code,
+              parentTask,
+              status,
+              item: {
+                ...item,
+                totalPriceUsed,
+              },
+            };
+          }
+        }),
+      );
+      return extractedData.filter(Boolean); // Filtering out undefined entries
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -322,12 +344,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
         relations: ['tasks', 'tasks.transactions'],
       });
-      const budgetAvailable =
-        itemExisted?.plannedAmount *
-        itemExisted?.plannedPrice *
-        (itemExisted?.percentage / 100);
       if (!itemExisted) {
-        throw new NotFoundException('Không tìm thấy giao dịch nào');
+        throw new NotFoundException(
+          'Không tìm thấy ngân sách của hạng mục này',
+        );
       }
       let totalAcceptedTransaction = 0;
       const listTask = itemExisted?.tasks.filter(
@@ -347,10 +367,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         }
       }
       return {
-        totalBudget: budgetAvailable,
         totalTransactionUsed: totalAcceptedTransaction,
-        remainBudget: budgetAvailable - totalAcceptedTransaction,
-        listTask,
+        itemExisted: {
+          ...itemExisted,
+          tasks: listTask,
+        },
       };
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -546,7 +567,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     } else {
       query += ` AND (assign_tasks.assignee = '${userId}' OR assign_tasks.taskMaster = '${userId}')`;
     }
-    console.log('Query: ', query);
     const result = await queryRunner.manager.query(query);
     return result.length > 0 ? true : false;
   }
