@@ -50,7 +50,6 @@ export class BudgetsController {
   @Get('/transaction-request')
   @Roles(ERole.MANAGER, ERole.STAFF)
   async getAllRequest(@Query() filter: FilterBigTaskAndItem): Promise<unknown> {
-    console.log('Filter: ', filter);
     return await this.budgetService.getAllTransactionRequest(filter);
   }
 
