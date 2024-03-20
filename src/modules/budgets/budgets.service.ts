@@ -73,7 +73,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
         relations: ['assignTasks'],
       });
-      console.log('Assign task: ', taskExisted);
       if (!taskExisted) {
         throw new NotFoundException('Không thể tìm thấy công việc này');
       }
@@ -92,6 +91,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           'Bạn không thể tạo yêu cầu giao dịch cho công việc này',
         );
       }
+      const assignTasks = taskExisted?.assignTasks;
+      if (assignTasks.length <= 0) {
+        throw new BadRequestException(
+          'Công việc này hiện tại chưa được giao cho ai nên không thể tạo giao dịch',
+        );
+      }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (user.role === ERole.STAFF && taskExisted?.parentTask !== null) {
@@ -106,6 +111,9 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           'Bạn không được quyền tạo yêu cầu giao dịch cho công việc này',
         );
       }
+      const filterAssignTasks = assignTasks.filter(
+        (task) => task.assignee === user.id,
+      );
       const transactionCode =
         await this.sharedService.generateTransactionCode();
       const newTransaction = await queryRunner.manager.insert(
@@ -120,21 +128,21 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
       );
       if (newTransaction.identifiers[0].id) {
-        // const dataNotificationAccepted: NotificationTransactionRequest = {
-        //   title: `Có một yêu cầu mới`,
-        //   content: `Yêu cầu ${transactionCode} đang đợi để được xử lý`,
-        //   type: ETypeNotification.BUDGET,
-        //   receiveUser: transactionExisted?.createdBy,
-        //   commonId: newTransaction.identifiers[0].id,
-        //   transactionId: newTransaction.identifiers[0].id,
-        //   avatar: user?.avatar,
-        //   messageSocket: 'notification',
-        // };
-        // await this.notificationService.createTransactionNotfication(
-        //   dataNotificationAccepted,
-        //   user?.id,
-        //   queryRunner,
-        // );
+        const dataNotificationAccepted: NotificationTransactionRequest = {
+          title: `Có một yêu cầu mới`,
+          content: `Yêu cầu ${transactionCode} đang đợi để được xử lý`,
+          type: ETypeNotification.BUDGET,
+          receiveUser: filterAssignTasks[0]?.taskMaster,
+          commonId: newTransaction.identifiers[0].id,
+          transactionId: newTransaction.identifiers[0].id,
+          avatar: user?.avatar,
+          messageSocket: 'notification',
+        };
+        await this.notificationService.createTransactionNotfication(
+          dataNotificationAccepted,
+          user?.id,
+          queryRunner,
+        );
         return 'Create transaction successfully';
       }
       throw new InternalServerErrorException(
