@@ -79,11 +79,7 @@ export class BudgetsController {
     @Body() data: CreateTransactionRequest,
     @GetUser() user: string,
   ): Promise<string> {
-    return await this.budgetService.createTransaction(
-      taskId,
-      data,
-      JSON.parse(user),
-    );
+    return await this.budgetService.createTransaction(taskId, data, user);
   }
 
   @Put('/update-status-transaction/:transactionId')

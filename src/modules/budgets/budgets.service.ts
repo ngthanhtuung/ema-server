@@ -62,15 +62,18 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   async createTransaction(
     taskId: string,
     data: CreateTransactionRequest,
-    user: UserEntity,
+    oUser: string,
   ): Promise<string> {
     try {
       const queryRunner = await this.createQueryRunner();
+      const user = JSON.parse(oUser);
       const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
         where: {
           id: taskId,
         },
+        relations: ['assignTasks'],
       });
+      console.log('Assign task: ', taskExisted);
       if (!taskExisted) {
         throw new NotFoundException('Không thể tìm thấy công việc này');
       }
@@ -117,7 +120,22 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
       );
       if (newTransaction.identifiers[0].id) {
-        return 'Create transacntion successfully';
+        // const dataNotificationAccepted: NotificationTransactionRequest = {
+        //   title: `Có một yêu cầu mới`,
+        //   content: `Yêu cầu ${transactionCode} đang đợi để được xử lý`,
+        //   type: ETypeNotification.BUDGET,
+        //   receiveUser: transactionExisted?.createdBy,
+        //   commonId: newTransaction.identifiers[0].id,
+        //   transactionId: newTransaction.identifiers[0].id,
+        //   avatar: user?.avatar,
+        //   messageSocket: 'notification',
+        // };
+        // await this.notificationService.createTransactionNotfication(
+        //   dataNotificationAccepted,
+        //   user?.id,
+        //   queryRunner,
+        // );
+        return 'Create transaction successfully';
       }
       throw new InternalServerErrorException(
         'Tạo giao dịch thất bại vui lòng thử lại sau',
