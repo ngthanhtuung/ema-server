@@ -409,7 +409,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           'tasks.transactions.evidences',
         ],
       });
-      console.log('itemExisted', itemExisted);
       if (!itemExisted) {
         throw new NotFoundException(
           'Không tìm thấy ngân sách của hạng mục này',
@@ -432,11 +431,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           );
         }
       }
+      const filteredTasks = listTask.filter((task) => task.parentTask !== null);
       return {
         totalTransactionUsed: totalAcceptedTransaction,
         itemExisted: {
           ...itemExisted,
-          tasks: listTask,
+          tasks: filteredTasks,
         },
       };
     } catch (err) {
@@ -623,10 +623,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       );
       const listTransactions = await Promise.all(transactionPromises);
       const listTransactionArray = [];
-      for (const task of listTransactions) {
+      for (const item of listTransactions) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        for (const transaction of task.listTask[0].transactions) {
+        for (const transaction of item.itemExisted.tasks) {
           listTransactionArray.push(transaction);
         }
       }
