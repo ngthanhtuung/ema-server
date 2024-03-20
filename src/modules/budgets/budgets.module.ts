@@ -8,6 +8,7 @@ import { BudgetsController } from './budgets.controller';
 import { UserModule } from '../user/user.module';
 import { FileModule } from '../../file/file.module';
 import { TransactionEvidenceEntity } from './transaction_evidence.entity';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TransactionEvidenceEntity } from './transaction_evidence.entity';
     SharedModule,
     UserModule,
     FileModule,
+    NotificationModule,
   ],
   providers: [BudgetsService],
   controllers: [BudgetsController],

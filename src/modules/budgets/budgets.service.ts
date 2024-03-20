@@ -31,6 +31,7 @@ import {
   ERole,
   ETaskStatus,
   ETransaction,
+  ETypeNotification,
 } from '../../common/enum/enum';
 import * as moment from 'moment-timezone';
 import { BudgetPagination } from './dto/budgets.pagination';
@@ -39,6 +40,8 @@ import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { FileRequest } from '../../file/dto/file.request';
 import { FileService } from '../../file/file.service';
 import { TransactionEvidenceEntity } from './transaction_evidence.entity';
+import { NotificationTransactionRequest } from '../notification/dto/notification.request';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class BudgetsService extends BaseService<TransactionEntity> {
@@ -51,6 +54,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     private readonly sharedService: SharedService,
     private readonly userService: UserService,
     private readonly fileService: FileService,
+    private readonly notificationService: NotificationService,
   ) {
     super(transactionRepository);
   }
@@ -202,11 +206,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   async updateStatusTransaction(
     transactionId: string,
     status: ETransaction,
-    user: UserEntity,
+    user: string,
     rejectReason?: TransactionRejectNote,
   ): Promise<string> {
     try {
       const queryRunner = await this.createQueryRunner();
+      const oUser = JSON.parse(user);
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
         {
@@ -223,7 +228,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const itemOfTask = task?.item;
       const checkUserInTask = await this.checkUserInTask(
         task?.id,
-        user.id,
+        oUser.id,
         ECheckUserInTask.TASK_MASTER,
       );
       if (!checkUserInTask) {
@@ -245,7 +250,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           ) {
             let errorMessage =
               'Số tiền yêu cầu của giao dịch này vượt quá hạn mức còn lại. ';
-            if (user.role.roleName === ERole.MANAGER) {
+            if (oUser.role.roleName === ERole.MANAGER) {
               errorMessage += ' Vui lòng mở thêm hạn mức';
             } else {
               errorMessage +=
@@ -258,14 +263,29 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             { id: transactionId },
             {
               status: ETransaction.ACCEPTED,
-              processedBy: user?.id,
-              updatedBy: user?.id,
+              processedBy: oUser?.id,
+              updatedBy: oUser?.id,
               updatedAt: moment()
                 .tz('Asia/Bangkok')
                 .format('YYYY-MM-DD HH:mm:ss'),
             },
           );
           if (resultAccepted.affected > 0) {
+            const dataNotificationAccepted: NotificationTransactionRequest = {
+              title: `Yêu cầu được chấp thuận`,
+              content: `Yêu cầu ${transactionExisted?.transactionCode} được chấp thuận`,
+              type: ETypeNotification.BUDGET,
+              receiveUser: transactionExisted?.createdBy,
+              commonId: transactionExisted?.id,
+              transactionId: transactionExisted?.id,
+              avatar: oUser?.avatar,
+              messageSocket: 'notification',
+            };
+            await this.notificationService.createTransactionNotfication(
+              dataNotificationAccepted,
+              oUser?.id,
+              queryRunner,
+            );
             return `Giao dịch này được duyệt thành công`;
           }
           throw new BadRequestException('Giao dịch này được duyệt thất bại');
@@ -281,14 +301,29 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             {
               status: ETransaction.REJECTED,
               rejectNote: rejectReason.rejectNote,
-              processedBy: user?.id,
-              updatedBy: user?.id,
+              processedBy: oUser?.id,
+              updatedBy: oUser?.id,
               updatedAt: moment()
                 .tz('Asia/Bangkok')
                 .format('YYYY-MM-DD HH:mm:ss'),
             },
           );
           if (resultReject.affected > 0) {
+            const dataNotificationReject: NotificationTransactionRequest = {
+              title: `Yêu cầu bị từ chối`,
+              content: `Yêu cầu ${transactionExisted?.transactionCode} bị từ chối`,
+              type: ETypeNotification.BUDGET,
+              receiveUser: transactionExisted?.createdBy,
+              commonId: transactionExisted?.id,
+              transactionId: transactionExisted?.id,
+              avatar: oUser?.avatar,
+              messageSocket: 'notification',
+            };
+            await this.notificationService.createTransactionNotfication(
+              dataNotificationReject,
+              oUser?.id,
+              queryRunner,
+            );
             return `Từ chối giao dịch ${transactionExisted.transactionCode} thành công. Lý do: ${rejectReason.rejectNote}`;
           }
           throw new BadRequestException('Giao dịch này được duyệt thất bại');
@@ -379,20 +414,46 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   }
 
   async updateItemPercentage(
-    itemId: string,
+    transactionId: string,
     amount: number,
-    user: UserEntity,
-  ): Promise<string> {
+    user: string,
+  ): Promise<unknown> {
     try {
+      const oUser = JSON.parse(user);
       const queryRunner = await this.createQueryRunner();
-      const itemExisted = await queryRunner.manager.findOne(ItemEntity, {
-        where: {
-          id: itemId,
+      const transactionExisted = await queryRunner.manager.findOne(
+        TransactionEntity,
+        {
+          where: {
+            id: transactionId,
+          },
+          relations: ['task', 'task.item'],
         },
-      });
-      if (!itemExisted) {
-        throw new NotFoundException('Item not found');
+      );
+      if (!transactionExisted) {
+        throw new NotFoundException('Không tìm thấy giao dịch này');
       }
+      const taskOfTransaction = transactionExisted?.task;
+      if (
+        ![ETaskStatus.PENDING, ETaskStatus.PROCESSING].includes(
+          taskOfTransaction?.status,
+        )
+      ) {
+        throw new BadRequestException(
+          `Công việc đang không còn trong trạng thái PENDING or PROCESSING, vì vậy không thể mở thêm số tiền cho mạng mục`,
+        );
+      }
+      const checkUserInTask = await this.checkUserInTask(
+        taskOfTransaction.id,
+        oUser?.id,
+        ECheckUserInTask.TASK_MASTER,
+      );
+      if (!checkUserInTask) {
+        throw new ForbiddenException(
+          'Bạn không quản lý hạng này nên không thể nâng hạng mức',
+        );
+      }
+      const itemExisted = transactionExisted?.task?.item;
       const totalPriceBudget =
         itemExisted.plannedAmount * itemExisted.plannedPrice;
       const budgetAvailable = totalPriceBudget * (itemExisted.percentage / 100);
@@ -401,7 +462,20 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       // @ts-ignore
       const totalTransactionUsed = totalUsed?.totalTransactionUsed;
       const remainingBudget = budgetAvailable - totalTransactionUsed;
-      const amountPercentage = (amount / remainingBudget) * 100;
+      if (amount <= remainingBudget) {
+        await this.updateStatusTransaction(
+          transactionId,
+          ETransaction.REJECTED,
+          user,
+          {
+            rejectNote: `Số tiền yêu cầu vẫn đủ trong hạn mức được giao. Vì vậy yêu cầu ${transactionExisted.transactionCode} với số tiền ${amount} bị từ chối`,
+          },
+        );
+        throw new BadRequestException(
+          `Số tiền yêu cầu vẫn đủ trong hạn mức được giao. Vì vậy yêu cầu ${transactionExisted.transactionCode} với số tiền ${amount} bị từ chối`,
+        );
+      }
+      const amountPercentage = Math.round((amount / remainingBudget) * 100);
       if (amountPercentage > 100 - itemExisted.percentage) {
         throw new BadRequestException(
           'Số tiền này vượt quá hạn mức quy định của kế hoạch, không thể mở thêm hạng mức cho hạng mục này',
@@ -409,19 +483,26 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       }
       const result = await queryRunner.manager.update(
         ItemEntity,
-        { id: itemId },
+        { id: itemExisted?.id },
         {
           percentage: itemExisted?.percentage + amountPercentage,
-          updatedBy: user.id,
+          updatedBy: oUser?.id,
           updatedAt: moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
       );
       if (result.affected > 0) {
-        return 'Đã nâng hạng mức thành công';
+        const updateResult = await this.updateStatusTransaction(
+          transactionId,
+          ETransaction.SUCCESS,
+          user,
+        );
+        return `Đã nâng hạng mức thành công. Hạn mức mới là ${
+          itemExisted?.percentage + amountPercentage
+        }`;
       }
       throw new InternalServerErrorException('Cập nhật hạng mức thất bại');
     } catch (err) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(err.message);
     }
   }
 

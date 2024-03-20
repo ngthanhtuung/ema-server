@@ -22,6 +22,7 @@ import { BaseService } from '../base/base.service';
 import {
   NotificationContractRequest,
   NotificationCreateRequest,
+  NotificationTransactionRequest,
 } from './dto/notification.request';
 import { UserService } from '../user/user.service';
 import * as moment from 'moment-timezone';
@@ -263,6 +264,64 @@ export class NotificationService extends BaseService<NotificationEntity> {
         type: notification?.type,
         userId: notification?.receiveUser,
         contractId: notification?.contractId,
+        commonId: notification?.commonId,
+        avatarSender: notification?.avatar,
+      };
+      const socket = this.sessions.getUserSocket(notification?.receiveUser);
+      if (socket !== null) {
+        client
+          .to(socket?.id)
+          .emit(notification.messageSocket, dataNotification);
+      }
+      const createNotification = await queryRunner.manager.insert(
+        UserNotificationsEntity,
+        {
+          user: { id: notification?.receiveUser },
+          notification: { id: newNoti?.identifiers[0]?.id },
+        },
+      );
+
+      const firebaseNotificationPayload: FirebaseNotificationRequest = {
+        title: notification?.title,
+        body: notification?.content,
+        listUser: listUserPushNoti,
+      };
+      await this.firebaseCustomService.sendCustomNotificationFirebase(
+        firebaseNotificationPayload,
+      );
+      if (newNoti?.raw?.affectedRows > 0) {
+        return 'Create notification successfully!';
+      }
+      throw new InternalServerErrorException('Create notification failed!');
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+  }
+
+  async createTransactionNotfication(
+    notification: NotificationTransactionRequest,
+    senderUser: string,
+    queryRunner: QueryRunner,
+  ): Promise<unknown> {
+    try {
+      const client = this.appGateWay.server;
+      const newNoti = await queryRunner.manager.insert(NotificationEntity, {
+        title: notification?.title,
+        content: notification?.content,
+        type: notification?.type,
+        commonId: notification?.commonId,
+        contractId: notification?.transactionId,
+        avatarSender: notification?.avatar,
+      });
+
+      const listUserPushNoti = [notification?.receiveUser];
+      const dataNotification = {
+        title: notification?.title,
+        content: notification?.content,
+        readFlag: false,
+        type: notification?.type,
+        userId: notification?.receiveUser,
+        contractId: notification?.transactionId,
         commonId: notification?.commonId,
         avatarSender: notification?.avatar,
       };
