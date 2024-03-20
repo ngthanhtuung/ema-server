@@ -403,8 +403,13 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         where: {
           id: itemId,
         },
-        relations: ['tasks', 'tasks.transactions'],
+        relations: [
+          'tasks',
+          'tasks.transactions',
+          'tasks.transactions.evidences',
+        ],
       });
+      console.log('itemExisted', itemExisted);
       if (!itemExisted) {
         throw new NotFoundException(
           'Không tìm thấy ngân sách của hạng mục này',
