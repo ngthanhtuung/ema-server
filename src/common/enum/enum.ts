@@ -169,7 +169,7 @@ export enum ETransaction {
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
   ALL = 'ALL',
-  SUCCESS = 'SUCESS',
+  SUCCESS = 'SUCCESS',
 }
 
 export enum ECheckUserInTask {
