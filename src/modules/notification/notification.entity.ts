@@ -24,6 +24,9 @@ export class NotificationEntity extends BaseEntity {
   contractId: string;
 
   @Column({ type: 'varchar', nullable: true })
+  transactionId: string;
+
+  @Column({ type: 'varchar', nullable: true })
   avatarSender: string;
 
   @Column({

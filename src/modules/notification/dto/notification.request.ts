@@ -99,3 +99,12 @@ export class NotificationContractRequest {
   @ApiProperty()
   receiveUser: string;
 }
+
+export class NotificationTransactionRequest extends OmitType(
+  NotificationContractRequest,
+  ['contractId'],
+) {
+  @IsString()
+  @ApiProperty({ default: 'Test desc' })
+  transactionId?: string;
+}

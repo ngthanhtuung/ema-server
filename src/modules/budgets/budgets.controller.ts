@@ -106,7 +106,7 @@ export class BudgetsController {
     return await this.budgetService.updateStatusTransaction(
       transactionId,
       status,
-      JSON.parse(user),
+      user,
       rejectNote,
     );
   }
@@ -154,6 +154,25 @@ export class BudgetsController {
       transactionId,
       fileDtos,
       JSON.parse(user),
+    );
+  }
+
+  @Put('/:transactionId/update-budget-percentage')
+  @Roles(ERole.MANAGER)
+  @ApiQuery({
+    name: 'amount',
+    required: true,
+    type: 'number',
+  })
+  async updateItemPercentage(
+    @Param('transactionId') transactionId: string,
+    @Query('amount') amount: number,
+    @GetUser() user: string,
+  ): Promise<unknown> {
+    return await this.budgetService.updateItemPercentage(
+      transactionId,
+      amount,
+      user,
     );
   }
 }
