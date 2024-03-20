@@ -96,7 +96,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       // @ts-ignore
       if (user.role === ERole.EMPLOYEE && taskExisted?.parentTask === null) {
         throw new ForbiddenException(
-          'Bạn chỉ được quyền tạo yêu cầu giao dịch cho công việc này',
+          'Bạn không được quyền tạo yêu cầu giao dịch cho công việc này',
         );
       }
       const transactionCode =
