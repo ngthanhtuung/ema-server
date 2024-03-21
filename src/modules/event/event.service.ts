@@ -556,7 +556,9 @@ export class EventService extends BaseService<EventEntity> {
             id: parentTask,
           },
           isTemplate: isTemplate,
-          itemId: itemId,
+          item: {
+            id: itemId,
+          },
         };
       });
       await Promise.all([
