@@ -492,6 +492,24 @@ export class ItemsService extends BaseService<ItemEntity> {
     }
   }
 
+  async getItemDetail(itemId: string): Promise<ItemEntity> {
+    try {
+      const itemExisted = await this.itemsRepository.findOne({
+        where: {
+          id: itemId,
+        },
+        relations: [
+          'tasks',
+          'tasks.transactions',
+          'tasks.transactions.evidences',
+        ],
+      });
+      return itemExisted;
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
   async deleteItem(itemId: string): Promise<string> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();

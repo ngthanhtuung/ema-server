@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BudgetsService } from './budgets.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionEntity } from './transactions.entity';
@@ -9,6 +9,7 @@ import { UserModule } from '../user/user.module';
 import { FileModule } from '../../file/file.module';
 import { TransactionEvidenceEntity } from './transaction_evidence.entity';
 import { NotificationModule } from '../notification/notification.module';
+import { ItemsModule } from '../items/items.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { NotificationModule } from '../notification/notification.module';
     UserModule,
     FileModule,
     NotificationModule,
+    forwardRef(() => ItemsModule),
   ],
   providers: [BudgetsService],
   controllers: [BudgetsController],

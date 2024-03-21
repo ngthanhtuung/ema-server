@@ -43,6 +43,7 @@ import { FileService } from '../../file/file.service';
 import { TransactionEvidenceEntity } from './transaction_evidence.entity';
 import { NotificationTransactionRequest } from '../notification/dto/notification.request';
 import { NotificationService } from '../notification/notification.service';
+import { ItemsService } from '../items/items.service';
 
 @Injectable()
 export class BudgetsService extends BaseService<TransactionEntity> {
@@ -55,6 +56,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     private readonly sharedService: SharedService,
     private readonly userService: UserService,
     private readonly fileService: FileService,
+    private readonly itemsService: ItemsService,
     private readonly notificationService: NotificationService,
   ) {
     super(transactionRepository);
@@ -296,13 +298,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             itemOfTask?.plannedAmount * itemOfTask?.plannedPrice;
           const budgetAvailable =
             totalPriceBudget * (itemOfTask?.percentage / 100);
-          const totalUsed = await this.getTransactionOfItem(
+          const totalUsed: any = await this.getTransactionOfItem(
             itemOfTask?.id,
             false,
-            queryRunner,
           );
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           const totalTransactionUser = totalUsed.totalTransactionUsed;
           if (
             transactionExisted?.amount >
@@ -431,7 +430,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         sort: undefined,
         status: undefined,
       });
-      // Handle getTransactionOfItem
       const listBudgetOfItem = listTaskAndItem.reduce((acc, task) => {
         const { parentTask, item } = task;
         if (parentTask === null) {
@@ -460,7 +458,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           }
         }),
       );
-      return extractedData.filter(Boolean); // Filtering out undefined entries
+      return extractedData.filter(Boolean);
+      // Filtering out undefined entries
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -476,22 +475,9 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   async getTransactionOfItem(
     itemId: string,
     filterNotParentTask: boolean,
-    queryRunner?: QueryRunner,
-  ): Promise<unknown> {
+  ): Promise<any> {
     try {
-      if (!queryRunner) {
-        queryRunner = this.dataSource.createQueryRunner();
-      }
-      const itemExisted = await queryRunner.manager.findOne(ItemEntity, {
-        where: {
-          id: itemId,
-        },
-        relations: [
-          'tasks',
-          'tasks.transactions',
-          'tasks.transactions.evidences',
-        ],
-      });
+      const itemExisted = await this.itemsService.getItemDetail(itemId);
       if (!itemExisted) {
         throw new NotFoundException(
           'Không tìm thấy ngân sách của hạng mục này',
@@ -585,7 +571,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const totalUsed: any = await this.getTransactionOfItem(
         itemExisted?.id,
         false,
-        queryRunner,
       );
       const totalTransactionUsed = totalUsed?.totalTransactionUsed;
       const remainingBudget = budgetAvailable - totalTransactionUsed;
@@ -722,23 +707,29 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           this.getTransactionOfItem(budget.items.id, false),
         ),
       );
+      console.log('listItemInEvent:', listItemInEvent);
 
       const listTransactionArray = listItemInEvent.map((item) => {
         const tasksWithNullParent =
           type === 'OWN'
-            ? item?.itemExisted?.tasks.filter((task) => task.parentTask == null)
-            : item.itemExisted.tasks.filter((task) => task.parentTask !== null);
+            ? item?.itemExisted?.tasks.filter(
+                (task) => task.parentTask != undefined,
+              )
+            : item?.itemExisted?.tasks.filter(
+                (task) => task.parentTask == undefined,
+              );
+        console.log('tasksWithNullParent:', tasksWithNullParent);
 
         if (tasksWithNullParent.length > 0) {
           const filterItems = listItems.filter(
-            (task) => task.items.id === item?.itemExisted?.id,
+            (task) => task?.items?.id === item?.itemExisted?.id,
           );
           item.itemExisted.tasks = tasksWithNullParent;
           delete filterItems[0].items;
           return {
             ...filterItems[0],
-            totalTransactionUsed: item.totalTransactionUsed,
-            itemExisted: item.itemExisted,
+            totalTransactionUsed: item?.totalTransactionUsed,
+            itemExisted: item?.itemExisted,
           };
         }
         return null;
@@ -759,7 +750,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     transactionId: string,
   ): Promise<TransactionEvidenceEntity[]> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
+      const queryRunner = await this.createQueryRunner();
       const evidence = await queryRunner.manager.find(
         TransactionEvidenceEntity,
         {
@@ -781,7 +772,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     transactionId: string,
   ): Promise<unknown | undefined> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
+      const queryRunner = await this.createQueryRunner();
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
         {
@@ -809,7 +800,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     user: string,
   ): Promise<string> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
+      const queryRunner = await this.createQueryRunner();
       const oUser = JSON.parse(user);
       const transactionExisted: any = await this.getDetailTransactionById(
         transactionId,
@@ -837,6 +828,9 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     return this.transactionRepository.createQueryBuilder('transactions');
   }
 
+  private async createQueryRunner(): Promise<QueryRunner> {
+    return this.dataSource.createQueryRunner();
+  }
   private async checkUserInTask(
     taskId: string,
     userId: string,
@@ -844,7 +838,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     queryRunner?: QueryRunner,
   ): Promise<boolean> {
     if (!queryRunner) {
-      queryRunner = this.dataSource.createQueryRunner();
+      queryRunner = await this.createQueryRunner();
     }
     let query = `
         SELECT COUNT(*) as count

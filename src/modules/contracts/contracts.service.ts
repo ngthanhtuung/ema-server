@@ -673,7 +673,6 @@ export class ContractsService extends BaseService<ContractEntity> {
             } else {
               return 'Cập nhật hợp đồng thất bại, vui lòng thử lại';
             }
-            break;
           case EContractStatus.REJECTED:
             if (rejectReason.rejectNote.length <= 0) {
               throw new BadRequestException(

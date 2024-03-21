@@ -760,10 +760,10 @@ export class TaskService extends BaseService<TaskEntity> {
           },
         });
       }
+      return result;
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
-    return result;
   }
 
   async findUserInTask(
