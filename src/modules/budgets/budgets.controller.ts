@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -45,6 +46,14 @@ export class BudgetsController {
     @Query() filter: FilterBigTaskAndItem,
   ): Promise<unknown> {
     return await this.budgetService.getListBugdetForTask(filter);
+  }
+
+  @Get('/transaction-detail/:transactionId')
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
+  async getTranssactionDetail(
+    @Param('transactionId') transactionId: string,
+  ): Promise<unknown | undefined> {
+    return await this.budgetService.getDetailTransactionById(transactionId);
   }
 
   @Get('/transaction-request')
@@ -178,5 +187,14 @@ export class BudgetsController {
       amount,
       user,
     );
+  }
+
+  @Delete('/:transactionId')
+  @Roles(ERole.MANAGER, ERole.STAFF, ERole.EMPLOYEE)
+  async deleteTransaction(
+    @Param('transactionId') transactionId: string,
+    @GetUser() user: string,
+  ): Promise<string> {
+    return await this.budgetService.deleteTransaction(transactionId, user);
   }
 }

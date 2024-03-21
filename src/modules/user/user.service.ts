@@ -40,7 +40,6 @@ import {
 import { IPaginateResponse, paginateResponse } from '../base/filter.pagination';
 import { ERole } from 'src/common/enum/enum';
 import { DivisionEntity } from '../division/division.entity';
-import * as _ from 'lodash';
 import { RoleEntity } from '../roles/roles.entity';
 
 @Injectable()

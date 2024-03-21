@@ -49,6 +49,8 @@ import { NotificationContractRequest } from '../notification/dto/notification.re
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
+  private;
+
   constructor(
     @InjectRepository(ContractEntity)
     private readonly contractRepository: Repository<ContractEntity>,
@@ -256,21 +258,23 @@ export class ContractsService extends BaseService<ContractEntity> {
       ]);
 
       const contractWithCompanyRepresentative = await Promise.all(
-        result.map(async (contract) => {
+        result.map((contract) => {
           if (contract.companyRepresentative) {
-            const userDetails = await this.userService.findByIdV2(
-              contract.companyRepresentative,
-            );
-            const companyRepresentative = {
-              id: userDetails.id,
-              fullName: userDetails.fullName,
-              email: userDetails.email,
-              phoneNumber: userDetails.phoneNumber,
-              dob: userDetails.dob,
-              avatar: userDetails.avatar,
-              status: userDetails.status,
-            };
-            return { ...contract, companyRepresentative };
+            return this.userService
+              .findByIdV2(contract.companyRepresentative)
+              .then((userDetails) => ({
+                id: userDetails.id,
+                fullName: userDetails.fullName,
+                email: userDetails.email,
+                phoneNumber: userDetails.phoneNumber,
+                dob: userDetails.dob,
+                avatar: userDetails.avatar,
+                status: userDetails.status,
+              }))
+              .then((companyRepresentative) => ({
+                ...contract,
+                companyRepresentative,
+              }));
           }
           return contract;
         }),
@@ -312,12 +316,6 @@ export class ContractsService extends BaseService<ContractEntity> {
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
       }
-      // if (
-      //   contract.companyRepresentative !== user.id &&
-      //   user.role.toString() !== ERole.ADMIN
-      // ) {
-      //   throw new ForbiddenException('You are not allowed to do this action');
-      // }
       const contractSuccess = contract?.files.filter(
         (file) => file.status === EContractStatus.ACCEPTED,
       );
@@ -424,7 +422,6 @@ export class ContractsService extends BaseService<ContractEntity> {
     contactId: string,
   ): Promise<ContractEvidenceEntity[]> {
     try {
-      console.log('ContractId: ', contactId);
       const query = this.dataSource.createQueryRunner();
       const evidence = await query.manager.find(ContractEvidenceEntity, {
         where: { contract: { id: contactId } },

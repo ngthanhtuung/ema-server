@@ -678,6 +678,60 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  async getDetailTransactionById(
+    transactionId: string,
+  ): Promise<unknown | undefined> {
+    try {
+      const queryRunner = await this.createQueryRunner();
+      const transactionExisted = await queryRunner.manager.findOne(
+        TransactionEntity,
+        {
+          where: { id: transactionId },
+          relations: ['evidences'],
+        },
+      );
+      if (!transactionExisted) {
+        throw new NotFoundException('Không thể tìm thấy giao dịch này');
+      }
+      return transactionExisted;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async deleteTransaction(
+    transactionId: string,
+    user: string,
+  ): Promise<string> {
+    try {
+      const queryRunner = await this.createQueryRunner();
+      const oUser = JSON.parse(user);
+      const transactionExisted = await this.getDetailTransactionById(
+        transactionId,
+      );
+
+      if (
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        transactionExisted.createdBy !== oUser.id ||
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        transactionExisted.status !== ETransaction.PENDING
+      ) {
+        throw new InternalServerErrorException('Không thể xóa giao dịch này');
+      }
+      const result = await queryRunner.manager.delete(TransactionEntity, {
+        id: transactionId,
+      });
+      if (result.affected > 0) {
+        return 'Xóa giao dịch này thành công';
+      }
+      throw new BadRequestException('Xóa giao dịch thất bại');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
   private generalBuilderContracts(): SelectQueryBuilder<TransactionEntity> {
     return this.transactionRepository.createQueryBuilder('transactions');
   }
