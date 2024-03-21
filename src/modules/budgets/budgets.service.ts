@@ -438,26 +438,24 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         return acc;
       }, []);
       const listDataBudgetOfItem = await Promise.all(listBudgetOfItem);
-      const extractedData = await Promise.all(
-        listTaskAndItem.map((task, index) => {
-          const { id, title, code, parentTask, status, item } = task;
-          if (parentTask === null) {
-            const budgetOfItem: any = listDataBudgetOfItem[index];
-            const totalPriceUsed = budgetOfItem?.totalTransactionUsed || 0;
-            return {
-              id,
-              title,
-              code,
-              parentTask,
-              status,
-              item: {
-                ...item,
-                totalPriceUsed,
-              },
-            };
-          }
-        }),
-      );
+      const extractedData = listTaskAndItem.map((task, index) => {
+        const { id, title, code, parentTask, status, item } = task;
+        if (parentTask === null) {
+          const budgetOfItem: any = listDataBudgetOfItem[index];
+          const totalPriceUsed = budgetOfItem?.totalTransactionUsed || 0;
+          return {
+            id,
+            title,
+            code,
+            parentTask,
+            status,
+            item: {
+              ...item,
+              totalPriceUsed,
+            },
+          };
+        }
+      });
       return extractedData.filter(Boolean);
       // Filtering out undefined entries
     } catch (err) {
@@ -692,50 +690,62 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   ): Promise<unknown> {
     try {
       const itemTasks: any = await this.getListBudgetForTask(filter);
-      const listItems = itemTasks.map((itemInTask) => ({
-        id: itemInTask.id,
-        title: itemInTask.title,
-        code: itemInTask.code,
-        parentTask: itemInTask.parentTask,
-        status: itemInTask.status,
-        totalTransactionUsed: null, // Add totalTransactionUsed from item
-        itemExisted: null, // Add itemExisted from item
-        items: itemInTask.item,
-      }));
-      const listItemInEvent = await Promise.all(
-        listItems.map((budget) =>
-          this.getTransactionOfItem(budget.items.id, false),
-        ),
+      const listItems = [];
+      for (const itemInTask of itemTasks) {
+        const newItem = {
+          id: itemInTask.id,
+          title: itemInTask.title,
+          code: itemInTask.code,
+          parentTask: itemInTask.parentTask,
+          status: itemInTask.status,
+          totalTransactionUsed: null, // Add totalTransactionUsed from item
+          itemExisted: null, // Add itemExisted from item
+          items: itemInTask.item,
+        };
+        listItems.push(newItem);
+      }
+      const itemPromises = listItems.map((budget) =>
+        this.getTransactionOfItem(budget.items.id, false),
       );
-      console.log('listItemInEvent:', listItemInEvent);
-
+      const listItemInEvent = await Promise.all(itemPromises);
       const listTransactionArray = listItemInEvent.map((item) => {
-        const tasksWithNullParent =
-          type === 'OWN'
-            ? item?.itemExisted?.tasks.filter(
-                (task) => task.parentTask != undefined,
-              )
-            : item?.itemExisted?.tasks.filter(
-                (task) => task.parentTask == undefined,
+        switch (type) {
+          case 'OWN':
+            const tasksWithNullParentOwn = item?.itemExisted?.tasks.filter(
+              (task) => task?.parentTask == null,
+            );
+            console.log('Task with null: ', tasksWithNullParentOwn);
+            if (tasksWithNullParentOwn.length > 0) {
+              const filterItems = listItems.filter(
+                (task) => task?.items?.id === item?.itemExisted?.id,
               );
-        console.log('tasksWithNullParent:', tasksWithNullParent);
-
-        if (tasksWithNullParent.length > 0) {
-          const filterItems = listItems.filter(
-            (task) => task?.items?.id === item?.itemExisted?.id,
-          );
-          item.itemExisted.tasks = tasksWithNullParent;
-          delete filterItems[0].items;
-          return {
-            ...filterItems[0],
-            totalTransactionUsed: item?.totalTransactionUsed,
-            itemExisted: item?.itemExisted,
-          };
+              item.itemExisted.tasks = tasksWithNullParentOwn;
+              delete filterItems[0].items;
+              return {
+                ...filterItems[0],
+                totalTransactionUsed: item.totalTransactionUsed,
+                itemExisted: item.itemExisted,
+              };
+            }
+            return null;
+          case 'ALL':
+            const tasksWithNullParentAll = item.itemExisted.tasks.filter(
+              (task) => task?.parentTask !== null,
+            );
+            const filterItems = listItems.filter(
+              (task) => task?.items?.id === item?.itemExisted?.id,
+            );
+            item.itemExisted.tasks = tasksWithNullParentAll;
+            delete filterItems[0].items;
+            return {
+              ...filterItems[0],
+              totalTransactionUsed: item.totalTransactionUsed,
+              itemExisted: item.itemExisted,
+            };
         }
-        return null;
       });
-
-      return listTransactionArray.filter(Boolean);
+      const filteredListTransactionArray = listTransactionArray.filter(Boolean);
+      return filteredListTransactionArray;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
