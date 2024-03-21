@@ -1066,23 +1066,27 @@ export class ContractsService extends BaseService<ContractEntity> {
       const template = await this.downloadTemplate(
         'contract/template/Contract_Template.docx',
       );
-      const zip = new PizZip(template);
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-      });
-      const calculateDuration = await this.sharedService.calculateDuration(
-        contractRequest.startDate,
-        contractRequest.endDate,
-      );
-      const formattedDateProcessing =
-        await this.sharedService.formatDateToString(
-          contractRequest.processingDate,
-          'DD/MM/YYYY HH:mm:ss',
-        );
-      const dataPlan = await this.planService.getPlanByCustomerContactId(
-        contactId,
-      );
+      let doc = undefined;
+      if (template) {
+        const zip = new PizZip(template);
+        doc = new Docxtemplater(zip, {
+          paragraphLoop: true,
+          linebreaks: true,
+        });
+      }
+      const [calculateDuration, formattedDateProcessing, dataPlan] =
+        await Promise.all([
+          this.sharedService.calculateDuration(
+            contractRequest.startDate,
+            contractRequest.endDate,
+          ),
+          this.sharedService.formatDateToString(
+            contractRequest.processingDate,
+            'DD/MM/YYYY HH:mm:ss',
+          ),
+          this.planService.getPlanByCustomerContactId(contactId),
+        ]);
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const plan = dataPlan?.plan;
@@ -1114,47 +1118,48 @@ export class ContractsService extends BaseService<ContractEntity> {
       const plannedTotal = plannedTotalPrice + plannedBackup + plannedVAT;
       const plannedTotalPriceFormatted =
         await this.sharedService.formattedCurrency(plannedTotalPrice);
-      const plannedBackupFormatted = await this.sharedService.formattedCurrency(
-        plannedBackup,
-      );
-      const plannedVATFormatted = await this.sharedService.formattedCurrency(
-        plannedVAT,
-      );
-      const plannedTotalFormatted = await this.sharedService.formattedCurrency(
-        plannedTotal,
-      );
-      const contractValueByName = await this.sharedService.moneyToWord(
-        parseFloat(String(plannedTotal)),
-      );
-      doc.render({
-        companyRepresentativeName: user.profile.fullName,
-        companyRepresentativeRole: user.role.roleName,
-        companyRepresentativeNationalId: user.profile.nationalId,
-        compannyRepresentativePhoneNumber: user.profile.phoneNumber,
-        companyRepresentativeEmail: user.email,
-        customerName: contractRequest.customerName,
-        customerNationalId: contractRequest.customerNationalId,
-        customerAddress: contractRequest.customerAddress,
-        customerPhoneNumber: contractRequest.customerPhoneNumber,
-        customerEmail: contractRequest.customerEmail,
-        eventName: contractRequest.eventName,
-        eventAddress: contractRequest.location,
-        processingDate: formattedDateProcessing,
-        duration: calculateDuration,
-        contractValue: plannedTotalFormatted,
-        contractValueByName: contractValueByName,
-        paymentMethod: contractRequest.paymentMethod,
-        plan: plan,
-        plannedTotalPrice: plannedTotalPriceFormatted,
-        plannedBackup: plannedBackupFormatted,
-        plannedVAT: plannedVATFormatted,
-        plannedTotal: plannedTotalFormatted,
-      });
-      const buf = doc.getZip().generate({
-        type: 'nodebuffer',
-        compression: 'DEFLATE',
-      });
-      return buf;
+      const [
+        plannedBackupFormatted,
+        plannedVATFormatted,
+        plannedTotalFormatted,
+        contractValueByName,
+      ] = await Promise.all([
+        this.sharedService.formattedCurrency(plannedBackup),
+        this.sharedService.formattedCurrency(plannedVAT),
+        this.sharedService.formattedCurrency(plannedTotal),
+        this.sharedService.moneyToWord(parseFloat(String(plannedTotal))),
+      ]);
+      if (doc) {
+        doc?.render({
+          companyRepresentativeName: user.profile.fullName,
+          companyRepresentativeRole: user.role.roleName,
+          companyRepresentativeNationalId: user.profile.nationalId,
+          compannyRepresentativePhoneNumber: user.profile.phoneNumber,
+          companyRepresentativeEmail: user.email,
+          customerName: contractRequest.customerName,
+          customerNationalId: contractRequest.customerNationalId,
+          customerAddress: contractRequest.customerAddress,
+          customerPhoneNumber: contractRequest.customerPhoneNumber,
+          customerEmail: contractRequest.customerEmail,
+          eventName: contractRequest.eventName,
+          eventAddress: contractRequest.location,
+          processingDate: formattedDateProcessing,
+          duration: calculateDuration,
+          contractValue: plannedTotalFormatted,
+          contractValueByName: contractValueByName,
+          paymentMethod: contractRequest.paymentMethod,
+          plan: plan,
+          plannedTotalPrice: plannedTotalPriceFormatted,
+          plannedBackup: plannedBackupFormatted,
+          plannedVAT: plannedVATFormatted,
+          plannedTotal: plannedTotalFormatted,
+        });
+        const buf = doc.getZip().generate({
+          type: 'nodebuffer',
+          compression: 'DEFLATE',
+        });
+        return buf;
+      }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
