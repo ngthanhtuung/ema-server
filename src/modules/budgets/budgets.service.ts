@@ -238,7 +238,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         }
         acc.push(res);
         return acc;
-      });
+      }, []);
       const formattedData = this.groupTransactionsByTask(
         transactionWithProcessBy,
       );
