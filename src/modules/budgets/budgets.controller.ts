@@ -49,8 +49,16 @@ export class BudgetsController {
 
   @Get('/transaction-request')
   @Roles(ERole.MANAGER, ERole.STAFF)
-  async getAllRequest(@Query() filter: FilterBigTaskAndItem): Promise<unknown> {
-    return await this.budgetService.getAllTransactionRequest(filter);
+  @ApiQuery({
+    name: 'type',
+    type: 'enum',
+    enum: ['OWN', 'ALL'],
+  })
+  async getAllRequest(
+    @Query() filter: FilterBigTaskAndItem,
+    @Query('type') type: string,
+  ): Promise<unknown> {
+    return await this.budgetService.getAllTransactionRequest(filter, type);
   }
 
   @Get('/own-transaction')
