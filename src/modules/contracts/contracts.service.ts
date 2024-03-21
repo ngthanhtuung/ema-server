@@ -47,18 +47,22 @@ import { ContractFileEntity } from './contract_files.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationContractRequest } from '../notification/dto/notification.request';
+import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
   constructor(
     @InjectRepository(ContractEntity)
     private readonly contractRepository: Repository<ContractEntity>,
+    @InjectRepository(ContractEvidenceEntity)
+    private readonly contractEvidenceEntity: Repository<ContractEvidenceEntity>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly sharedService: SharedService,
     private readonly userService: UserService,
     private readonly fileService: FileService,
     private readonly planService: ItemsService,
+    private readonly customerContactsService: CustomerContactsService,
     private readonly notificationService: NotificationService,
   ) {
     super(contractRepository);
@@ -66,17 +70,11 @@ export class ContractsService extends BaseService<ContractEntity> {
 
   /**
    * findContact
-   * @param queryRunner
    * @param contactId
    * @returns
    */
-  async findContact(queryRunner: QueryRunner, contactId: string) {
-    return await queryRunner.manager.findOne(CustomerContactEntity, {
-      where: { id: contactId },
-      relations: {
-        contract: true,
-      },
-    });
+  async findContact(contactId: string) {
+    return await this.customerContactsService.findContactById(contactId);
   }
 
   /**
@@ -191,7 +189,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       // Get Information of Contact
       const [contactExisted, contractCode] = await Promise.all([
-        this.findContact(queryRunner, contactId),
+        this.findContact(contactId),
         this.sharedService.generateContractCode(),
       ]);
       // Generate Contract Docs
@@ -358,16 +356,18 @@ export class ContractsService extends BaseService<ContractEntity> {
           status: user?.status,
         };
       });
-      const contractWithCompanyRepresentative = result.map((contract) => {
-        if (contract?.companyRepresentative) {
-          const userDetails = listUser[contract?.companyRepresentative];
-          return {
-            ...contract,
-            userDetails,
-          };
-        }
-        return contract;
-      });
+      const contractWithCompanyRepresentative = (result || []).map(
+        (contract) => {
+          if (contract?.companyRepresentative) {
+            const userDetails = listUser?.[contract?.companyRepresentative];
+            return {
+              ...contract,
+              userDetails,
+            };
+          }
+          return contract;
+        },
+      );
       const formatData = this.formattedDataGetAllContract(
         contractWithCompanyRepresentative,
       );
@@ -397,7 +397,7 @@ export class ContractsService extends BaseService<ContractEntity> {
   ): Promise<unknown | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const contract = await this.getContract(queryRunner, contractId);
+      const contract = await this.getContract(contractId);
 
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
@@ -447,12 +447,11 @@ export class ContractsService extends BaseService<ContractEntity> {
 
   /**
    * getContract
-   * @param queryRunner
    * @param contractId
    * @returns
    */
-  async getContract(queryRunner, contractId) {
-    return await queryRunner.manager.findOne(ContractEntity, {
+  async getContract(contractId) {
+    return await this.contractRepository.findOne({
       where: { id: contractId },
       relations: ['customerContact', 'files'],
     });
@@ -584,8 +583,7 @@ export class ContractsService extends BaseService<ContractEntity> {
     contactId: string,
   ): Promise<ContractEvidenceEntity[]> {
     try {
-      const query = this.dataSource.createQueryRunner();
-      const evidence = await query.manager.find(ContractEvidenceEntity, {
+      const evidence = await this.contractEvidenceEntity.find({
         where: { contract: { id: contactId } },
       });
       console.log('Evidence: ', evidence);
@@ -843,8 +841,7 @@ export class ContractsService extends BaseService<ContractEntity> {
    */
   async getAllContractFile(): Promise<ContractEntity[]> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      const contractExisted = await queryRunner.manager.find(ContractEntity, {
+      const contractExisted = await this.contractRepository.find({
         relations: {
           files: true,
           customerContact: true,
@@ -855,8 +852,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       }
       const dataFinal = contractExisted?.map((item) => {
         item.files?.sort((a, b) => {
-          const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
-          const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          const dateA = moment(a?.createdAt).format('YYYY-MM-DD HH:mm:ss');
+          const dateB = moment(b?.createdAt).format('YYYY-MM-DD HH:mm:ss');
           return moment(dateB, 'YYYY-MM-DD HH:mm:ss').diff(
             moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
           );

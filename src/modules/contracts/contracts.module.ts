@@ -9,14 +9,17 @@ import { FileModule } from 'src/file/file.module';
 import { forwardRef } from '@nestjs/common/utils';
 import { ItemsModule } from '../items/items.module';
 import { NotificationModule } from '../notification/notification.module';
+import { CustomerContactsModule } from '../customer_contacts/customer_contacts.module';
+import { ContractEvidenceEntity } from './contract_evidence.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ContractEntity]),
+    TypeOrmModule.forFeature([ContractEntity, ContractEvidenceEntity]),
     SharedModule,
     UserModule,
     FileModule,
     NotificationModule,
+    CustomerContactsModule,
     forwardRef(() => ItemsModule),
   ],
   providers: [ContractsService],

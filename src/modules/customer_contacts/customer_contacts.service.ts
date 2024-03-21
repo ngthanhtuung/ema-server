@@ -138,6 +138,11 @@ export class CustomerContactsService {
     }
   }
 
+  /**
+   * getContactDetailsById
+   * @param contactId
+   * @returns
+   */
   async getContactDetailsById(contactId: string): Promise<unknown> {
     try {
       const query = this.generalBuilderContacts();
@@ -166,6 +171,25 @@ export class CustomerContactsService {
         ...data[0],
         customerInfo: user,
       };
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  /**
+   * findContactById
+   * @param contactId
+   * @returns
+   */
+  async findContactById(contactId: string): Promise<CustomerContactEntity> {
+    try {
+      const data = await this.customerContactRepository.findOne({
+        where: { id: contactId },
+        relations: {
+          contract: true,
+        },
+      });
+      return data;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
