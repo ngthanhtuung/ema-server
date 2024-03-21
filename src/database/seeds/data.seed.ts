@@ -156,12 +156,12 @@ export class DataSeed implements Seeder {
           'Hỗ trợ logistics cho các sự kiện, bao gồm vận chuyển, sắp xếp địa điểm, và cung cấp vật tư',
       },
       {
-        divisionName: 'Nhóm Thiết kế',
+        divisionName: 'Nhóm Thiết Kế',
         description:
           'Thiết kế và phát triển các tài liệu quảng cáo cho các sự kiện, bao gồm logo, banner, và website.',
       },
       {
-        divisionName: 'Nhóm kế hoạch',
+        divisionName: 'Nhóm Kế Hoạch',
         description: 'Lập kế hoạch và phát triển chiến lược cho các sự kiện',
       },
       {
@@ -170,7 +170,7 @@ export class DataSeed implements Seeder {
           'Có kinh nghiệm trong việc quảng bá và thu hút khách hàng tham dự sự kiện.',
       },
       {
-        divisionName: 'Nhóm Bán hàng',
+        divisionName: 'Nhóm Bán Hàng',
         description: 'Có chuyên môn về bán hàng và thuyết trình.',
       },
       {

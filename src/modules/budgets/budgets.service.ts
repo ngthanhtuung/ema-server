@@ -212,7 +212,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       ]);
 
       const listInfoUser = await Promise.all(
-        result.reduce((acc, item) => {
+        (result || []).reduce((acc, item) => {
           if (item.processedBy) {
             acc.push(this.userService.findByIdV2(item.processedBy));
           }
@@ -231,7 +231,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           status: user?.status,
         };
       });
-      const transactionWithProcessBy = result.reduce((acc, item) => {
+      const transactionWithProcessBy = (result || []).reduce((acc, item) => {
         const res = { ...item };
         if (item.processedBy) {
           res.processedBy = userMap[item?.processedBy];
@@ -430,7 +430,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         sort: undefined,
         status: undefined,
       });
-      const listBudgetOfItem = listTaskAndItem.reduce((acc, task) => {
+      const listBudgetOfItem = (listTaskAndItem || []).reduce((acc, task) => {
         const { parentTask, item } = task;
         if (parentTask === null) {
           acc.push(this.getTransactionOfItem(item?.id, false));
