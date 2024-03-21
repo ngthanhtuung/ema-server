@@ -48,7 +48,7 @@ export class BudgetsController {
   }
 
   @Get('/transaction-request')
-  @Roles(ERole.MANAGER, ERole.STAFF)
+  @Roles(ERole.MANAGER)
   @ApiQuery({
     name: 'type',
     type: 'enum',

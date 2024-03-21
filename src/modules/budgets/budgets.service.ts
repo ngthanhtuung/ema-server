@@ -725,6 +725,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       }
       tasks[taskId].transactions.push({
         id: transaction.id,
+        transactionName: transaction.transactionName,
         transactionCode: transaction.transactionCode,
         description: transaction.description,
         amount: transaction.amount,
