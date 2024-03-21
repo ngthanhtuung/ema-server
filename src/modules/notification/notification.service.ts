@@ -240,9 +240,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
     }
   }
 
-  async createContractNotfication(
+  async createContractNotification(
     notification: NotificationContractRequest,
-    senderUser: string,
     queryRunner: QueryRunner,
   ): Promise<unknown> {
     try {
@@ -273,13 +272,10 @@ export class NotificationService extends BaseService<NotificationEntity> {
           .to(socket?.id)
           .emit(notification.messageSocket, dataNotification);
       }
-      const createNotification = await queryRunner.manager.insert(
-        UserNotificationsEntity,
-        {
-          user: { id: notification?.receiveUser },
-          notification: { id: newNoti?.identifiers[0]?.id },
-        },
-      );
+      await queryRunner.manager.insert(UserNotificationsEntity, {
+        user: { id: notification?.receiveUser },
+        notification: { id: newNoti?.identifiers[0]?.id },
+      });
 
       const firebaseNotificationPayload: FirebaseNotificationRequest = {
         title: notification?.title,
@@ -298,9 +294,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
     }
   }
 
-  async createTransactionNotfication(
+  async createTransactionNotification(
     notification: NotificationTransactionRequest,
-    senderUser: string,
     queryRunner: QueryRunner,
   ): Promise<unknown> {
     try {
@@ -331,22 +326,21 @@ export class NotificationService extends BaseService<NotificationEntity> {
           .to(socket?.id)
           .emit(notification.messageSocket, dataNotification);
       }
-      const createNotification = await queryRunner.manager.insert(
-        UserNotificationsEntity,
-        {
-          user: { id: notification?.receiveUser },
-          notification: { id: newNoti?.identifiers[0]?.id },
-        },
-      );
 
       const firebaseNotificationPayload: FirebaseNotificationRequest = {
         title: notification?.title,
         body: notification?.content,
         listUser: listUserPushNoti,
       };
-      await this.firebaseCustomService.sendCustomNotificationFirebase(
-        firebaseNotificationPayload,
-      );
+      await Promise.all([
+        queryRunner.manager.insert(UserNotificationsEntity, {
+          user: { id: notification?.receiveUser },
+          notification: { id: newNoti?.identifiers[0]?.id },
+        }),
+        this.firebaseCustomService.sendCustomNotificationFirebase(
+          firebaseNotificationPayload,
+        ),
+      ]);
       if (newNoti?.raw?.affectedRows > 0) {
         return 'Create notification successfully!';
       }

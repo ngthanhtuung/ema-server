@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BadRequestException,
@@ -59,13 +60,20 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     super(transactionRepository);
   }
 
+  /**
+   * createTransaction
+   * @param taskId
+   * @param data
+   * @param oUser
+   * @returns
+   */
   async createTransaction(
     taskId: string,
     data: CreateTransactionRequest,
     oUser: string,
   ): Promise<string> {
     try {
-      const queryRunner = await this.createQueryRunner();
+      const queryRunner = this.dataSource.createQueryRunner();
       const user = JSON.parse(oUser);
       const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
         where: {
@@ -85,6 +93,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         taskId,
         user.id,
         ECheckUserInTask.ASSIGNEE,
+        queryRunner,
       );
       if (!checkUserInTask) {
         throw new BadRequestException(
@@ -97,22 +106,18 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           'Công việc này hiện tại chưa được giao cho ai nên không thể tạo giao dịch',
         );
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (user.role === ERole.STAFF && taskExisted?.parentTask !== null) {
+      if (user?.role === ERole.STAFF && taskExisted?.parentTask !== null) {
         throw new ForbiddenException(
           'Bạn chỉ được quyền tạo yêu cầu giao dịch cho hạng mục và gửi đến cho quản lý',
         );
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (user.role === ERole.EMPLOYEE && taskExisted?.parentTask === null) {
+      if (user?.role === ERole.EMPLOYEE && taskExisted?.parentTask === null) {
         throw new ForbiddenException(
           'Bạn không được quyền tạo yêu cầu giao dịch cho công việc này',
         );
       }
-      const filterAssignTasks = assignTasks.filter(
-        (task) => task.assignee === user.id,
+      const filterAssignTasks = assignTasks.find(
+        (task) => task?.assignee === user?.id,
       );
       const transactionCode =
         await this.sharedService.generateTransactionCode();
@@ -123,24 +128,23 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           transactionName: data?.transactionName,
           description: data?.description,
           amount: data?.amount,
-          createdBy: user.id,
+          createdBy: user?.id,
           task: taskExisted,
         },
       );
-      if (newTransaction.identifiers[0].id) {
+      if (newTransaction?.identifiers?.[0]?.id) {
         const dataNotificationAccepted: NotificationTransactionRequest = {
           title: `Có một yêu cầu mới`,
           content: `Yêu cầu ${transactionCode} đang đợi để được xử lý`,
           type: ETypeNotification.BUDGET,
-          receiveUser: filterAssignTasks[0]?.taskMaster,
-          commonId: newTransaction.identifiers[0].id,
-          transactionId: newTransaction.identifiers[0].id,
+          receiveUser: filterAssignTasks?.taskMaster,
+          commonId: newTransaction?.identifiers?.[0]?.id,
+          transactionId: newTransaction?.identifiers?.[0]?.id,
           avatar: user?.avatar,
           messageSocket: 'notification',
         };
-        await this.notificationService.createTransactionNotfication(
+        await this.notificationService.createTransactionNotification(
           dataNotificationAccepted,
-          user?.id,
           queryRunner,
         );
         return 'Create transaction successfully';
@@ -153,6 +157,13 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * getOwnRequest
+   * @param pagination
+   * @param filter
+   * @param user
+   * @returns
+   */
   async getOwnRequest(
     pagination: BudgetPagination,
     filter: FilterTransaction,
@@ -197,25 +208,35 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           .execute(),
         query.getCount(),
       ]);
-      const transactionWithProcessBy = [];
-      for (const item of result) {
+
+      const listInfoUser = await Promise.all(
+        result.reduce((acc, item) => {
+          if (item.processedBy) {
+            acc.push(this.userService.findByIdV2(item.processedBy));
+          }
+          return acc;
+        }, []),
+      );
+      const userMap = {};
+      listInfoUser.forEach((user) => {
+        userMap[user?.id] = {
+          id: user?.id,
+          fullName: user?.fullName,
+          email: user.email,
+          phoneNumber: user?.phoneNumber,
+          dob: user?.dob,
+          avatar: user?.avatar,
+          status: user?.status,
+        };
+      });
+      const transactionWithProcessBy = result.reduce((acc, item) => {
         const res = { ...item };
         if (item.processedBy) {
-          const userDetails = await this.userService.findByIdV2(
-            item.processedBy,
-          );
-          res.processedBy = {
-            id: userDetails.id,
-            fullName: userDetails.fullName,
-            email: userDetails.email,
-            phoneNumber: userDetails.phoneNumber,
-            dob: userDetails.dob,
-            avatar: userDetails.avatar,
-            status: userDetails.status,
-          };
+          res.processedBy = userMap[item?.processedBy];
         }
-        transactionWithProcessBy.push(res);
-      }
+        acc.push(res);
+        return acc;
+      });
       const formattedData = this.groupTransactionsByTask(
         transactionWithProcessBy,
       );
@@ -229,6 +250,14 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * updateStatusTransaction
+   * @param transactionId
+   * @param status
+   * @param user
+   * @param rejectReason
+   * @returns
+   */
   async updateStatusTransaction(
     transactionId: string,
     status: ETransaction,
@@ -236,7 +265,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     rejectReason?: TransactionRejectNote,
   ): Promise<string> {
     try {
-      const queryRunner = await this.createQueryRunner();
+      const queryRunner = this.dataSource.createQueryRunner();
       const oUser = JSON.parse(user);
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
@@ -256,6 +285,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         task?.id,
         oUser.id,
         ECheckUserInTask.TASK_MASTER,
+        queryRunner,
       );
       if (!checkUserInTask) {
         throw new ForbiddenException('Bạn không có quyền duyệt giao dịch này');
@@ -269,6 +299,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           const totalUsed = await this.getTransactionOfItem(
             itemOfTask?.id,
             false,
+            queryRunner,
           );
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -310,9 +341,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
               avatar: oUser?.avatar,
               messageSocket: 'notification',
             };
-            await this.notificationService.createTransactionNotfication(
+            await this.notificationService.createTransactionNotification(
               dataNotificationAccepted,
-              oUser?.id,
               queryRunner,
             );
             return `Giao dịch này được duyệt thành công`;
@@ -348,9 +378,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
               avatar: oUser?.avatar,
               messageSocket: 'notification',
             };
-            await this.notificationService.createTransactionNotfication(
+            await this.notificationService.createTransactionNotification(
               dataNotificationReject,
-              oUser?.id,
               queryRunner,
             );
             return `Từ chối giao dịch ${transactionExisted.transactionCode} thành công. Lý do: ${rejectReason.rejectNote}`;
@@ -388,7 +417,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
-  async getListBugdetForTask(filter: FilterBigTaskAndItem): Promise<unknown> {
+  /**
+   * getListBudgetForTask
+   * @param filter
+   * @returns
+   */
+  async getListBudgetForTask(filter: FilterBigTaskAndItem): Promise<unknown> {
     try {
       const listTaskAndItem = await this.taskService.filterTaskByAssignee({
         assignee: filter?.assignee,
@@ -397,16 +431,20 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         sort: undefined,
         status: undefined,
       });
+      // Handle getTransactionOfItem
+      const listBudgetOfItem = listTaskAndItem.reduce((acc, task) => {
+        const { parentTask, item } = task;
+        if (parentTask === null) {
+          acc.push(this.getTransactionOfItem(item?.id, false));
+        }
+        return acc;
+      }, []);
+      const listDataBudgetOfItem = await Promise.all(listBudgetOfItem);
       const extractedData = await Promise.all(
-        listTaskAndItem.map(async (task) => {
+        listTaskAndItem.map((task, index) => {
           const { id, title, code, parentTask, status, item } = task;
           if (parentTask === null) {
-            const budgetOfItem = await this.getTransactionOfItem(
-              item?.id,
-              false,
-            );
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
+            const budgetOfItem: any = listDataBudgetOfItem[index];
             const totalPriceUsed = budgetOfItem?.totalTransactionUsed || 0;
             return {
               id,
@@ -428,12 +466,22 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * getTransactionOfItem
+   * @param itemId
+   * @param filterNotParentTask
+   * @param queryRunner
+   * @returns
+   */
   async getTransactionOfItem(
     itemId: string,
     filterNotParentTask: boolean,
+    queryRunner?: QueryRunner,
   ): Promise<unknown> {
     try {
-      const queryRunner = await this.createQueryRunner();
+      if (!queryRunner) {
+        queryRunner = this.dataSource.createQueryRunner();
+      }
       const itemExisted = await queryRunner.manager.findOne(ItemEntity, {
         where: {
           id: itemId,
@@ -450,27 +498,25 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         );
       }
       let totalAcceptedTransaction = 0;
-      const listTask = itemExisted?.tasks.filter(
-        (task) => task.transactions.length > 0,
-      );
+      const listTask = itemExisted?.tasks || [];
       for (const task of listTask) {
-        const acceptedTransaction = task?.transactions.filter((transaction) =>
-          [ETransaction.ACCEPTED, ETransaction.SUCCESS].includes(
-            transaction.status,
-          ),
+        totalAcceptedTransaction = (task?.transactions || []).reduce(
+          (total, transaction) => {
+            if (
+              [ETransaction.ACCEPTED, ETransaction.SUCCESS].includes(
+                transaction.status,
+              )
+            ) {
+              total += transaction.amount;
+            }
+            return total;
+          },
+          0,
         );
-        if (acceptedTransaction.length > 0) {
-          totalAcceptedTransaction = acceptedTransaction.reduce(
-            (total, transaction) => (total += transaction.amount),
-            0,
-          );
-        }
       }
-      const taskReponse = listTask;
+      let taskReponse = listTask;
       if (filterNotParentTask === true) {
-        const filteredTasks = listTask.filter(
-          (task) => task.parentTask !== null,
-        );
+        taskReponse = listTask.filter((task) => task.parentTask !== null);
       }
       return {
         totalTransactionUsed: totalAcceptedTransaction,
@@ -484,6 +530,13 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * updateItemPercentage
+   * @param transactionId
+   * @param amount
+   * @param user
+   * @returns
+   */
   async updateItemPercentage(
     transactionId: string,
     amount: number,
@@ -491,7 +544,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   ): Promise<unknown> {
     try {
       const oUser = JSON.parse(user);
-      const queryRunner = await this.createQueryRunner();
+      const queryRunner = this.dataSource.createQueryRunner();
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
         {
@@ -518,6 +571,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         taskOfTransaction.id,
         oUser?.id,
         ECheckUserInTask.TASK_MASTER,
+        queryRunner,
       );
       if (!checkUserInTask) {
         throw new ForbiddenException(
@@ -528,9 +582,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const totalPriceBudget =
         itemExisted.plannedAmount * itemExisted.plannedPrice;
       const budgetAvailable = totalPriceBudget * (itemExisted.percentage / 100);
-      const totalUsed = await this.getTransactionOfItem(itemExisted?.id, false);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      const totalUsed: any = await this.getTransactionOfItem(
+        itemExisted?.id,
+        false,
+        queryRunner,
+      );
       const totalTransactionUsed = totalUsed?.totalTransactionUsed;
       const remainingBudget = budgetAvailable - totalTransactionUsed;
       if (amount <= remainingBudget) {
@@ -562,7 +618,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
       );
       if (result.affected > 0) {
-        const updateResult = await this.updateStatusTransaction(
+        await this.updateStatusTransaction(
           transactionId,
           ETransaction.SUCCESS,
           user,
@@ -577,6 +633,13 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * updateContractEvidence
+   * @param transactionId
+   * @param files
+   * @param user
+   * @returns
+   */
   async updateContractEvidence(
     transactionId: string,
     files: FileRequest[],
@@ -603,134 +666,100 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           }`,
         );
       }
-      const listPromiseAllUploadFile = files.map((files, index) => {
-        return this.fileService.uploadFile(
-          files,
-          `transaction/${transaction?.transactionCode}`, //file path to upload on Firebase
-          `${transaction?.transactionCode} - ${index + 1}`,
-        );
-      });
-      const listBufSign = await Promise.all(listPromiseAllUploadFile);
-      console.log('listBufSign', listBufSign);
+      const listBufSign = await Promise.all(
+        files.map((file, index) =>
+          this.fileService.uploadFile(
+            file,
+            `transaction/${transaction?.transactionCode}`, //file path to upload on Firebase
+            `${transaction?.transactionCode} - ${index + 1}`,
+          ),
+        ),
+      );
       const dataMapTransactionEvidenceEntityInsert = listBufSign.map(
-        (bufSign, index) => {
-          return {
-            transaction: transaction,
-            evidenceFileName: `${transaction?.transactionCode} - ${index + 1}`,
-            evidenceFileSize: bufSign['fileSize'],
-            evidenceFileType: bufSign['fileType'],
-            evidenceUrl: bufSign['downloadUrl'],
-            createdBy: user.id,
-          };
-        },
+        (bufSign, index) => ({
+          transaction: transaction,
+          evidenceFileName: `${transaction?.transactionCode} - ${index + 1}`,
+          evidenceFileSize: bufSign['fileSize'],
+          evidenceFileType: bufSign['fileType'],
+          evidenceUrl: bufSign['downloadUrl'],
+          createdBy: user.id,
+        }),
       );
       await queryRunner.manager.insert(
         TransactionEvidenceEntity,
         dataMapTransactionEvidenceEntityInsert,
       );
-      if (listBufSign.length > 0) {
-        return listBufSign;
-      }
+      return listBufSign.length > 0 ? listBufSign : undefined;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
   }
 
+  /**
+   * getAllTransactionRequest
+   * @param filter
+   * @param type
+   * @returns
+   */
   async getAllTransactionRequest(
     filter: FilterBigTaskAndItem,
     type: string,
   ): Promise<unknown> {
     try {
-      const listItems = [];
-      const itemTasks = await this.getListBugdetForTask(filter);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      for (const itemInTask of itemTasks) {
-        const newItem = {
-          id: itemInTask.id,
-          title: itemInTask.title,
-          code: itemInTask.code,
-          parentTask: itemInTask.parentTask,
-          status: itemInTask.status,
-          totalTransactionUsed: null, // Add totalTransactionUsed from item
-          itemExisted: null, // Add itemExisted from item
-          items: itemInTask.item,
-        };
-        listItems.push(newItem);
-      }
-      const itemPromises = listItems.map((budget) =>
-        this.getTransactionOfItem(budget.items.id, false),
+      const itemTasks: any = await this.getListBudgetForTask(filter);
+      const listItems = itemTasks.map((itemInTask) => ({
+        id: itemInTask.id,
+        title: itemInTask.title,
+        code: itemInTask.code,
+        parentTask: itemInTask.parentTask,
+        status: itemInTask.status,
+        totalTransactionUsed: null, // Add totalTransactionUsed from item
+        itemExisted: null, // Add itemExisted from item
+        items: itemInTask.item,
+      }));
+      const listItemInEvent = await Promise.all(
+        listItems.map((budget) =>
+          this.getTransactionOfItem(budget.items.id, false),
+        ),
       );
 
-      const listItemInEvent = await Promise.all(itemPromises);
       const listTransactionArray = listItemInEvent.map((item) => {
-        switch (type) {
-          case 'OWN':
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const tasksWithNullParentOwn = item?.itemExisted?.tasks.filter(
-              (task) => task.parentTask == null,
-            );
-            console.log('Task with null: ', tasksWithNullParentOwn);
-            if (tasksWithNullParentOwn.length > 0) {
-              const filterItems = listItems.filter(
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                (task) => task.items.id === item?.itemExisted?.id,
-              );
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              item.itemExisted.tasks = tasksWithNullParentOwn;
-              delete filterItems[0].items;
-              return {
-                ...filterItems[0],
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                totalTransactionUsed: item.totalTransactionUsed,
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                itemExisted: item.itemExisted,
-              };
-            }
-            return null;
-          case 'ALL':
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            const tasksWithNullParentAll = item.itemExisted.tasks.filter(
-              (task) => task.parentTask !== null,
-            );
-            const filterItems = listItems.filter(
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              (task) => task.items.id === item?.itemExisted?.id,
-            );
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            item.itemExisted.tasks = tasksWithNullParentAll;
-            delete filterItems[0].items;
-            return {
-              ...filterItems[0],
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              totalTransactionUsed: item.totalTransactionUsed,
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              itemExisted: item.itemExisted,
-            };
+        const tasksWithNullParent =
+          type === 'OWN'
+            ? item?.itemExisted?.tasks.filter((task) => task.parentTask == null)
+            : item.itemExisted.tasks.filter((task) => task.parentTask !== null);
+
+        if (tasksWithNullParent.length > 0) {
+          const filterItems = listItems.filter(
+            (task) => task.items.id === item?.itemExisted?.id,
+          );
+          item.itemExisted.tasks = tasksWithNullParent;
+          delete filterItems[0].items;
+          return {
+            ...filterItems[0],
+            totalTransactionUsed: item.totalTransactionUsed,
+            itemExisted: item.itemExisted,
+          };
         }
+        return null;
       });
-      const filteredListTransactionArray = listTransactionArray.filter(Boolean);
-      return listTransactionArray;
+
+      return listTransactionArray.filter(Boolean);
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
   }
 
+  /**
+   * getEvidenceByTransactionId
+   * @param transactionId
+   * @returns
+   */
   async getEvidenceByTransactionId(
     transactionId: string,
   ): Promise<TransactionEvidenceEntity[]> {
     try {
-      const queryRunner = await this.createQueryRunner();
+      const queryRunner = this.dataSource.createQueryRunner();
       const evidence = await queryRunner.manager.find(
         TransactionEvidenceEntity,
         {
@@ -743,11 +772,16 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * getDetailTransactionById
+   * @param transactionId
+   * @returns
+   */
   async getDetailTransactionById(
     transactionId: string,
   ): Promise<unknown | undefined> {
     try {
-      const queryRunner = await this.createQueryRunner();
+      const queryRunner = this.dataSource.createQueryRunner();
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
         {
@@ -764,31 +798,33 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
+  /**
+   * deleteTransaction
+   * @param transactionId
+   * @param user
+   * @returns
+   */
   async deleteTransaction(
     transactionId: string,
     user: string,
   ): Promise<string> {
     try {
-      const queryRunner = await this.createQueryRunner();
+      const queryRunner = this.dataSource.createQueryRunner();
       const oUser = JSON.parse(user);
-      const transactionExisted = await this.getDetailTransactionById(
+      const transactionExisted: any = await this.getDetailTransactionById(
         transactionId,
       );
 
       if (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        transactionExisted.createdBy !== oUser.id ||
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        transactionExisted.status !== ETransaction.PENDING
+        transactionExisted?.createdBy !== oUser?.id ||
+        transactionExisted?.status !== ETransaction.PENDING
       ) {
         throw new InternalServerErrorException('Không thể xóa giao dịch này');
       }
       const result = await queryRunner.manager.delete(TransactionEntity, {
         id: transactionId,
       });
-      if (result.affected > 0) {
+      if (result?.affected > 0) {
         return 'Xóa giao dịch này thành công';
       }
       throw new BadRequestException('Xóa giao dịch thất bại');
@@ -801,16 +837,15 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     return this.transactionRepository.createQueryBuilder('transactions');
   }
 
-  private async createQueryRunner(): Promise<QueryRunner> {
-    return this.dataSource.createQueryRunner();
-  }
-
   private async checkUserInTask(
     taskId: string,
     userId: string,
     typeCheck: ECheckUserInTask,
+    queryRunner?: QueryRunner,
   ): Promise<boolean> {
-    const queryRunner = await this.createQueryRunner();
+    if (!queryRunner) {
+      queryRunner = this.dataSource.createQueryRunner();
+    }
     let query = `
         SELECT COUNT(*) as count
         FROM tasks
@@ -827,7 +862,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     return result.length > 0 ? true : false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   private groupTransactionsByTask(data: any) {
     const tasks = {};
 

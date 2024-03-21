@@ -98,13 +98,4 @@ export class TaskController {
     const res = await this.taskService.updateTask(taskID, data, oUser);
     if (res) return 'Update status success';
   }
-
-  @Get('/user-task/:userId')
-  async checkUserInTask(
-    @Param('userId') userId: string,
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-  ): Promise<unknown> {
-    return this.taskService.checkUserInTask(userId, startDate, endDate);
-  }
 }

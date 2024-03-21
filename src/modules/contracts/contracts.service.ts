@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
@@ -49,8 +50,6 @@ import { NotificationContractRequest } from '../notification/dto/notification.re
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
-  private;
-
   constructor(
     @InjectRepository(ContractEntity)
     private readonly contractRepository: Repository<ContractEntity>,
@@ -65,6 +64,124 @@ export class ContractsService extends BaseService<ContractEntity> {
     super(contractRepository);
   }
 
+  /**
+   * findContact
+   * @param queryRunner
+   * @param contactId
+   * @returns
+   */
+  async findContact(queryRunner: QueryRunner, contactId: string) {
+    return await queryRunner.manager.findOne(CustomerContactEntity, {
+      where: { id: contactId },
+      relations: {
+        contract: true,
+      },
+    });
+  }
+
+  /**
+   * uploadContractFile
+   * @param buf
+   * @param contractCode
+   * @returns
+   */
+  async uploadContractFile(buf: Buffer, contractCode: string) {
+    const fileName = `${contractCode}.pdf`;
+    const download = await this.uploadFile(buf, fileName);
+    return download;
+  }
+
+  /**
+   * createContract
+   * @param queryRunner
+   * @param customerInfo
+   * @param contactId
+   * @param user
+   * @returns
+   */
+  async createContract(
+    queryRunner: QueryRunner,
+    customerInfo: EventCreateRequestContract,
+    contactId: string,
+    user: UserEntity,
+  ) {
+    const contract = await queryRunner.manager.insert(ContractEntity, {
+      customerName: customerInfo.customerName,
+      customerNationalId: customerInfo.customerNationalId,
+      customerAddress: customerInfo.customerAddress,
+      customerEmail: customerInfo.customerEmail,
+      customerPhoneNumber: customerInfo.customerPhoneNumber,
+      companyRepresentative: user.id,
+      createdBy: user.id,
+      paymentMethod: customerInfo.paymentMethod,
+      eventName: customerInfo.eventName,
+      startDate: customerInfo.startDate,
+      processingDate: customerInfo.processingDate,
+      endDate: customerInfo.endDate,
+      location: customerInfo.location,
+      paymentDate: customerInfo.paymentDate,
+      customerContact: {
+        id: contactId,
+      },
+    });
+    return contract?.generatedMaps[0]['id'];
+  }
+
+  /**
+   * createContractFile
+   * @param queryRunner
+   * @param contractCode
+   * @param buf
+   * @param download
+   * @param contractId
+   */
+  async createContractFile(
+    queryRunner: QueryRunner,
+    contractCode: string,
+    buf: Buffer,
+    download: any,
+    contractId: string,
+  ) {
+    await queryRunner.manager.insert(ContractFileEntity, {
+      contractCode: contractCode,
+      contractFileName: `${contractCode}.pdf`,
+      contractFileSize: buf.length,
+      contractFileUrl: download?.['downloadUrl'],
+      contract: {
+        id: contractId,
+      },
+    });
+  }
+
+  /**
+   * sendContractAlert
+   * @param user
+   * @param customerInfo
+   * @param contractCode
+   */
+  async sendContractAlert(
+    user: UserEntity,
+    customerInfo: EventCreateRequestContract,
+    contractCode: string,
+  ) {
+    const userProcess = await this.userService.findByIdV2(user.id);
+    await this.sharedService.sendContractAlert(
+      customerInfo.customerEmail,
+      customerInfo.customerName,
+      contractCode,
+      userProcess.fullName,
+      userProcess.email,
+      userProcess.phoneNumber,
+    );
+  }
+
+  /**
+   * generateNewContract
+   * @param customerInfo
+   * @param contactId
+   * @param user
+   * @returns
+   */
   async generateNewContract(
     customerInfo: EventCreateRequestContract,
     contactId: string,
@@ -72,75 +189,37 @@ export class ContractsService extends BaseService<ContractEntity> {
   ): Promise<object | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      let downloadObject = undefined;
-      const contactExisted = await queryRunner.manager.findOne(
-        CustomerContactEntity,
-        {
-          where: { id: contactId },
-          relations: {
-            contract: true,
-          },
-        },
+      // Get Information of Contact
+      const contactExisted = await this.findContact(queryRunner, contactId);
+      // Generate Contract Code
+      const contractCode = await this.sharedService.generateContractCode();
+      // Generate Contract Docs
+      const buf = await this.generateContractDocs(
+        customerInfo,
+        contactId,
+        user,
+        queryRunner,
       );
-      let contractCode;
-      const callback = async (queryRunner: QueryRunner): Promise<void> => {
-        const generateCode = await this.sharedService.generateContractCode();
-        contractCode = generateCode;
-        const buf = await this.generateContractDocs(
+      if (!buf) return undefined;
+      // Upload Contract File
+      const downloadObject = await this.uploadContractFile(buf, contractCode);
+      let contractId = contactExisted?.contract?.id;
+      if (!contactExisted.contract) {
+        contractId = await this.createContract(
+          queryRunner,
           customerInfo,
           contactId,
           user,
-          queryRunner,
         );
-        if (!buf) return undefined;
-        const fileName = `${generateCode}.pdf`;
-        const download = await this.uploadFile(buf, fileName);
-        if (download) {
-          downloadObject = download;
-        }
-        let contractId = contactExisted?.contract?.id;
-        if (!contactExisted.contract) {
-          const contract = await queryRunner.manager.insert(ContractEntity, {
-            customerName: customerInfo.customerName,
-            customerNationalId: customerInfo.customerNationalId,
-            customerAddress: customerInfo.customerAddress,
-            customerEmail: customerInfo.customerEmail,
-            customerPhoneNumber: customerInfo.customerPhoneNumber,
-            companyRepresentative: user.id,
-            createdBy: user.id,
-            paymentMethod: customerInfo.paymentMethod,
-            eventName: customerInfo.eventName,
-            startDate: customerInfo.startDate,
-            processingDate: customerInfo.processingDate,
-            endDate: customerInfo.endDate,
-            location: customerInfo.location,
-            paymentDate: customerInfo.paymentDate,
-            customerContact: {
-              id: contactId,
-            },
-          });
-          contractId = contract?.generatedMaps[0]['id'];
-        }
-        await queryRunner.manager.insert(ContractFileEntity, {
-          contractCode: generateCode,
-          contractFileName: fileName,
-          contractFileSize: buf.length,
-          contractFileUrl: download?.['downloadUrl'],
-          contract: {
-            id: contractId,
-          },
-        });
-      };
-      await this.transaction(callback, queryRunner);
-      const userProcess = await this.userService.findByIdV2(user.id);
-      await this.sharedService.sendContractAlert(
-        customerInfo.customerEmail,
-        customerInfo.customerName,
+      }
+      await this.createContractFile(
+        queryRunner,
         contractCode,
-        userProcess.fullName,
-        userProcess.email,
-        userProcess.phoneNumber,
+        buf,
+        downloadObject,
+        contractId,
       );
+      await this.sendContractAlert(user, customerInfo, contractCode);
       return downloadObject;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -256,29 +335,36 @@ export class ContractsService extends BaseService<ContractEntity> {
           .execute(),
         query.getCount(),
       ]);
-
-      const contractWithCompanyRepresentative = await Promise.all(
+      const listUser = await Promise.all(
         result.map((contract) => {
           if (contract.companyRepresentative) {
-            return this.userService
-              .findByIdV2(contract.companyRepresentative)
-              .then((userDetails) => ({
-                id: userDetails.id,
-                fullName: userDetails.fullName,
-                email: userDetails.email,
-                phoneNumber: userDetails.phoneNumber,
-                dob: userDetails.dob,
-                avatar: userDetails.avatar,
-                status: userDetails.status,
-              }))
-              .then((companyRepresentative) => ({
-                ...contract,
-                companyRepresentative,
-              }));
+            return this.userService.findByIdV2(contract.companyRepresentative);
           }
           return contract;
         }),
       );
+      const userMap = {};
+      listUser.forEach((user) => {
+        userMap[user?.id] = {
+          id: user?.id,
+          fullName: user?.fullName,
+          email: user.email,
+          phoneNumber: user?.phoneNumber,
+          dob: user?.dob,
+          avatar: user?.avatar,
+          status: user?.status,
+        };
+      });
+      const contractWithCompanyRepresentative = result.map(async (contract) => {
+        if (contract?.companyRepresentative) {
+          const userDetails = listUser[contract?.companyRepresentative];
+          return {
+            ...contract,
+            userDetails,
+          };
+        }
+        return contract;
+      });
       const formatData = this.formattedDataGetAllContract(
         contractWithCompanyRepresentative,
       );
@@ -293,13 +379,13 @@ export class ContractsService extends BaseService<ContractEntity> {
   }
 
   /**
-   * @description Update contract evidence
+   * updateContractEvidence
    * @param contractId
+   * @param type
    * @param files
    * @param user
    * @returns
-   * */
-
+   */
   async updateContractEvidence(
     contractId: string,
     type: EContractEvidenceType,
@@ -308,109 +394,182 @@ export class ContractsService extends BaseService<ContractEntity> {
   ): Promise<unknown | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
-      const contract = await queryRunner.manager.findOne(ContractEntity, {
-        where: { id: contractId },
-        relations: ['customerContact', 'files'],
-      });
+      const contract = await this.getContract(queryRunner, contractId);
 
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
       }
-      const contractSuccess = contract?.files.filter(
-        (file) => file.status === EContractStatus.ACCEPTED,
-      );
+
+      const contractSuccess = this.getSuccessfulContracts(contract);
+
       if (contractSuccess.length <= 0) {
         throw new InternalServerErrorException(
           'Hiện chưa có hợp đồng nào được chấp thuận, vui lòng kiểm tra lại',
         );
       }
-      const result = await Promise.all(
-        files.map(async (file, index) => {
-          const number = index + 1;
-          switch (type) {
-            case EContractEvidenceType.CONTRACT_SIGNED:
-              if (contract.status !== EContractStatus.WAIT_FOR_SIGN) {
-                throw new BadRequestException(
-                  'Chưa có hợp đồng nào được chấp thuận để kí duyệt, vui lòng thử lại sau',
-                );
-              }
-              const bufSign = await this.fileService.uploadFile(
-                file,
-                `contract/signed/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
-                `${contractSuccess[0]?.contractCode} - ${number}`,
-              );
-              if (!bufSign) return undefined;
-              await queryRunner.manager.insert(ContractEvidenceEntity, {
-                contract: contract,
-                evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
-                evidenceFileSize: bufSign['fileSize'],
-                evidenceFileType: bufSign['fileType'],
-                evidenceUrl: bufSign['downloadUrl'],
-                createdBy: user.id,
-              });
-              return bufSign;
-            case EContractEvidenceType.CONTRACT_PAID:
-              if (contract.status !== EContractStatus.WAIT_FOR_PAID) {
-                throw new BadRequestException(
-                  'Hợp đồng này chưa thể thanh toán, vui lòng kiểm tra lại trạng thái của hợp đồng',
-                );
-              }
-              const buf = await this.fileService.uploadFile(
-                file,
-                `contract/transaction/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
-                `${contractSuccess[0]?.contractCode} - ${number}`,
-              );
-              if (!buf) return undefined;
-              await queryRunner.manager.insert(ContractEvidenceEntity, {
-                contract: contract,
-                evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
-                evidenceFileSize: buf['fileSize'],
-                evidenceFileType: buf['fileType'],
-                evidenceUrl: buf['downloadUrl'],
-                createdBy: user.id,
-              });
-              return buf;
-          }
-        }),
-      );
-      if (result.length > 0) {
-        if (type === EContractEvidenceType.CONTRACT_SIGNED) {
-          await queryRunner.manager.update(
-            ContractEntity,
-            {
-              id: contractId,
-            },
-            {
-              dateOfSigning: moment
-                .tz('Asia/Bangkok')
-                .format('YYYY-MM-DD HH:mm:ss'),
-              updatedAt: moment
-                .tz('Asia/Bangkok')
-                .format('YYYY-MM-DD HH:mm:ss'),
-              updatedBy: user.id,
-              status: EContractStatus.WAIT_FOR_PAID,
-            },
-          );
-        } else {
-          await queryRunner.manager.update(
-            ContractEntity,
-            {
-              id: contractId,
-            },
-            {
-              updatedAt: moment
-                .tz('Asia/Bangkok')
-                .format('YYYY-MM-DD HH:mm:ss'),
-              updatedBy: user.id,
-              status: EContractStatus.PAID,
-            },
-          );
+
+      for (const [index, file] of files.entries()) {
+        const number = index + 1;
+        switch (type) {
+          case EContractEvidenceType.CONTRACT_SIGNED:
+            await this.processContractSigned(
+              file,
+              contract,
+              contractSuccess,
+              user,
+              queryRunner,
+              number,
+            );
+            break;
+          case EContractEvidenceType.CONTRACT_PAID:
+            await this.processContractPaid(
+              file,
+              contract,
+              contractSuccess,
+              user,
+              queryRunner,
+              number,
+            );
+            break;
         }
       }
-      return result;
+
+      await this.updateContractStatus(type, contractId, user, queryRunner);
+
+      return 'Upload evidence successful';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
+  }
+
+  /**
+   * getContract
+   * @param queryRunner
+   * @param contractId
+   * @returns
+   */
+  async getContract(queryRunner, contractId) {
+    return await queryRunner.manager.findOne(ContractEntity, {
+      where: { id: contractId },
+      relations: ['customerContact', 'files'],
+    });
+  }
+
+  /**
+   * getSuccessfulContracts
+   * @param contract
+   * @returns
+   */
+  getSuccessfulContracts(contract) {
+    return contract?.files.filter(
+      (file) => file.status === EContractStatus.ACCEPTED,
+    );
+  }
+
+  /**
+   * processContractSigned
+   * @param file
+   * @param contract
+   * @param contractSuccess
+   * @param user
+   * @param queryRunner
+   * @param number
+   * @returns
+   */
+  async processContractSigned(
+    file,
+    contract,
+    contractSuccess,
+    user,
+    queryRunner,
+    number,
+  ) {
+    if (contract.status !== EContractStatus.WAIT_FOR_SIGN) {
+      throw new BadRequestException(
+        'Chưa có hợp đồng nào được chấp thuận để kí duyệt, vui lòng thử lại sau',
+      );
+    }
+    const bufSign = await this.fileService.uploadFile(
+      file,
+      `contract/signed/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
+      `${contractSuccess[0]?.contractCode} - ${number}`,
+    );
+    if (!bufSign) return undefined;
+    await queryRunner.manager.insert(ContractEvidenceEntity, {
+      contract: contract,
+      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+      evidenceFileSize: bufSign['fileSize'],
+      evidenceFileType: bufSign['fileType'],
+      evidenceUrl: bufSign['downloadUrl'],
+      createdBy: user.id,
+    });
+  }
+
+  /**
+   * processContractPaid
+   * @param file
+   * @param contract
+   * @param contractSuccess
+   * @param user
+   * @param queryRunner
+   * @param number
+   * @returns
+   */
+  async processContractPaid(
+    file,
+    contract,
+    contractSuccess,
+    user,
+    queryRunner,
+    number,
+  ) {
+    if (contract.status !== EContractStatus.WAIT_FOR_PAID) {
+      throw new BadRequestException(
+        'Hợp đồng này chưa thể thanh toán, vui lòng kiểm tra lại trạng thái của hợp đồng',
+      );
+    }
+    const buf = await this.fileService.uploadFile(
+      file,
+      `contract/transaction/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
+      `${contractSuccess[0]?.contractCode} - ${number}`,
+    );
+    if (!buf) return undefined;
+    await queryRunner.manager.insert(ContractEvidenceEntity, {
+      contract: contract,
+      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+      evidenceFileSize: buf['fileSize'],
+      evidenceFileType: buf['fileType'],
+      evidenceUrl: buf['downloadUrl'],
+      createdBy: user.id,
+    });
+  }
+
+  /**
+   * updateContractStatus
+   * @param type
+   * @param contractId
+   * @param user
+   * @param queryRunner
+   */
+  async updateContractStatus(type, contractId, user, queryRunner) {
+    let status;
+    switch (type) {
+      case EContractEvidenceType.CONTRACT_SIGNED:
+        status = EContractStatus.WAIT_FOR_PAID;
+        break;
+      case EContractEvidenceType.CONTRACT_PAID:
+        status = EContractStatus.PAID;
+        break;
+    }
+    await queryRunner.manager.update(
+      ContractEntity,
+      { id: contractId },
+      {
+        updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
+        updatedBy: user.id,
+        status: status,
+      },
+    );
   }
 
   /**
@@ -503,9 +662,8 @@ export class ContractsService extends BaseService<ContractEntity> {
                 avatar: oUser?.avatar,
                 messageSocket: 'notification',
               };
-              await this.notificationService.createContractNotfication(
+              await this.notificationService.createContractNotification(
                 dataNotification,
-                oUser?.id,
                 queryRunner,
               );
               return 'Hợp đồng được chấp thuận';
@@ -543,9 +701,8 @@ export class ContractsService extends BaseService<ContractEntity> {
               avatar: oUser?.avatar,
               messageSocket: 'notification',
             };
-            await this.notificationService.createContractNotfication(
+            await this.notificationService.createContractNotification(
               dataNotification,
-              oUser?.id,
               queryRunner,
             );
             return `Hợp đồng bị từ chối vì lí do: ${rejectReason.rejectNote}`;
@@ -582,16 +739,13 @@ export class ContractsService extends BaseService<ContractEntity> {
           relations: ['contract', 'eventType'],
         },
       );
-      const contractFiles = await this.getContractFileByCustomerContactId(
+      const contractFiles: any = await this.getContractFileByCustomerContactId(
         customerContactId,
       );
-
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const hasPendingOrAcceptedFiles = contractFiles?.files.some(
-        (file) =>
-          file.status === EContractStatus.PENDING ||
-          file.status === EContractStatus.ACCEPTED,
+      const hasPendingOrAcceptedFiles = contractFiles?.files.some((file) =>
+        [EContractStatus.PENDING, EContractStatus.ACCEPTED].includes(
+          file.status,
+        ),
       );
 
       if (!contactExisted) {

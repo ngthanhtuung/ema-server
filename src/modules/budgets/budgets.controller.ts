@@ -45,7 +45,7 @@ export class BudgetsController {
   async getAllItemByTask(
     @Query() filter: FilterBigTaskAndItem,
   ): Promise<unknown> {
-    return await this.budgetService.getListBugdetForTask(filter);
+    return await this.budgetService.getListBudgetForTask(filter);
   }
 
   @Get('/transaction-detail/:transactionId')

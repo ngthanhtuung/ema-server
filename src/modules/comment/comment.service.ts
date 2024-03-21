@@ -98,6 +98,7 @@ export class CommentService extends BaseService<CommentEntity> {
       const userInTask = await this.taskService.findUserInTask(
         data.taskID,
         loginUser.id,
+        queryRunner,
       );
       if (userInTask || loginUser.role === ERole.MANAGER) {
         const callback = async (queryRunner: QueryRunner): Promise<void> => {

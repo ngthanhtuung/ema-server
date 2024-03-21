@@ -514,7 +514,7 @@ export class EventService extends BaseService<EventEntity> {
         .into(AssignEventEntity)
         .values(dataEditDivision)
         .execute();
-
+      const listUpdatePercentage = [];
       const listInsertTask = event.listTask.map((task) => {
         const {
           title,
@@ -528,6 +528,15 @@ export class EventService extends BaseService<EventEntity> {
           itemId,
           itemPercentage,
         } = task;
+        listUpdatePercentage.push(
+          queryRunner.manager.update(
+            ItemEntity,
+            { id: itemId },
+            {
+              percentage: itemPercentage,
+            },
+          ),
+        );
         return {
           title: title,
           createdBy: user.id,
@@ -551,15 +560,11 @@ export class EventService extends BaseService<EventEntity> {
             id: itemId,
           },
         };
-        const updatePercentage = queryRunner.manager.update(
-          ItemEntity,
-          { id: itemId },
-          {
-            percentage: itemPercentage,
-          },
-        );
       });
-      await queryRunner.manager.insert(TaskEntity, listInsertTask);
+      await Promise.all([
+        ...listUpdatePercentage,
+        queryRunner.manager.insert(TaskEntity, listInsertTask),
+      ]);
     };
     await this.transaction(callback, queryRunner);
     return `Created event successfully`;

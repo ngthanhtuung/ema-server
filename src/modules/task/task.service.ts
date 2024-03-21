@@ -769,9 +769,12 @@ export class TaskService extends BaseService<TaskEntity> {
   async findUserInTask(
     taskId: string,
     userId: string,
+    queryRunner?: QueryRunner,
   ): Promise<boolean | undefined> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
+      if (!queryRunner) {
+        queryRunner = this.dataSource.createQueryRunner();
+      }
       const query = await queryRunner.manager.query(`
       SELECT COUNT(*) as count
       FROM tasks
@@ -912,30 +915,6 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
-  async checkUserInTask(
-    userId: string,
-    startDate: string,
-    endDate: string,
-  ): Promise<unknown> {
-    try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      const result = await queryRunner.manager.query(`
-      SELECT T.*
-      FROM tasks T
-      INNER JOIN assign_tasks AT ON T.id = AT.taskId
-      WHERE AT.assignee = '${userId}' AND (T.status IN ('PENDING', 'PROCESSING')) AND ('${startDate}' <= T.startDate AND '${endDate}' >= T.endDate)
-      `);
-      console.log('Result: ', result);
-      const totalTasks = result.length;
-      return {
-        totalTasks: totalTasks,
-        tasks: result,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
-
   @Cron(CronExpression.EVERY_MINUTE)
   async autoUpdateTask(): Promise<void> {
     try {
@@ -944,15 +923,13 @@ export class TaskService extends BaseService<TaskEntity> {
         where: [
           { status: ETaskStatus.PENDING },
           { status: ETaskStatus.PROCESSING },
-          { startDate: Not(IsNull()), endDate: Not(IsNull()) },
         ],
       });
       const overdueTasks = tasks.filter((task) => {
-        if (task?.endDate !== undefined && task?.endDate <= currentDate) {
+        if (task?.endDate != undefined && task?.endDate <= currentDate) {
           return task;
         }
       });
-      console.log('overdueTasks:', overdueTasks);
       if (overdueTasks.length > 0) {
         await Promise.all(
           overdueTasks.map((task) => {
