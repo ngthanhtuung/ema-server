@@ -649,10 +649,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
 
       const listItemInEvent = await Promise.all(itemPromises);
       const listTransactionArray = listItemInEvent.map((item) => {
-        console.log('Item in loop: ', item);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // console.log('Task in item: ', item?.itemExisted?.tasks);
         switch (type) {
           case 'OWN':
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
