@@ -514,7 +514,6 @@ export class EventService extends BaseService<EventEntity> {
         .into(AssignEventEntity)
         .values(dataEditDivision)
         .execute();
-      console.log('data:', data);
 
       const listInsertTask = event.listTask.map((task) => {
         const {

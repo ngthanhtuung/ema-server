@@ -478,6 +478,7 @@ export class TaskService extends BaseService<TaskEntity> {
       estimationTime,
       assignee,
       file,
+      itemId,
       leader,
       isTemplate,
     } = task;
@@ -520,6 +521,9 @@ export class TaskService extends BaseService<TaskEntity> {
         priority: priority,
         parent: {
           id: parentTask,
+        },
+        item: {
+          id: itemId,
         },
         isTemplate: isTemplate,
       });
