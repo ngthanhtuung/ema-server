@@ -166,6 +166,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       query.select([
         'transactions.id as id',
         'transactions.transactionCode as transactionCode',
+        'transactions.transactionName as transactionName',
         'transactions.description as description',
         'transactions.amount as amount',
         'transactions.rejectNote as rejectNote',
@@ -609,28 +610,52 @@ export class BudgetsService extends BaseService<TransactionEntity> {
 
   async getAllTransactionRequest(
     filter: FilterBigTaskAndItem,
+    type: string,
   ): Promise<unknown> {
     try {
       const listItems = [];
       const items = await this.getListBugdetForTask(filter);
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      for (const item of items) {
-        listItems.push(item.item);
+      for (const itemInTask of items) {
+        listItems.push(itemInTask.item);
       }
-      const transactionPromises = listItems.map((item) =>
+      const itemPromises = listItems.map((item) =>
         this.getTransactionOfItem(item.id),
       );
-      const listTransactions = await Promise.all(transactionPromises);
-      const listTransactionArray = [];
-      for (const item of listTransactions) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        for (const transaction of item.itemExisted.tasks) {
-          listTransactionArray.push(transaction);
+      const listItemInEvent = await Promise.all(itemPromises);
+      const listTransactionArray = listItemInEvent.map((item) => {
+        switch (type) {
+          case 'OWN':
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const tasksWithNullParentOwn = item?.itemExisted?.tasks.filter(
+              (task) => task.parentTask === null,
+            );
+            if (tasksWithNullParentOwn.length > 0) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              item.itemExisted.tasks = tasksWithNullParentOwn;
+              return item;
+            }
+            return null;
+            break;
+          case 'ALL':
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const tasksWithNullParentAll = item.itemExisted.tasks.filter(
+              (task) => task.parentTask !== null,
+            );
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            item.itemExisted.tasks = tasksWithNullParentAll;
+            return item;
+            break;
         }
-      }
-      return listTransactionArray;
+      });
+      const filteredListTransactionArray = listTransactionArray.filter(Boolean);
+      return filteredListTransactionArray;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
