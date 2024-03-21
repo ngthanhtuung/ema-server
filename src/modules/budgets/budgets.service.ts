@@ -197,26 +197,25 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           .execute(),
         query.getCount(),
       ]);
-      const transactionWithProcessBy = await Promise.all(
-        result.map(async (item) => {
-          const res = { ...item };
-          if (item.processedBy) {
-            const userDetails = await this.userService.findByIdV2(
-              item.processedBy,
-            );
-            res.processedBy = {
-              id: userDetails.id,
-              fullName: userDetails.fullName,
-              email: userDetails.email,
-              phoneNumber: userDetails.phoneNumber,
-              dob: userDetails.dob,
-              avatar: userDetails.avatar,
-              status: userDetails.status,
-            };
-          }
-          return item;
-        }),
-      );
+      const transactionWithProcessBy = [];
+      for (const item of result) {
+        const res = { ...item };
+        if (item.processedBy) {
+          const userDetails = await this.userService.findByIdV2(
+            item.processedBy,
+          );
+          res.processedBy = {
+            id: userDetails.id,
+            fullName: userDetails.fullName,
+            email: userDetails.email,
+            phoneNumber: userDetails.phoneNumber,
+            dob: userDetails.dob,
+            avatar: userDetails.avatar,
+            status: userDetails.status,
+          };
+        }
+        transactionWithProcessBy.push(res);
+      }
       const formattedData = this.groupTransactionsByTask(
         transactionWithProcessBy,
       );
@@ -267,7 +266,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             itemOfTask?.plannedAmount * itemOfTask?.plannedPrice;
           const budgetAvailable =
             totalPriceBudget * (itemOfTask?.percentage / 100);
-          const totalUsed = await this.getTransactionOfItem(itemOfTask?.id);
+          const totalUsed = await this.getTransactionOfItem(
+            itemOfTask?.id,
+            false,
+          );
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           const totalTransactionUser = totalUsed.totalTransactionUsed;
@@ -373,7 +375,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         listTaskAndItem.map(async (task) => {
           const { id, title, code, parentTask, status, item } = task;
           if (parentTask === null) {
-            const budgetOfItem = await this.getTransactionOfItem(item?.id);
+            const budgetOfItem = await this.getTransactionOfItem(
+              item?.id,
+              false,
+            );
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const totalPriceUsed = budgetOfItem?.totalTransactionUsed || 0;
@@ -397,7 +402,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
   }
 
-  async getTransactionOfItem(itemId: string): Promise<unknown> {
+  async getTransactionOfItem(
+    itemId: string,
+    filterNotParentTask: boolean,
+  ): Promise<unknown> {
     try {
       const queryRunner = await this.createQueryRunner();
       const itemExisted = await queryRunner.manager.findOne(ItemEntity, {
@@ -432,12 +440,17 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           );
         }
       }
-      const filteredTasks = listTask.filter((task) => task.parentTask !== null);
+      const taskReponse = listTask;
+      if (filterNotParentTask === true) {
+        const filteredTasks = listTask.filter(
+          (task) => task.parentTask !== null,
+        );
+      }
       return {
         totalTransactionUsed: totalAcceptedTransaction,
         itemExisted: {
           ...itemExisted,
-          tasks: filteredTasks,
+          tasks: taskReponse,
         },
       };
     } catch (err) {
@@ -489,7 +502,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const totalPriceBudget =
         itemExisted.plannedAmount * itemExisted.plannedPrice;
       const budgetAvailable = totalPriceBudget * (itemExisted.percentage / 100);
-      const totalUsed = await this.getTransactionOfItem(itemExisted?.id);
+      const totalUsed = await this.getTransactionOfItem(itemExisted?.id, false);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const totalTransactionUsed = totalUsed?.totalTransactionUsed;
@@ -614,48 +627,89 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   ): Promise<unknown> {
     try {
       const listItems = [];
-      const items = await this.getListBugdetForTask(filter);
-
+      const itemTasks = await this.getListBugdetForTask(filter);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      for (const itemInTask of items) {
-        listItems.push(itemInTask.item);
+      for (const itemInTask of itemTasks) {
+        const newItem = {
+          id: itemInTask.id,
+          title: itemInTask.title,
+          code: itemInTask.code,
+          parentTask: itemInTask.parentTask,
+          status: itemInTask.status,
+          totalTransactionUsed: null, // Add totalTransactionUsed from item
+          itemExisted: null, // Add itemExisted from item
+          items: itemInTask.item,
+        };
+        listItems.push(newItem);
       }
-      const itemPromises = listItems.map((item) =>
-        this.getTransactionOfItem(item.id),
+      const itemPromises = listItems.map((budget) =>
+        this.getTransactionOfItem(budget.items.id, false),
       );
+
       const listItemInEvent = await Promise.all(itemPromises);
       const listTransactionArray = listItemInEvent.map((item) => {
+        console.log('Item in loop: ', item);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // console.log('Task in item: ', item?.itemExisted?.tasks);
         switch (type) {
           case 'OWN':
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const tasksWithNullParentOwn = item?.itemExisted?.tasks.filter(
-              (task) => task.parentTask === null,
+              (task) => task.parentTask == null,
             );
+            console.log('Task with null: ', tasksWithNullParentOwn);
             if (tasksWithNullParentOwn.length > 0) {
+              const filterItems = listItems.filter(
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                (task) => task.items.id === item?.itemExisted?.id,
+              );
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               item.itemExisted.tasks = tasksWithNullParentOwn;
-              return item;
+              delete filterItems[0].items;
+              return {
+                ...filterItems[0],
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                totalTransactionUsed: item.totalTransactionUsed,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                itemExisted: item.itemExisted,
+              };
             }
             return null;
-            break;
           case 'ALL':
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             const tasksWithNullParentAll = item.itemExisted.tasks.filter(
               (task) => task.parentTask !== null,
             );
+            const filterItems = listItems.filter(
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              (task) => task.items.id === item?.itemExisted?.id,
+            );
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             item.itemExisted.tasks = tasksWithNullParentAll;
-            return item;
-            break;
+            delete filterItems[0].items;
+            return {
+              ...filterItems[0],
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              totalTransactionUsed: item.totalTransactionUsed,
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              itemExisted: item.itemExisted,
+            };
         }
       });
       const filteredListTransactionArray = listTransactionArray.filter(Boolean);
-      return filteredListTransactionArray;
+      return listTransactionArray;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
