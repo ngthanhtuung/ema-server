@@ -356,6 +356,32 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             return `Từ chối giao dịch ${transactionExisted.transactionCode} thành công. Lý do: ${rejectReason.rejectNote}`;
           }
           throw new BadRequestException('Giao dịch này được duyệt thất bại');
+          break;
+        case ETransaction.SUCCESS:
+          if (!checkUserInTask) {
+            throw new ForbiddenException(
+              'Bạn không có quyền cập nhật trạng thái giao dịch này',
+            );
+          }
+          const resultSuccess = await queryRunner.manager.update(
+            TransactionEntity,
+            { id: transactionId },
+            {
+              status: ETransaction.SUCCESS,
+              processedBy: oUser?.id,
+              updatedBy: oUser?.id,
+              updatedAt: moment()
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+            },
+          );
+          if (resultSuccess.affected > 0) {
+            return 'Giao dịch này được xác nhận thành công';
+          }
+          throw new InternalServerErrorException(
+            'Cập nhật trạng thái giao dịch thất bại',
+          );
+          break;
       }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -603,19 +629,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         dataMapTransactionEvidenceEntityInsert,
       );
       if (listBufSign.length > 0) {
-        await queryRunner.manager.update(
-          TransactionEntity,
-          {
-            id: transactionId,
-          },
-          {
-            updatedAt: moment.tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
-            updatedBy: user.id,
-            status: ETransaction.SUCCESS,
-          },
-        );
+        return listBufSign;
       }
-      return listBufSign;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

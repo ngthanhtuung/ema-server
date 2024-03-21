@@ -104,7 +104,7 @@ export class BudgetsController {
   @ApiQuery({
     name: 'status',
     type: 'enum',
-    enum: [ETransaction.ACCEPTED, ETransaction.REJECTED],
+    enum: [ETransaction.ACCEPTED, ETransaction.REJECTED, ETransaction.SUCCESS],
   })
   @ApiBody({
     type: TransactionRejectNote,
