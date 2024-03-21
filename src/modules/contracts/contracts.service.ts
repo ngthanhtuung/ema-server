@@ -190,9 +190,10 @@ export class ContractsService extends BaseService<ContractEntity> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       // Get Information of Contact
-      const contactExisted = await this.findContact(queryRunner, contactId);
-      // Generate Contract Code
-      const contractCode = await this.sharedService.generateContractCode();
+      const [contactExisted, contractCode] = await Promise.all([
+        this.findContact(queryRunner, contactId),
+        this.sharedService.generateContractCode(),
+      ]);
       // Generate Contract Docs
       const buf = await this.generateContractDocs(
         customerInfo,
@@ -212,14 +213,16 @@ export class ContractsService extends BaseService<ContractEntity> {
           user,
         );
       }
-      await this.createContractFile(
-        queryRunner,
-        contractCode,
-        buf,
-        downloadObject,
-        contractId,
-      );
-      await this.sendContractAlert(user, customerInfo, contractCode);
+      await Promise.all([
+        this.createContractFile(
+          queryRunner,
+          contractCode,
+          buf,
+          downloadObject,
+          contractId,
+        ),
+        this.sendContractAlert(user, customerInfo, contractCode),
+      ]);
       return downloadObject;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -355,7 +358,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           status: user?.status,
         };
       });
-      const contractWithCompanyRepresentative = result.map(async (contract) => {
+      const contractWithCompanyRepresentative = result.map((contract) => {
         if (contract?.companyRepresentative) {
           const userDetails = listUser[contract?.companyRepresentative];
           return {

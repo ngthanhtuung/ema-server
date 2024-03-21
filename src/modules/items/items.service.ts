@@ -23,12 +23,8 @@ import {
 } from './dto/item.request';
 import { CategoryEntity } from '../categories/categories.entity';
 import { UserEntity } from '../user/user.entity';
-import { BudgetsService } from '../budgets/budgets.service';
 import * as iconv from 'iconv-lite';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
-import { SharedService } from '../../shared/shared.service';
-import { ConfigService } from '@nestjs/config';
-import { UserService } from '../user/user.service';
 import { CreateCategoryRequest } from '../categories/dto/categories.request';
 import { EventTypesService } from '../event_types/event_types.service';
 
@@ -40,10 +36,6 @@ export class ItemsService extends BaseService<ItemEntity> {
     private readonly categoriesService: CategoriesService,
     @InjectDataSource()
     private dataSource: DataSource,
-    private readonly budgetService: BudgetsService,
-    private readonly sharedService: SharedService,
-    private readonly configService: ConfigService,
-    private readonly userService: UserService,
     private readonly eventTypesService: EventTypesService,
   ) {
     super(itemsRepository);
@@ -248,7 +240,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       const categories: CategoryEntity[] =
         await this.categoriesService.getCategories();
       const { results, errors, totalRecords, totalErrorsRecords } =
-        await this.processCSVData(file, categories);
+        await this.processCSVData(file);
       let convertResult = results;
       console.log('results:', results);
 
@@ -285,13 +277,9 @@ export class ItemsService extends BaseService<ItemEntity> {
   /**
    * processCSVData
    * @param file
-   * @param categories
    * @returns
    */
-  async processCSVData(
-    file: Express.Multer.File,
-    categories: CategoryEntity[],
-  ): Promise<{
+  async processCSVData(file: Express.Multer.File): Promise<{
     results: any[];
     errors: string[];
     totalRecords: number;
