@@ -86,7 +86,7 @@ export class BudgetsController {
 
   @Get('/:itemId')
   async getItemTransaction(@Param('itemId') itemId: string): Promise<unknown> {
-    return await this.budgetService.getTransactionOfItem(itemId);
+    return await this.budgetService.getTransactionOfItem(itemId, true);
   }
 
   @Post('/:taskId/transaction-request')

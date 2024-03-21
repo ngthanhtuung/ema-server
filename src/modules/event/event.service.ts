@@ -444,7 +444,6 @@ export class EventService extends BaseService<EventEntity> {
     user: UserEntity,
     contactId: string,
   ): Promise<string> {
-    console.log('contactId:', contactId);
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
