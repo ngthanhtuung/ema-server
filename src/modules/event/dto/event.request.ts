@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import {
   EContractPaymentMethod,
   EEventDate,
@@ -70,7 +76,8 @@ export class EventCreateRequest {
 
   @IsArray()
   @ApiProperty({ default: ['1a73eb86-99ee-46c4-92c3-a9ae091c0caf'] })
-  listDivision: Array<string>;
+  @IsOptional()
+  listDivision?: Array<string>;
 }
 
 export class EventCreateRequestContract {
