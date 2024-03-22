@@ -39,11 +39,11 @@ import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { UserEntity } from '../user/user.entity';
 import { TaskService } from '../task/task.service';
-import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { ContractEntity } from '../contracts/contracts.entity';
 import { TaskEntity } from '../task/task.entity';
 import { ItemEntity } from '../items/items.entity';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -54,8 +54,6 @@ export class EventService extends BaseService<EventEntity> {
     private dataSource: DataSource,
     private readonly assignEventService: AssignEventService,
     private readonly taskService: TaskService,
-    private readonly contractsService: ContractsService,
-    private readonly customerContactsService: CustomerContactsService,
   ) {
     super(eventRepository);
   }
@@ -782,6 +780,86 @@ export class EventService extends BaseService<EventEntity> {
             AND at2.assignee = '${userIdLogin}';
       `);
       return events;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async autoUpdateTask(): Promise<void> {
+    try {
+      const currentDate = moment().add(7, 'hours').format('YYYY-MM-DD');
+      console.log('currentDate:', currentDate);
+      const listEvent = await this.eventRepository.find({
+        where: [
+          { status: EEventStatus.PENDING },
+          { status: EEventStatus.PREPARING },
+          { status: EEventStatus.PROCESSING },
+          { isTemplate: false },
+        ],
+      });
+      console.log('listEvent:', listEvent);
+      const events = {
+        [EEventStatus.PENDING]: [],
+        [EEventStatus.PREPARING]: [],
+        [EEventStatus.PROCESSING]: [],
+      };
+      listEvent.forEach((item) => {
+        const date = {
+          [EEventStatus.PENDING]: item.startDate,
+          [EEventStatus.PREPARING]: item.processingDate,
+          [EEventStatus.PROCESSING]: item.endDate,
+        }[item.status];
+        if (moment(date).format('YYYY-MM-DD') === currentDate) {
+          events[item.status].push(item);
+        }
+      });
+      const eventPending = events[EEventStatus.PENDING];
+      const eventPreparing = events[EEventStatus.PREPARING];
+      const eventProcessing = events[EEventStatus.PROCESSING];
+      // List all event have status pending to update preparing
+      console.log('eventPending:', eventPending);
+      if (eventPending.length > 0) {
+        await Promise.all(
+          eventPending.map((event) => {
+            return this.eventRepository.update(
+              { id: event.id },
+              { status: EEventStatus.PREPARING },
+            );
+          }),
+        );
+        console.log('Update status event pending to preparing');
+      }
+      // List all event have status Preparing to update Processing
+      console.log('eventPreparing:', eventPreparing);
+      if (eventPreparing.length > 0) {
+        await Promise.all(
+          eventPreparing.map((event) => {
+            return this.eventRepository.update(
+              { id: event?.id },
+              { status: EEventStatus.PROCESSING },
+            );
+          }),
+        );
+        console.log(
+          'Update status event have status Prepairing to update Processing',
+        );
+      }
+      // List all event have status Processing to update Done
+      console.log('eventProcessing:', eventProcessing);
+      if (eventPreparing.length > 0) {
+        await Promise.all(
+          eventProcessing.map((event) => {
+            return this.eventRepository.update(
+              { id: event?.id },
+              { status: EEventStatus.DONE },
+            );
+          }),
+        );
+        console.log(
+          'Update status event have status Processing to update Done',
+        );
+      }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

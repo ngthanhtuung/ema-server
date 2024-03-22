@@ -48,7 +48,6 @@ import { CustomerContactEntity } from '../customer_contacts/customer_contacts.en
 import { NotificationService } from '../notification/notification.service';
 import { NotificationContractRequest } from '../notification/dto/notification.request';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
-
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
   constructor(
@@ -188,16 +187,13 @@ export class ContractsService extends BaseService<ContractEntity> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       // Get Information of Contact
-      const [contactExisted, contractCode] = await Promise.all([
-        this.findContact(contactId),
-        this.sharedService.generateContractCode(),
-      ]);
+      const contactExisted = await this.findContact(contactId);
+      const contractCode = this.sharedService.generateContractCode();
       // Generate Contract Docs
       const buf = await this.generateContractDocs(
         customerInfo,
         contactId,
         user,
-        queryRunner,
       );
       if (!buf) return undefined;
       // Upload Contract File
@@ -1046,10 +1042,9 @@ export class ContractsService extends BaseService<ContractEntity> {
     contractRequest: EventCreateRequestContract,
     contactId: string,
     userId: UserEntity,
-    queryRunner: QueryRunner,
   ): Promise<Buffer | undefined> {
     try {
-      const user = await queryRunner.manager.findOne(UserEntity, {
+      const user = await this.userService.findOne({
         where: { id: userId.id },
         relations: ['profile', 'role'],
       });
@@ -1070,80 +1065,71 @@ export class ContractsService extends BaseService<ContractEntity> {
           linebreaks: true,
         });
       }
-      const [calculateDuration, formattedDateProcessing, dataPlan] =
-        await Promise.all([
-          this.sharedService.calculateDuration(
-            contractRequest.startDate,
-            contractRequest.endDate,
-          ),
-          this.sharedService.formatDateToString(
-            contractRequest.processingDate,
-            'DD/MM/YYYY HH:mm:ss',
-          ),
-          this.planService.getPlanByCustomerContactId(contactId),
-        ]);
-
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      const calculateDuration = this.sharedService.calculateDuration(
+        contractRequest?.startDate,
+        contractRequest?.endDate,
+      );
+      const formattedDateProcessing = this.sharedService.formatDateToString(
+        contractRequest?.processingDate,
+        'DD/MM/YYYY HH:mm:ss',
+      );
+      const dataPlan: any = await this.planService.getPlanByCustomerContactId(
+        contactId,
+      );
       const plan = dataPlan?.plan;
-      if (plan.length <= 0) {
+      if (plan?.length <= 0) {
         throw new BadRequestException(
           'Quản lý vui lòng tạo kế hoạch trước khi tạo hợp đồng',
         );
       }
       let index = 1;
       let plannedTotalPrice = 0;
-      for (const category of plan) {
-        // Initialize index for items within the category
-        for (const item of category.items) {
-          // Calculate total price for each item
-          const itemTotalPrice = item.plannedPrice * item.plannedAmount;
+      plan.map((category) => {
+        (category?.items || []).map((item) => {
+          const itemTotalPrice = item?.plannedPrice * item?.plannedAmount;
           plannedTotalPrice += itemTotalPrice;
-          // Add totalPrice and index fields to each item
-          item.plannedPrice = await this.sharedService.formattedCurrency(
-            parseFloat(item.plannedPrice),
+          item.plannedPrice = this.sharedService.formattedCurrency(
+            parseFloat(item?.plannedPrice),
           );
-          item.itemTotalPrice = await this.sharedService.formattedCurrency(
+          item.itemTotalPrice = this.sharedService.formattedCurrency(
             parseFloat(String(itemTotalPrice)),
           );
           item.index = index++;
-        }
-      }
+        });
+      });
       const plannedBackup = plannedTotalPrice * 0.05;
       const plannedVAT = (plannedTotalPrice + plannedBackup) * 0.1;
       const plannedTotal = plannedTotalPrice + plannedBackup + plannedVAT;
       const plannedTotalPriceFormatted =
-        await this.sharedService.formattedCurrency(plannedTotalPrice);
-      const [
-        plannedBackupFormatted,
-        plannedVATFormatted,
-        plannedTotalFormatted,
-        contractValueByName,
-      ] = await Promise.all([
-        this.sharedService.formattedCurrency(plannedBackup),
-        this.sharedService.formattedCurrency(plannedVAT),
-        this.sharedService.formattedCurrency(plannedTotal),
-        this.sharedService.moneyToWord(parseFloat(String(plannedTotal))),
-      ]);
+        this.sharedService.formattedCurrency(plannedTotalPrice);
+      const plannedBackupFormatted =
+        this.sharedService.formattedCurrency(plannedBackup);
+      const plannedVATFormatted =
+        this.sharedService.formattedCurrency(plannedVAT);
+      const plannedTotalFormatted =
+        this.sharedService.formattedCurrency(plannedTotal);
+      const contractValueByName = this.sharedService.moneyToWord(
+        parseFloat(String(plannedTotal)),
+      );
       if (doc) {
         doc?.render({
-          companyRepresentativeName: user.profile.fullName,
-          companyRepresentativeRole: user.role.roleName,
-          companyRepresentativeNationalId: user.profile.nationalId,
-          compannyRepresentativePhoneNumber: user.profile.phoneNumber,
-          companyRepresentativeEmail: user.email,
-          customerName: contractRequest.customerName,
-          customerNationalId: contractRequest.customerNationalId,
-          customerAddress: contractRequest.customerAddress,
-          customerPhoneNumber: contractRequest.customerPhoneNumber,
-          customerEmail: contractRequest.customerEmail,
-          eventName: contractRequest.eventName,
-          eventAddress: contractRequest.location,
+          companyRepresentativeName: user?.profile?.fullName,
+          companyRepresentativeRole: user?.role?.roleName,
+          companyRepresentativeNationalId: user?.profile?.nationalId,
+          compannyRepresentativePhoneNumber: user?.profile?.phoneNumber,
+          companyRepresentativeEmail: user?.email,
+          customerName: contractRequest?.customerName,
+          customerNationalId: contractRequest?.customerNationalId,
+          customerAddress: contractRequest?.customerAddress,
+          customerPhoneNumber: contractRequest?.customerPhoneNumber,
+          customerEmail: contractRequest?.customerEmail,
+          eventName: contractRequest?.eventName,
+          eventAddress: contractRequest?.location,
           processingDate: formattedDateProcessing,
           duration: calculateDuration,
           contractValue: plannedTotalFormatted,
           contractValueByName: contractValueByName,
-          paymentMethod: contractRequest.paymentMethod,
+          paymentMethod: contractRequest?.paymentMethod,
           plan: plan,
           plannedTotalPrice: plannedTotalPriceFormatted,
           plannedBackup: plannedBackupFormatted,
@@ -1161,16 +1147,20 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  private formattedDataGetAllContract(rawData: any) {
+  /**
+   * formattedDataGetAllContract
+   * @param rawData
+   * @returns
+   */
+  private formattedDataGetAllContract(rawData: any): any {
     const groupedData = {};
     rawData.forEach((item) => {
       if (!groupedData[item.id]) {
         groupedData[item.id] = {
-          contractId: item.id,
-          customerName: item.customerName,
-          customerNationalId: item.customerNationalId,
-          customerEmail: item.customerEmail,
+          contractId: item?.id,
+          customerName: item?.customerName,
+          customerNationalId: item?.customerNationalId,
+          customerEmail: item?.customerEmail,
           customerPhoneNumber: item.customerPhoneNumber,
           customerAddress: item.customerAddress,
           dateOfSigning: item.dateOfSigning,

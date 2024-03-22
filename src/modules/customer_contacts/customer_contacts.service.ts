@@ -87,49 +87,59 @@ export class CustomerContactsService {
           .execute(),
         query.getCount(),
       ]);
-      const result = originalResult;
+      let result = originalResult;
       if (status === EContactInformation.ALL) {
-        const result = originalResult.filter(
+        result = result.filter(
           (contact) => contact.status !== EContactInformation.DELETED,
         );
       }
-      const contactsWithUserDetails = await Promise.all(
-        result.map(async (contact) => {
-          if (contact.processedBy) {
-            const userDetails = await this.userService.findByIdV2(
-              contact.processedBy,
-            );
-            const processedBy = {
-              id: userDetails.id,
-              fullName: userDetails.fullName,
-              email: userDetails.email,
-              phoneNumber: userDetails.phoneNumber,
-              dob: userDetails.dob,
-              avatar: userDetails.avatar,
-              status: userDetails.status,
-            };
-            return { ...contact, processedBy }; // Merge contact and user details
+      let listEventType = [];
+      const listInfoUser = await Promise.all(
+        (result || []).reduce((acc, item) => {
+          if (item.processedBy) {
+            acc.push(this.userService.findByIdV2(item.processedBy));
           }
-          return contact;
-        }),
-      );
-      const contactsWithEventTypes = await Promise.all(
-        contactsWithUserDetails.map(async (contact) => {
-          if (contact.eventType) {
-            const eventTypeDetails = await this.eventTypeService.findById(
-              contact.eventType,
-            );
-            const eventType = {
-              id: eventTypeDetails.id,
-              typeName: eventTypeDetails.typeName,
-            };
-            return { ...contact, eventType };
+          if (item.eventType) {
+            listEventType.push(this.eventTypeService.findById(item.eventType));
           }
-          return contact;
-        }),
+          return acc;
+        }, []),
       );
+      listEventType = await Promise.all(listEventType);
+      // Lists User
+      const userMap = {};
+      listInfoUser.forEach((user) => {
+        userMap[user?.id] = {
+          id: user?.id,
+          fullName: user?.fullName,
+          email: user.email,
+          phoneNumber: user?.phoneNumber,
+          dob: user?.dob,
+          avatar: user?.avatar,
+          status: user?.status,
+        };
+      });
+      // List Event Type
+      const eventTypeMap = {};
+      listEventType.forEach((eventType) => {
+        eventTypeMap[eventType?.id] = {
+          id: eventType?.id,
+          typeName: eventType?.typeName,
+        };
+      });
+      const finalData = result.reduce((acc, contact) => {
+        const res = { ...contact };
+        if (contact.processedBy) {
+          res.processedBy = userMap[contact?.processedBy];
+        }
+        if (contact.eventType) {
+          res.eventType = eventTypeMap[contact?.eventType];
+        }
+        acc.push(res);
+        return acc;
+      }, []);
       return paginateResponse<unknown>(
-        [contactsWithEventTypes, total],
+        [finalData, total],
         currentPage as number,
         sizePage as number,
       );
@@ -421,9 +431,10 @@ export class CustomerContactsService {
           'You are not allowed to update this contact',
         );
       }
-      const eventType = await this.dataSource.manager.findOne(EventTypeEntity, {
-        where: { id: contact.eventTypeId },
-      });
+
+      const eventType = await this.eventTypeService.findById(
+        contact.eventTypeId,
+      );
       const updatedData = await this.customerContactRepository.update(
         { id: contactId },
         {

@@ -210,13 +210,18 @@ export class AuthService {
         throw new BadRequestException("Account don't exist");
       }
       const hashPassword = await this.sharedService.hashPassword(password);
-      const currentDate = moment().tz('Asia/Bangkok').toDate();
       await this.userService.updatePassword(hashPassword, loginUser.id);
       return 'Update password successfully!!';
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  /**
+   * loginGoogle
+   * @param token
+   * @returns
+   */
   async loginGoogle(
     token: string,
   ): Promise<{ access_token: string; refresh_token: string }> {

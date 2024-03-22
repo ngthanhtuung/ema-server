@@ -161,7 +161,7 @@ export class SharedService {
     }
   }
 
-  public async formattedCurrency(amount: number): Promise<string | undefined> {
+  public formattedCurrency(amount: number): string {
     try {
       const formattedAmount = new Intl.NumberFormat('vi-VN', {
         style: 'currency',
@@ -173,10 +173,7 @@ export class SharedService {
     }
   }
 
-  public async calculateDuration(
-    startDate: string,
-    endDate: string,
-  ): Promise<string | undefined> {
+  public calculateDuration(startDate: string, endDate: string): string {
     try {
       const start = new Date(startDate);
       const end = new Date(endDate);
@@ -193,10 +190,7 @@ export class SharedService {
     }
   }
 
-  public async formatDateToString(
-    date: string,
-    format: string,
-  ): Promise<string | undefined> {
+  public formatDateToString(date: string, format: string): string {
     try {
       return moment(date).format(format);
     } catch (err) {
@@ -227,7 +221,7 @@ export class SharedService {
   //   }
   // }
 
-  public async generateContractCode(): Promise<string | undefined> {
+  public generateContractCode(): string {
     try {
       const randomPart = Math.random()
         .toString(36)
@@ -241,7 +235,7 @@ export class SharedService {
     }
   }
 
-  public async generateTransactionCode(): Promise<string | undefined> {
+  public generateTransactionCode(): string {
     try {
       const randomPart = Math.random()
         .toString(36)

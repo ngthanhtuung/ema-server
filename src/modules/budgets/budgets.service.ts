@@ -121,8 +121,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const filterAssignTasks = assignTasks.find(
         (task) => task?.assignee === user?.id,
       );
-      const transactionCode =
-        await this.sharedService.generateTransactionCode();
+      const transactionCode = this.sharedService.generateTransactionCode();
       const newTransaction = await queryRunner.manager.insert(
         TransactionEntity,
         {
