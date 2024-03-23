@@ -48,7 +48,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { ItemsModule } from './modules/items/items.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-
+import { ThrottlerBehindProxyGuard } from './utils/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -105,6 +106,12 @@ import { join } from 'path';
     MessagesAttachmentsModule,
     MapModule,
     CategoriesModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 6000,
+        limit: 100,
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [
@@ -112,6 +119,10 @@ import { join } from 'path';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerBehindProxyGuard,
     },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

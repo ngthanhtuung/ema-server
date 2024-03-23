@@ -484,26 +484,20 @@ export class TaskService extends BaseService<TaskEntity> {
     } = task;
     const oUser = JSON.parse(user);
     const createBy = oUser.id;
-    let createTaskId;
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventExisted = await queryRunner.manager.findOne(EventEntity, {
         where: { id: eventID },
       });
-
       if (!eventExisted) {
         throw new BadRequestException(EVENT_ERROR_MESSAGE.EVENT_NOT_FOUND);
       }
-
       const divisionId = (await this.userService.findById(assignee[0]))
         ?.divisionId;
-      // console.log('divisionId:', divisionId);
-
       const listIdEventDivison =
         await this.assignEventService.getListIdEventDivision(
           eventID,
           divisionId,
         );
-      // console.log('listIdEventDivison:', listIdEventDivison);
       const createTask = await queryRunner.manager.insert(TaskEntity, {
         title: title,
         createdBy: createBy,
@@ -527,21 +521,22 @@ export class TaskService extends BaseService<TaskEntity> {
         },
         isTemplate: isTemplate,
       });
-      createTaskId = createTask?.generatedMaps?.[0]?.['id'];
+      const newTaskID = createTask?.generatedMaps?.[0]?.['id'];
       // If task have file
       if (file) {
-        for (const itemFile of file) {
-          await queryRunner.manager.insert(TaskFileEntity, {
-            taskID: createTask?.generatedMaps?.[0]?.['id'],
+        const listFile = file.map((itemFile) => {
+          return {
+            taskID: newTaskID,
             fileName: itemFile?.fileName,
             fileUrl: itemFile?.fileUrl,
-          });
-        }
+          };
+        });
+        await queryRunner.manager.insert(TaskFileEntity, listFile);
       }
       if (assignee?.length > 0) {
         const oAssignTask = {
           assignee,
-          taskID: createTask?.generatedMaps?.[0]?.['id'],
+          taskID: newTaskID,
           leader,
         };
         await this.assignTaskService.assignMemberToTask(

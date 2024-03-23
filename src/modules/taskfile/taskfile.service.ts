@@ -76,14 +76,14 @@ export class TaskfileService extends BaseService<TaskFileEntity> {
           throw new NotFoundException(TASK_ERROR_MESSAGE.TASK_NOT_FOUND);
         }
         await queryRunner.manager.delete(TaskFileEntity, { taskID: taskId });
-        const insertPromises = taskFiles.map((taskFile) =>
-          queryRunner.manager.insert(TaskFileEntity, {
+        const insertPromises = taskFiles.map((taskFile) => {
+          return {
             taskID: taskId,
             fileName: taskFile.fileName,
             fileUrl: taskFile.fileUrl,
-          }),
-        );
-        await Promise.all(insertPromises);
+          };
+        });
+        await queryRunner.manager.insert(TaskFileEntity, insertPromises);
       };
       await this.transaction(callback, queryRunner);
       return 'Update task file successfully';

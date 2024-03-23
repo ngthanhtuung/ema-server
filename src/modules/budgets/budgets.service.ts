@@ -268,15 +268,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       const oUser = JSON.parse(user);
-      const transactionExisted = await queryRunner.manager.findOne(
-        TransactionEntity,
-        {
-          where: {
-            id: transactionId,
-          },
-          relations: ['task', 'task.item'],
+      const transactionExisted = await this.transactionRepository.findOne({
+        where: {
+          id: transactionId,
         },
-      );
+        relations: ['task', 'task.item'],
+      });
       if (!transactionExisted) {
         throw new NotFoundException('Không thể tìm thấy giao dịch này');
       }
@@ -564,13 +561,17 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const itemExisted = transactionExisted?.task?.item;
       const totalPriceBudget =
         itemExisted.plannedAmount * itemExisted.plannedPrice;
+      console.log('totalPriceBudget:', totalPriceBudget);
+
       const budgetAvailable = totalPriceBudget * (itemExisted.percentage / 100);
+      console.log('budgetAvailable:', budgetAvailable);
       const totalUsed: any = await this.getTransactionOfItem(
         itemExisted?.id,
         false,
       );
-      const totalTransactionUsed = totalUsed?.totalTransactionUsed;
+      const totalTransactionUsed = totalUsed?.totalTransactionUsed || 0;
       const remainingBudget = budgetAvailable - totalTransactionUsed;
+      console.log('remainingBudget:', remainingBudget);
       if (amount <= remainingBudget) {
         await this.updateStatusTransaction(
           transactionId,
@@ -584,8 +585,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           `Số tiền yêu cầu vẫn đủ trong hạn mức được giao. Vì vậy yêu cầu ${transactionExisted.transactionCode} với số tiền ${amount} bị từ chối`,
         );
       }
-      const amountPercentage = Math.round((amount / remainingBudget) * 100);
-      if (amountPercentage > 100 - itemExisted.percentage) {
+      const amountPercentage = Math.round(
+        (amount + totalTransactionUsed / totalPriceBudget) * 100,
+      );
+      console.log('amountPercentage:', amountPercentage);
+
+      if (amountPercentage > 100) {
         throw new BadRequestException(
           'Số tiền này vượt quá hạn mức quy định của kế hoạch, không thể mở thêm hạng mức cho hạng mục này',
         );
@@ -594,7 +599,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         ItemEntity,
         { id: itemExisted?.id },
         {
-          percentage: itemExisted?.percentage + amountPercentage,
+          percentage: amountPercentage,
           updatedBy: oUser?.id,
           updatedAt: moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
@@ -605,9 +610,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           ETransaction.SUCCESS,
           user,
         );
-        return `Đã nâng hạng mức thành công. Hạn mức mới là ${
-          itemExisted?.percentage + amountPercentage
-        }`;
+        return `Đã nâng hạng mức thành công. Hạn mức mới là ${amountPercentage}`;
       }
       throw new InternalServerErrorException('Cập nhật hạng mức thất bại');
     } catch (err) {
