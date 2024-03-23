@@ -3,7 +3,7 @@ import {
   UserProfileUpdateRequest,
   UserProfileUpdateRequestV2,
 } from './dto/user.request';
-import { Controller, Get, Param, Query, Put, Body } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/decorators/getUser.decorator';
 import { UserService } from './user.service';
@@ -76,7 +76,7 @@ export class UserController {
   }
 
   @Put('/:userId/:status')
-  @Roles(ERole.MANAGER, ERole.ADMIN)
+  @Roles(ERole.MANAGER, ERole.ADMIN, ERole.STAFF)
   @ApiParam({ name: 'status', enum: EUserStatus })
   async updateStatus(
     @Param('userId') userId: string,
@@ -103,7 +103,7 @@ export class UserController {
   }
 
   @Put('/:userId')
-  @Roles(ERole.MANAGER, ERole.ADMIN)
+  @Roles(ERole.MANAGER, ERole.ADMIN, ERole.STAFF)
   async UpdateProfileV2(
     @GetUser() user: string,
     @Body() updateProfile: UserProfileUpdateRequestV2,
