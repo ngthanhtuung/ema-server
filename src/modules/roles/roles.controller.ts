@@ -12,7 +12,7 @@ export class RolesController {
   constructor(private readonly roleService: RolesService) {}
 
   @Get()
-  @Roles(ERole.ADMIN, ERole.MANAGER, ERole.EMPLOYEE)
+  @Roles(ERole.ADMIN, ERole.MANAGER, ERole.STAFF)
   async getAllRoles(): Promise<RoleEntity[] | undefined> {
     return await this.roleService.findAll();
   }
