@@ -479,14 +479,14 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       }
       let totalAcceptedTransaction = 0;
       const listTask = itemExisted?.tasks || [];
-      for (const task of listTask) {
+      let taskResponse = listTask;
+      if (filterNotParentTask === true) {
+        taskResponse = listTask.filter((task) => task.parentTask !== null);
+      }
+      for (const task of taskResponse) {
         totalAcceptedTransaction = (task?.transactions || []).reduce(
           (total, transaction) => {
-            if (
-              [ETransaction.ACCEPTED, ETransaction.SUCCESS].includes(
-                transaction.status,
-              )
-            ) {
+            if ([ETransaction.SUCCESS].includes(transaction.status)) {
               total += transaction.amount;
             }
             return total;
@@ -494,15 +494,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           0,
         );
       }
-      let taskReponse = listTask;
-      if (filterNotParentTask === true) {
-        taskReponse = listTask.filter((task) => task.parentTask !== null);
-      }
       return {
         totalTransactionUsed: totalAcceptedTransaction,
         itemExisted: {
           ...itemExisted,
-          tasks: taskReponse,
+          tasks: taskResponse,
         },
       };
     } catch (err) {
@@ -567,8 +563,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       console.log('budgetAvailable:', budgetAvailable);
       const totalUsed: any = await this.getTransactionOfItem(
         itemExisted?.id,
-        false,
+        true,
       );
+      console.log('totalUsed:', totalUsed);
+
       const totalTransactionUsed = totalUsed?.totalTransactionUsed || 0;
       const remainingBudget = budgetAvailable - totalTransactionUsed;
       console.log('remainingBudget:', remainingBudget);
@@ -586,7 +584,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         );
       }
       const amountPercentage = Math.round(
-        (amount + totalTransactionUsed / totalPriceBudget) * 100,
+        ((amount + totalTransactionUsed) / totalPriceBudget) * 100,
       );
       console.log('amountPercentage:', amountPercentage);
 
@@ -607,7 +605,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       if (result.affected > 0) {
         await this.updateStatusTransaction(
           transactionId,
-          ETransaction.SUCCESS,
+          ETransaction.ACCEPTED,
           user,
         );
         return `Đã nâng hạng mức thành công. Hạn mức mới là ${amountPercentage}`;
@@ -843,6 +841,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   private async createQueryRunner(): Promise<QueryRunner> {
     return this.dataSource.createQueryRunner();
   }
+
   private async checkUserInTask(
     taskId: string,
     userId: string,
