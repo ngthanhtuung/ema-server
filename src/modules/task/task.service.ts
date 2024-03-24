@@ -229,6 +229,7 @@ export class TaskService extends BaseService<TaskEntity> {
               },
               taskFiles: true,
             },
+            item: true,
           },
         });
       });
@@ -415,6 +416,7 @@ export class TaskService extends BaseService<TaskEntity> {
               event: true,
             },
           },
+          item: true,
         },
       });
       console.log('result:', results);
