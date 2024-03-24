@@ -442,6 +442,7 @@ export class EventService extends BaseService<EventEntity> {
     user: UserEntity,
     contactId: string,
   ): Promise<string> {
+    let idEvent = '';
     const queryRunner = this.dataSource.createQueryRunner();
     const callback = async (queryRunner: QueryRunner): Promise<void> => {
       const eventType = await queryRunner.manager.findOne(EventTypeEntity, {
@@ -483,6 +484,7 @@ export class EventService extends BaseService<EventEntity> {
         "createEvent.generatedMaps[0]['id']:",
         createEvent.generatedMaps[0]['id'],
       );
+      idEvent = createEvent.generatedMaps[0]['id'];
       // Update Contract Status
       await queryRunner.manager.update(
         ContractEntity,
@@ -502,7 +504,7 @@ export class EventService extends BaseService<EventEntity> {
       // Assigne divsion into event
       const dataEditDivision = event.listDivision.map((item) => {
         return {
-          event: { id: createEvent.generatedMaps[0]['id'] },
+          event: { id: idEvent },
           division: { id: item },
         };
       });
@@ -565,7 +567,7 @@ export class EventService extends BaseService<EventEntity> {
       ]);
     };
     await this.transaction(callback, queryRunner);
-    return `Created event successfully`;
+    return idEvent;
   }
 
   /**
