@@ -72,14 +72,21 @@ export class BudgetsController {
 
   @Get('/own-transaction')
   @Roles(ERole.STAFF, ERole.EMPLOYEE)
+  @ApiQuery({
+    name: 'taskId',
+    type: 'string',
+    required: false,
+  })
   async getOwnTransaction(
     @Query() transactionPagination: BudgetPagination,
     @Query() filter: FilterTransaction,
+    @Query('taskId') taskId: string,
     @GetUser() user: string,
   ): Promise<IPaginateResponse<unknown>> {
     return await this.budgetService.getOwnRequest(
       transactionPagination,
       filter,
+      taskId,
       JSON.parse(user),
     );
   }
@@ -163,7 +170,7 @@ export class BudgetsController {
         fileBuffer: file.buffer,
       }),
     );
-    return await this.budgetService.updateContractEvidence(
+    return await this.budgetService.createContractEvidence(
       transactionId,
       fileDtos,
       JSON.parse(user),
@@ -185,6 +192,44 @@ export class BudgetsController {
     return await this.budgetService.updateItemPercentage(
       transactionId,
       amount,
+      user,
+    );
+  }
+
+  @Put('/:transactionId/evidence')
+  @ApiConsumes('multipart/form-data')
+  @Roles(ERole.STAFF, ERole.EMPLOYEE)
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('files'))
+  async updateTransactionEvidence(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Param('transactionId') transactionId: string,
+    @GetUser() user: string,
+  ): Promise<string> {
+    const fileDtos = files.map((file) =>
+      plainToInstance(FileRequest, {
+        fileName: file.originalname,
+        fileType: file.mimetype,
+        fileSize: file.size,
+        fileBuffer: file.buffer,
+      }),
+    );
+    return await this.budgetService.updateTransactionEvidence(
+      transactionId,
+      fileDtos,
       user,
     );
   }

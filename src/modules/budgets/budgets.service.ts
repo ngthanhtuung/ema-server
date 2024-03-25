@@ -168,6 +168,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   async getOwnRequest(
     pagination: BudgetPagination,
     filter: FilterTransaction,
+    taskId: string,
     user: UserEntity,
   ): Promise<IPaginateResponse<unknown> | undefined> {
     try {
@@ -198,6 +199,9 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       });
       if (status !== ETransaction.ALL) {
         query.andWhere('transactions.status = :status', { status: status });
+      }
+      if (taskId) {
+        query.andWhere('task.id = :taskId', { taskId: taskId });
       }
       if (sortProperty) {
         query.orderBy(`transactions.${sortProperty}`, sort);
@@ -299,6 +303,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             false,
           );
           const totalTransactionUser = totalUsed.totalTransactionUsed;
+          console.log(
+            'Total used at accept transaction: ',
+            totalTransactionUser,
+          );
           if (
             transactionExisted?.amount >
             budgetAvailable - totalTransactionUser
@@ -617,13 +625,13 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   }
 
   /**
-   * updateContractEvidence
+   * createContractEvidence
    * @param transactionId
    * @param files
    * @param user
    * @returns
    */
-  async updateContractEvidence(
+  async createContractEvidence(
     transactionId: string,
     files: FileRequest[],
     user: UserEntity,
@@ -829,6 +837,59 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         return 'Xóa giao dịch này thành công';
       }
       throw new BadRequestException('Xóa giao dịch thất bại');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async updateTransactionEvidence(
+    transactionId: string,
+    files: FileRequest[],
+    oUser: string,
+  ): Promise<string> {
+    try {
+      const user = JSON.parse(oUser);
+      const queryRunner = await this.createQueryRunner();
+      const transactionExisted = await this.transactionRepository.findOne({
+        where: {
+          id: transactionId,
+        },
+      });
+      if (!transactionExisted) {
+        throw new InternalServerErrorException('Transaction not found');
+      }
+      if (transactionExisted.createdBy !== user.id) {
+        throw new ForbiddenException(
+          'Bạn không có quyền cập nhật bằng chứng cho giao dịch này',
+        );
+      } else if (transactionExisted.status !== ETransaction.ACCEPTED) {
+        throw new BadRequestException(
+          `Giao dịch này ${
+            transactionExisted.status === ETransaction.PENDING
+              ? 'đang được xử lý không thể cập nhật bằng chứng.'
+              : 'bị từ chối hoặc đãn được xác nhận, không thể cập nhật bằng chứng'
+          }`,
+        );
+      }
+      const deleteResult = await queryRunner.manager.delete(
+        TransactionEvidenceEntity,
+        {
+          transaction: {
+            id: transactionId,
+          },
+        },
+      );
+      if (deleteResult.affected > 0) {
+        const createdResult = await this.createContractEvidence(
+          transactionId,
+          files,
+          user,
+        );
+        return `Cập nhật bằng chứng cho giao dịch ${transactionId} thành công`;
+      }
+      throw new BadRequestException(
+        `Cập nhật bằng chứng cho giao dịch ${transactionId} thất bại`,
+      );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
