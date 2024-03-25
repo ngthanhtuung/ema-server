@@ -21,6 +21,7 @@ export class UserNotificationsService {
   async getMyNotifications(
     userId: string,
     pagination: QueryNotificationDto,
+    filter: string,
   ): Promise<IPaginateResponse<unknown>> {
     try {
       const { currentPage, sizePage } = pagination;
@@ -46,6 +47,11 @@ export class UserNotificationsService {
         isDelete: false,
       });
       query.andWhere('notification.status = :status', { status: true });
+      if (filter === 'READ') {
+        query.andWhere('userNotifications.isRead = :isRead', { isRead: true });
+      } else if (filter === 'UNREAD') {
+        query.andWhere('userNotifications.isRead = :isRead', { isRead: false });
+      }
       query.orderBy('userNotifications.createdAt', 'DESC');
       const [result, total] = await Promise.all([
         query
