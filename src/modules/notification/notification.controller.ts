@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Put, Query } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { IPaginateResponse } from '../base/filter.pagination';
 import { GetUser } from 'src/decorators/getUser.decorator';
@@ -12,13 +12,20 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Get()
+  @ApiQuery({
+    name: 'type',
+    type: 'enum',
+    enum: ['ALL', 'READ', 'UNREAD'],
+  })
   async getAllNotifications(
     @GetUser() user: string,
     @Query() notificationPagination: QueryNotificationDto,
+    @Query('type') filter: string,
   ): Promise<IPaginateResponse<unknown>> {
     return await this.notificationService.getMyNotifications(
       JSON.parse(user).id,
       notificationPagination,
+      filter,
     );
   }
 

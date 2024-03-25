@@ -59,11 +59,13 @@ export class NotificationService extends BaseService<NotificationEntity> {
   async getMyNotifications(
     userId: string,
     pagination: QueryNotificationDto,
+    filter: string,
   ): Promise<IPaginateResponse<unknown>> {
     try {
       return await this.userNotificationService.getMyNotifications(
         userId,
         pagination,
+        filter,
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
