@@ -121,6 +121,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       const filterAssignTasks = assignTasks.find(
         (task) => task?.assignee === user?.id,
       );
+      const eventId = await this.getEventIdByTaskId(taskId, queryRunner);
       const transactionCode = this.sharedService.generateTransactionCode();
       const newTransaction = await queryRunner.manager.insert(
         TransactionEntity,
@@ -140,6 +141,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           type: ETypeNotification.BUDGET,
           receiveUser: filterAssignTasks?.taskMaster,
           commonId: newTransaction?.identifiers?.[0]?.id,
+          eventID: eventId,
+          parentTaskId: taskExisted?.parentTask,
           transactionId: newTransaction?.identifiers?.[0]?.id,
           avatar: user?.avatar,
           messageSocket: 'notification',
@@ -292,6 +295,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       if (!checkUserInTask) {
         throw new ForbiddenException('Bạn không có quyền duyệt giao dịch này');
       }
+      const eventId = await this.getEventIdByTaskId(task?.id, queryRunner);
       switch (status) {
         case ETransaction.ACCEPTED:
           const totalPriceBudget =
@@ -336,10 +340,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           if (resultAccepted.affected > 0) {
             const dataNotificationAccepted: NotificationTransactionRequest = {
               title: `Yêu cầu được chấp thuận`,
-              content: `Yêu cầu ${transactionExisted?.transactionCode} được chấp thuận`,
+              content: `Yêu cầu ${transactionExisted?.transactionName} được chấp thuận`,
               type: ETypeNotification.BUDGET,
               receiveUser: transactionExisted?.createdBy,
               commonId: transactionExisted?.id,
+              eventID: eventId,
+              parentTaskId: task?.parentTask,
               transactionId: transactionExisted?.id,
               avatar: oUser?.avatar,
               messageSocket: 'notification',
@@ -373,10 +379,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           if (resultReject.affected > 0) {
             const dataNotificationReject: NotificationTransactionRequest = {
               title: `Yêu cầu bị từ chối`,
-              content: `Yêu cầu ${transactionExisted?.transactionCode} bị từ chối`,
+              content: `Yêu cầu ${transactionExisted?.transactionName} bị từ chối`,
               type: ETypeNotification.BUDGET,
               receiveUser: transactionExisted?.createdBy,
               commonId: transactionExisted?.id,
+              eventID: eventId,
+              parentTaskId: task?.parentTask,
               transactionId: transactionExisted?.id,
               avatar: oUser?.avatar,
               messageSocket: 'notification',
@@ -926,6 +934,23 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     }
     const result = await queryRunner.manager.query(query);
     return result.length > 0 ? true : false;
+  }
+
+  private async getEventIdByTaskId(
+    taskId: string,
+    queryRunner?: QueryRunner,
+  ): Promise<string> {
+    try {
+      if (!queryRunner) {
+        queryRunner = await this.createQueryRunner();
+      }
+      const query = `SELECT eventId FROM assign_events
+WHERE id = (SELECT eventDivisionId FROM tasks where id = '${taskId}');`;
+      const result = await queryRunner.manager.query(query);
+      return result[0].eventId;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 
   private groupTransactionsByTask(data: any) {

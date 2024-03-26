@@ -107,4 +107,12 @@ export class NotificationTransactionRequest extends OmitType(
   @IsString()
   @ApiProperty({ default: 'Test desc' })
   transactionId?: string;
+
+  @IsString()
+  @ApiProperty({ default: 'Test desc' })
+  eventID?: string;
+
+  @IsString()
+  @ApiProperty({ default: 'Test desc' })
+  parentTaskId?: string;
 }

@@ -547,7 +547,6 @@ export class DivisionService extends BaseService<DivisionEntity> {
         },
       });
       console.log('getDivsion:', getDivsion);
-
       let listDivisionHaveStaff = [];
       if (mode === 2) {
         listDivisionHaveStaff = await this.divisionRepository.find({
@@ -561,9 +560,16 @@ export class DivisionService extends BaseService<DivisionEntity> {
           },
         });
         console.log('listDivisionHaveStaff:', listDivisionHaveStaff);
-
-        getDivsion = getDivsion?.filter((item) =>
-          listDivisionHaveStaff.find((data) => data.id !== item.id),
+        // getDivsion = getDivsion?.filter((item) =>
+        //   listDivisionHaveStaff.find((data) => data.id !== item.id),
+        // );
+        // Extract IDs of divisions that have staff members
+        const divisionIdsWithStaff = listDivisionHaveStaff.map(
+          (data) => data.id,
+        );
+        // Filter getDivsion to include only divisions that are not in divisionIdsWithStaff
+        getDivsion = getDivsion.filter(
+          (item) => !divisionIdsWithStaff.includes(item.id),
         );
       }
       const finalData = getDivsion.map((item) => {
