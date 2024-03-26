@@ -283,6 +283,7 @@ export class UserService extends BaseService<UserEntity> {
       query
         .select('roles.roleName as role')
         .addSelect([
+          'roles.id as roleId',
           'users.id as id',
           'profiles.fullName as fullName',
           'users.email as email',
