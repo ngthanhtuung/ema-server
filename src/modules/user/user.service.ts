@@ -173,7 +173,6 @@ export class UserService extends BaseService<UserEntity> {
       ]);
 
     const data = await query.execute();
-    console.log('Data after query: ', data);
     return plainToClass(PayloadUser, data[0]);
   }
 
@@ -611,7 +610,6 @@ export class UserService extends BaseService<UserEntity> {
           isStaff: role.roleName === ERole.STAFF,
         },
       );
-
       const query = await queryRunner.manager.query(`
           SELECT COUNT(*) as count
           FROM tasks
@@ -620,15 +618,22 @@ export class UserService extends BaseService<UserEntity> {
           WHERE assign_tasks.assignee = '${userIdUpdate}' AND (tasks.status IN ('PENDING', 'PROCESSING'))
       `);
       const result = query[0].count;
-      if (result === 0) {
-        await queryRunner.manager.update(
-          UserEntity,
-          { id: userIdUpdate },
-          {
-            division: division,
-          },
-        );
+      if (existedUser.divisionId !== data.divisionId) {
+        if (result === 0) {
+          const updateResult = await queryRunner.manager.update(
+            UserEntity,
+            { id: userIdUpdate },
+            {
+              division: division,
+            },
+          );
+        } else {
+          throw new BadRequestException(
+            `Nhân viên này hiện tại còn ${result} công việc. Nên không thể thay đổi phòng ban`,
+          );
+        }
       }
+
       const callbacks = async (queryRunner: QueryRunner): Promise<void> => {
         await queryRunner.manager.update(
           ProfileEntity,
