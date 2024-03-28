@@ -37,9 +37,11 @@ export enum EPriority {
 }
 
 export enum ETaskStatus {
+  NOT_STARTED = 'NOT_STARTED',
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
   CONFIRM = 'CONFIRM',
+  REJECTED = 'REJECTED',
   DONE = 'DONE',
   CANCEL = 'CANCEL',
   OVERDUE = 'OVERDUE',
@@ -61,27 +63,6 @@ export enum ETypeEmployee {
   PART_TIME = 'PART_TIME',
 }
 
-export enum ERequestType {
-  A = 'A',
-  L = 'L',
-  M = 'M',
-  U = 'U',
-}
-
-export enum ERequestStatus {
-  PENDING = 'PENDING',
-  ACCEPT = 'ACCEPT',
-  REJECT = 'REJECT',
-}
-
-export enum EStatusBudgets {
-  PROCESSING = 'PROCESSING',
-  ACCEPT = 'ACCEPT',
-  REJECT = 'REJECT',
-  USED = 'USED',
-  CANCEL = 'CANCEL',
-}
-
 export enum ETypeNotification {
   TASK = 'TASK',
   SUBTASK = 'SUBTASK',
@@ -89,19 +70,6 @@ export enum ETypeNotification {
   CONTRACT = 'CONTRACT',
   COMMENT_SUBTASK = 'COMMENT_SUBTASK',
   BUDGET = 'BUDGET',
-}
-
-export enum ETypeMessage {
-  TASK = 'TASK',
-  COMMENT = 'COMMENT',
-  REQUEST = 'REQUEST',
-  BUDGETS = 'BUDGETS',
-}
-
-export enum ERoleParticipant {
-  ADMIN = 'ADMIN',
-  MEMBER = 'MEMBER',
-  MODERATOR = 'MODERATOR',
 }
 
 export enum EGroupSetting {
