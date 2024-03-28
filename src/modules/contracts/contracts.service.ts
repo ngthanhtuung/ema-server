@@ -48,6 +48,7 @@ import { CustomerContactEntity } from '../customer_contacts/customer_contacts.en
 import { NotificationService } from '../notification/notification.service';
 import { NotificationContractRequest } from '../notification/dto/notification.request';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
+
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
   constructor(
@@ -406,7 +407,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           'Hiện chưa có hợp đồng nào được chấp thuận, vui lòng kiểm tra lại',
         );
       }
-
+      let returnMessage = '';
       for (const [index, file] of files.entries()) {
         const number = index + 1;
         switch (type) {
@@ -419,6 +420,7 @@ export class ContractsService extends BaseService<ContractEntity> {
               queryRunner,
               number,
             );
+            returnMessage = 'Cập nhật hợp đồng đã ký thành công';
             break;
           case EContractEvidenceType.CONTRACT_PAID:
             await this.processContractPaid(
@@ -429,13 +431,12 @@ export class ContractsService extends BaseService<ContractEntity> {
               queryRunner,
               number,
             );
+            returnMessage = 'Cập nhật thanh toán hợp đồng thành công';
             break;
         }
       }
-
       await this.updateContractStatus(type, contractId, user, queryRunner);
-
-      return 'Upload evidence successful';
+      return returnMessage;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -490,14 +491,15 @@ export class ContractsService extends BaseService<ContractEntity> {
     const bufSign = await this.fileService.uploadFile(
       file,
       `contract/signed/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
-      `${contractSuccess[0]?.contractCode} - ${number}`,
+      `${contractSuccess[0]?.contractCode} - ${number} - SIGNED`,
     );
     if (!bufSign) return undefined;
     await queryRunner.manager.insert(ContractEvidenceEntity, {
       contract: contract,
-      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number} - SIGNED`,
       evidenceFileSize: bufSign['fileSize'],
       evidenceFileType: bufSign['fileType'],
+      evidenceType: EContractEvidenceType.CONTRACT_SIGNED,
       evidenceUrl: bufSign['downloadUrl'],
       createdBy: user.id,
     });
@@ -529,15 +531,16 @@ export class ContractsService extends BaseService<ContractEntity> {
     const buf = await this.fileService.uploadFile(
       file,
       `contract/transaction/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
-      `${contractSuccess[0]?.contractCode} - ${number}`,
+      `${contractSuccess[0]?.contractCode} - ${number} - PAID`,
     );
     if (!buf) return undefined;
     await queryRunner.manager.insert(ContractEvidenceEntity, {
       contract: contract,
-      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number}`,
+      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number} - PAID`,
       evidenceFileSize: buf['fileSize'],
       evidenceFileType: buf['fileType'],
       evidenceUrl: buf['downloadUrl'],
+      evidenceType: EContractEvidenceType.CONTRACT_PAID,
       createdBy: user.id,
     });
   }
@@ -582,7 +585,6 @@ export class ContractsService extends BaseService<ContractEntity> {
       const evidence = await this.contractEvidenceEntity.find({
         where: { contract: { id: contactId } },
       });
-      console.log('Evidence: ', evidence);
       return evidence;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
