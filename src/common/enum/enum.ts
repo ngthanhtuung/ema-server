@@ -37,7 +37,6 @@ export enum EPriority {
 }
 
 export enum ETaskStatus {
-  NOT_STARTED = 'NOT_STARTED',
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',
   CONFIRM = 'CONFIRM',
