@@ -500,14 +500,6 @@ export class TaskService extends BaseService<TaskEntity> {
           eventID,
           divisionId,
         );
-      const today = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
-      const taskStartDate = startDate
-        ? moment(startDate).tz('Asia/Bangkok').format('YYYY-MM-DD')
-        : undefined;
-      const taskStatus =
-        taskStartDate && taskStartDate > today
-          ? ETaskStatus.NOT_STARTED
-          : ETaskStatus.PENDING;
       const createTask = await queryRunner.manager.insert(TaskEntity, {
         title: title,
         createdBy: createBy,
@@ -530,7 +522,6 @@ export class TaskService extends BaseService<TaskEntity> {
           id: itemId,
         },
         isTemplate: isTemplate,
-        status: taskStatus,
       });
       const newTaskID = createTask?.generatedMaps?.[0]?.['id'];
       // If task have file
@@ -944,29 +935,6 @@ export class TaskService extends BaseService<TaskEntity> {
             );
           }),
         );
-      }
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async autoUpdateNotStartedTask(): Promise<void> {
-    try {
-      const today = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
-      const tasks = await this.taskRepository.find({
-        where: {
-          status: ETaskStatus.NOT_STARTED,
-          startDate: moment(today).tz('Asia/Bangkok').toDate(),
-        },
-      });
-      console.log('Task has NOT_STARTED: ', tasks);
-      if (tasks.length > 0) {
-        const queryRunner = this.dataSource.createQueryRunner();
-        const listUpdateTasksPromise = tasks.map((task) => {
-          task.status = ETaskStatus.PENDING;
-        });
-        const result = await queryRunner.manager.save(listUpdateTasksPromise);
       }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
