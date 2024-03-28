@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
-  BadRequestException,
 } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { TaskEntity } from './task.entity';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import TaskRepository from './task.repository';
-import { DataSource, IsNull, Not, QueryRunner } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { FilterTask, TaskCreateReq } from './dto/task.request';
 import { EventEntity } from '../event/event.entity';
 import {
@@ -500,6 +500,14 @@ export class TaskService extends BaseService<TaskEntity> {
           eventID,
           divisionId,
         );
+      const today = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
+      const taskStartDate = startDate
+        ? moment(startDate).tz('Asia/Bangkok').format('YYYY-MM-DD')
+        : undefined;
+      const taskStatus =
+        taskStartDate && taskStartDate > today
+          ? ETaskStatus.NOT_STARTED
+          : ETaskStatus.PENDING;
       const createTask = await queryRunner.manager.insert(TaskEntity, {
         title: title,
         createdBy: createBy,
@@ -522,6 +530,7 @@ export class TaskService extends BaseService<TaskEntity> {
           id: itemId,
         },
         isTemplate: isTemplate,
+        status: taskStatus,
       });
       const newTaskID = createTask?.generatedMaps?.[0]?.['id'];
       // If task have file
@@ -621,7 +630,6 @@ export class TaskService extends BaseService<TaskEntity> {
         avatar: oUser?.avatar,
         messageSocket: 'notification',
       };
-      console.log('dataNotification:', dataNotification);
       await this.notificationService.createNotification(
         dataNotification,
         oUser?.id,
@@ -936,6 +944,29 @@ export class TaskService extends BaseService<TaskEntity> {
             );
           }),
         );
+      }
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async autoUpdateNotStartedTask(): Promise<void> {
+    try {
+      const today = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
+      const tasks = await this.taskRepository.find({
+        where: {
+          status: ETaskStatus.NOT_STARTED,
+          startDate: moment(today).tz('Asia/Bangkok').toDate(),
+        },
+      });
+      console.log('Task has NOT_STARTED: ', tasks);
+      if (tasks.length > 0) {
+        const queryRunner = this.dataSource.createQueryRunner();
+        const listUpdateTasksPromise = tasks.map((task) => {
+          task.status = ETaskStatus.PENDING;
+        });
+        const result = await queryRunner.manager.save(listUpdateTasksPromise);
       }
     } catch (err) {
       throw new InternalServerErrorException(err.message);

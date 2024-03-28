@@ -444,17 +444,18 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       });
       const listBudgetOfItem = (listTaskAndItem || []).reduce((acc, task) => {
         const { parentTask, item } = task;
-        if (parentTask === null) {
+        if (parentTask !== null) {
           acc.push(this.getTransactionOfItem(item?.id, false));
         }
         return acc;
       }, []);
       const listDataBudgetOfItem = await Promise.all(listBudgetOfItem);
+      // console.log('listDataBudgetOfItem: ', listDataBudgetOfItem);
       const extractedData = listTaskAndItem.map((task, index) => {
         const { id, title, code, parentTask, status, item } = task;
         if (parentTask === null) {
           const budgetOfItem: any = listDataBudgetOfItem[index];
-          const totalPriceUsed = budgetOfItem?.totalTransactionUsed || 0;
+          const totalPriceUsed = budgetOfItem?.totalTransactionUsed;
           return {
             id,
             title,
@@ -469,7 +470,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         }
       });
       return extractedData.filter(Boolean);
-      // Filtering out undefined entries
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -496,19 +496,12 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       let totalAcceptedTransaction = 0;
       const listTask = itemExisted?.tasks || [];
       let taskResponse = listTask;
+      const taskChild = listTask.filter((task) => task.parentTask !== null);
       if (filterNotParentTask === true) {
-        taskResponse = listTask.filter((task) => task.parentTask !== null);
+        taskResponse = taskChild;
       }
-      for (const task of taskResponse) {
-        totalAcceptedTransaction = (task?.transactions || []).reduce(
-          (total, transaction) => {
-            if ([ETransaction.SUCCESS].includes(transaction.status)) {
-              total += transaction.amount;
-            }
-            return total;
-          },
-          0,
-        );
+      for (const task of taskChild) {
+        totalAcceptedTransaction += this.calculateTotalTransactionUsed(task);
       }
       return {
         totalTransactionUsed: totalAcceptedTransaction,
@@ -984,5 +977,26 @@ WHERE id = (SELECT eventDivisionId FROM tasks where id = '${taskId}');`;
     });
 
     return Object.values(tasks);
+  }
+
+  private calculateTotalTransactionUsed(task: any): number {
+    try {
+      const totalAcceptedTransaction = (task?.transactions || []).reduce(
+        (total, transaction) => {
+          if (
+            [ETransaction.SUCCESS, ETransaction.ACCEPTED].includes(
+              transaction.status,
+            )
+          ) {
+            total += transaction.amount;
+          }
+          return total;
+        },
+        0,
+      );
+      return totalAcceptedTransaction;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }
