@@ -334,9 +334,15 @@ export class EventService extends BaseService<EventEntity> {
           const res = {
             id: item.id,
             eventName: item.eventName,
-            startDate: item.startDate,
-            processingDate: item.processingDate,
-            endDate: item.endDate,
+            startDate: moment(item.startDate)
+              .tz('Asia/Bangkok')
+              .format('YYYY-MM-DD'),
+            processingDate: moment(item.processingDate)
+              .tz('Asia/Bangkok')
+              .format('YYYY-MM-DD'),
+            endDate: moment(item.endDate)
+              .tz('Asia/Bangkok')
+              .format('YYYY-MM-DD'),
             location: item.location,
             meetingUrl: item.meetingUrl,
             description: item.description,
