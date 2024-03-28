@@ -135,10 +135,19 @@ export class EventService extends BaseService<EventEntity> {
       const finalData = dataPromise[0].map((item) => {
         return {
           ...item,
-          startDate: moment(item.startDate).format('YYYY-MM-DD'),
-          endDate: moment(item.endDate).format('YYYY-MM-DD'),
-          createdAt: moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss'),
-          updatedAt: moment(item.updatedAt).format('YYYY-MM-DD HH:mm:ss'),
+          startDate: moment(item.startDate)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD'),
+          processingDate: moment(item.processingDate)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD'),
+          endDate: moment(item.endDate).tz('Asia/Bangkok').format('YYYY-MM-DD'),
+          createdAt: moment(item.createdAt)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD HH:mm:ss'),
+          updatedAt: moment(item.updatedAt)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD HH:mm:ss'),
           listDivision: listStaffOfDivision?.[`${item.id}`] ?? [],
           taskCount: Number(item?.taskCount),
         };
