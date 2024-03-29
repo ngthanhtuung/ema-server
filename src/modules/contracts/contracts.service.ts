@@ -390,23 +390,21 @@ export class ContractsService extends BaseService<ContractEntity> {
     contractId: string,
     type: EContractEvidenceType,
     files: FileRequest[],
-    user: UserEntity,
+    user: string,
   ): Promise<unknown | undefined> {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       const contract = await this.getContract(contractId);
-
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
       }
-
       const contractSuccess = this.getSuccessfulContracts(contract);
-
       if (contractSuccess.length <= 0) {
         throw new InternalServerErrorException(
           'Hiện chưa có hợp đồng nào được chấp thuận, vui lòng kiểm tra lại',
         );
       }
+      const oUser = JSON.parse(user);
       let returnMessage = '';
       for (const [index, file] of files.entries()) {
         const number = index + 1;
@@ -435,6 +433,34 @@ export class ContractsService extends BaseService<ContractEntity> {
             break;
         }
       }
+      let dataNotification;
+      if (type === EContractEvidenceType.CONTRACT_PAID) {
+        dataNotification = {
+          title: `Hợp đồng đã được thanh toán thành công`,
+          content: `Hợp đồng ${contractSuccess[0]?.contractCode} đã được khách hàng ${oUser?.fullName} thanh toán thành công`,
+          type: ETypeNotification.CONTRACT,
+          receiveUser: contract?.companyRepresentative,
+          commonId: contract?.id,
+          contractId: contract?.id,
+          avatar: oUser?.avatar,
+          messageSocket: 'notification',
+        };
+      } else {
+        dataNotification = {
+          title: `Hợp đồng ký kết thành công`,
+          content: `Hợp đồng ${contractSuccess[0]?.contractCode} đã được khách hàng ${oUser?.fullName} ký kết thành công`,
+          type: ETypeNotification.CONTRACT,
+          receiveUser: contract?.companyRepresentative,
+          commonId: contract?.id,
+          contractId: contract?.id,
+          avatar: oUser?.avatar,
+          messageSocket: 'notification',
+        };
+      }
+      await this.notificationService.createContractNotification(
+        dataNotification,
+        queryRunner,
+      );
       await this.updateContractStatus(type, contractId, user, queryRunner);
       return returnMessage;
     } catch (err) {
