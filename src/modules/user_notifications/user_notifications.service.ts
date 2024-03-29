@@ -60,11 +60,50 @@ export class UserNotificationsService {
           .execute(),
         query.getCount(),
       ]);
+      const totalUnreadNotifications = await this.getTotalUnseenNotification(
+        userId,
+      );
       return paginateResponse<unknown>(
-        [result, total],
+        [{ totalUnreadNotifications, notifications: result }, total],
         currentPage as number,
         sizePage as number,
       );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async getTotalUnseenNotification(userId: string): Promise<number> {
+    try {
+      const query = this.generalBuilderUserNotification();
+      query.leftJoinAndSelect('userNotifications.notification', 'notification');
+      query.select([
+        'userNotifications.id as id',
+        'notification.title as title',
+        'notification.content as content',
+        'notification.type as type',
+        'notification.status as status',
+        'notification.eventID as eventID',
+        'notification.commonId as commonId',
+        'notification.parentTaskId as parentTaskId',
+        'notification.contractId as contractId',
+        'notification.avatarSender as avatarSender',
+        'userNotifications.createdAt as createdAt',
+        'userNotifications.isRead as isRead',
+        'userNotifications.readAt as readAt',
+      ]);
+      query.where('userNotifications.userId = :userId', { userId });
+      query.andWhere('userNotifications.isDelete = :isDelete', {
+        isDelete: false,
+      });
+      query.andWhere('userNotifications.isRead = :isRead', { isRead: false });
+      query.andWhere('notification.status = :status', { status: true });
+      query.orderBy('userNotifications.createdAt', 'DESC');
+      const [result, total] = await Promise.all([
+        query.execute(),
+        query.getCount(),
+      ]);
+      return total;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
