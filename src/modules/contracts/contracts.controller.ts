@@ -171,7 +171,7 @@ export class ContractsController {
       id,
       type,
       fileDtos,
-      JSON.parse(user),
+      user,
     );
   }
 
