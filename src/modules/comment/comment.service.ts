@@ -122,6 +122,7 @@ export class CommentService extends BaseService<CommentEntity> {
               assignTasks: true,
             },
           });
+          console.log('task:', task);
           const taskMasterId = task?.assignTasks[0]?.taskMaster;
           let notificationType = ETypeNotification.COMMENT;
           if (task?.parentTask !== null) {
@@ -152,6 +153,11 @@ export class CommentService extends BaseService<CommentEntity> {
               });
             }
           }
+          console.log(
+            'task?.eventDivision?.event?.id:',
+            task?.eventDivision?.event?.id,
+          );
+
           // Send Notification
           const dataNotification: NotificationCreateRequest = {
             title: `Đã có một comment mới `,

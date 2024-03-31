@@ -155,7 +155,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
         content: notification?.content,
         type: notification?.type,
         commonId: notification?.commonId,
+        eventID: notification?.eventID,
         avatarSender: notification?.avatar,
+        parentTaskId: notification?.parentTaskId,
       });
 
       const createNotification = [];

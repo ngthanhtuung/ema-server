@@ -137,7 +137,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       if (newTransaction?.identifiers?.[0]?.id) {
         const dataNotificationAccepted: NotificationTransactionRequest = {
           title: `Có một yêu cầu mới`,
-          content: `Yêu cầu ${transactionCode} đang đợi để được xử lý`,
+          content: `Yêu cầu ${transactionCode} đã gửi đang đợi để được xử lý`,
           type: ETypeNotification.BUDGET,
           receiveUser: filterAssignTasks?.taskMaster,
           commonId: newTransaction?.identifiers?.[0]?.id,
@@ -379,7 +379,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           if (resultReject.affected > 0) {
             const dataNotificationReject: NotificationTransactionRequest = {
               title: `Yêu cầu bị từ chối`,
-              content: `Yêu cầu ${transactionExisted?.transactionName} bị từ chối`,
+              content: `Yêu cầu ${transactionExisted?.transactionName} đã bị từ chối`,
               type: ETypeNotification.BUDGET,
               receiveUser: transactionExisted?.createdBy,
               commonId: transactionExisted?.id,
