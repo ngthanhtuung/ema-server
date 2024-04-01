@@ -12,7 +12,6 @@ export const databaseConfig = {
   synchronize: true,
   autoLoadEntities: true,
   logging: true,
-  // entities: [__dirname + '/../**/*.entity.{js,ts}'],
   entities: [process.cwd() + '/dist/modules/**/*.entity.{ts,js}'],
   factories: [process.cwd() + '/factory/**/*{.ts,.js}'],
   seeds: [process.cwd() + '/dist/database/seeds/data.seed.js'],
