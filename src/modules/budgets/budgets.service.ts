@@ -86,7 +86,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       if (!taskExisted) {
         throw new NotFoundException('Không thể tìm thấy công việc này');
       }
-      if (taskExisted.status !== ETaskStatus.PENDING) {
+      if (
+        ![ETaskStatus.PENDING, ETaskStatus.PROCESSING].includes(
+          taskExisted.status,
+        )
+      ) {
         throw new BadRequestException(
           'Không thể tạo yêu cầu giao dịch cho công việc này vì công việc này đã hoàn thành hoặc quá hạn',
         );
