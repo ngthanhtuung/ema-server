@@ -1,0 +1,39 @@
+@startuml
+actor Customer as A
+participant "Browser" as B
+participant "Contract Controller" as C
+participant "Contract Service" as D
+participant "Contract Repository" as E
+database "Database" as F
+
+A -> B++: Click on "Chấp nhận" button of a specific contract
+B -> C++: PUT: /file/:contractFileId/status
+C -> D++: call updateStatusContractFile()
+D -> E++: call findOne()
+E -> F++: Query
+alt Contract Found
+    F --> E--: Return result
+    E --> D--: Return result
+    D -> E++: call updateStatusContract()
+    E -> F++: Update
+    alt Success
+        F --> E: Return result
+        E --> D: Return response
+        D --> C: Return response
+        C --> B: Return response
+        B --> A: Display message "Hợp đồng được chấp thuận"
+    else Fail
+        F --> E: Return null
+        E --> D: Return response
+        D --> C: Return response
+        C --> B: Return response
+        B --> A: Display message "Cập nhật trạng thái hợp đồng thất bại"
+    end
+else Contract Not Found
+     F --> E--: Return null
+     E --> D--: Return response
+     D --> C--: Return response
+     C --> B--: Return response
+     B --> A--: Display error message "Không tìm thấy hợp đồng này"
+end
+@enduml

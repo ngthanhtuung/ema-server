@@ -1,0 +1,44 @@
+@startuml
+
+actor Staff as user
+participant "Browser" as a
+participant "Task Controller" as b
+participant "Task Service" as c
+participant "Notification Service" as d
+participant "Task Repository" as e
+database "Database" as f
+
+user -> a++: Click to choose status of task
+a -> b++: PUT: /updateTaskStatus
+b -> c++: call updateTask()
+c -> e++: call findOne()
+e -> f++: Query
+alt Task existed
+    f --> e: Return result
+    e --> c: Return result
+    c -> e: call update()
+    e -> f++: Update
+    alt Success
+        f --> e: Return result
+        e --> c: Return result
+        c -> d++: call sendNotification()
+        d --> c--: Return result
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Cập nhật trạng thái công việc thành công"
+    else Fail
+         f --> e--: Return null
+         e --> c: Return response
+         c --> b: Return response
+         b --> a: Return response
+         a --> user: Display message "Cập nhật trạng thái công việc thất bại"
+    end
+else Task doesn't existed
+   f --> e--: Return null
+   e --> c--: Return response
+   c --> b--: Return response
+   b --> a--: Return response
+   a --> user--: Display message "Không tìm thấy công việc này"
+end
+@enduml
+

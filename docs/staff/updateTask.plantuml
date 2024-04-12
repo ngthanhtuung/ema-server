@@ -1,0 +1,36 @@
+@startuml
+
+actor Staff as user
+participant "Browser" as a
+participant "Task Controller" as b
+participant "Task Service" as c
+'participant "Assign Task Service" as d
+participant "Notification Service" as e
+participant "Task Repository" as f
+database "Database" as g
+
+user -> a++: Click on "Cập nhật công việc" button
+a -> b++: PUT: /updateTask
+b -> c++: call updateTask()
+c -> f++: call findOne()
+f -> g++: Query
+alt Success
+    g --> f: Return result
+    f --> c: Return result
+    c -> f: call update()
+    f -> g: Update
+    g --> f: Return result
+    f --> c: Return result
+    c -> e++: call sendNotification()
+    e --> c--: Return result
+    c --> b: Return response
+    b --> a: Return response
+    a --> user: Display message "Cập nhật công việc thành công"
+else Fail
+    g --> f--: Return null
+    f --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Cập nhật công việc thất bại"
+end
+@enduml

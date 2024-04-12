@@ -1,0 +1,46 @@
+@startuml
+
+actor Manager as user
+participant "Browser" as a
+participant "Task Controller" as b
+participant "Task Service" as c
+participant "Assign Task Service" as d
+participant "Notification Service" as e
+participant "Task Repository" as f
+database "Database" as g
+
+user -> a++: Click on "Thêm công việc mới" button
+a -> b++: POST: /createTask
+b -> c++: call createTask()
+c -> f++: call create()
+f -> g++: Insert
+alt Success
+    g --> f: Return result
+    f --> c: Return result
+    c -> d++: call assignMemberToTask()
+    d -> g++: Insert
+    alt Assign Success
+        g --> d: Return result
+        d -> e++: call sendNotification()
+        e --> d--: Return response
+        d --> c: Return response
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Tạo công việc mới thành công"
+    else Assign Fail
+        g --> d--: Return null
+        d --> c: Return response
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display error message "Tạo công việc mới thất bại"
+    end
+
+else Fail
+    g --> f--: Return null
+    f --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Tạo công việc mới thất bại"
+end
+
+@enduml

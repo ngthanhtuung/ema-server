@@ -1,6 +1,6 @@
 @startuml
 autonumber
-actor Guest as Guest
+actor "Unauthenticated User" as Guest
 participant Browser as A
 participant AuthController as B
 participant AuthService as C

@@ -1,0 +1,20 @@
+@startuml
+
+actor Staff as user
+participant Browser as a
+participant "Budget Controller" as b
+participant "Budget Service" as c
+participant "Budget Repository" as d
+database "Database" as e
+
+user -> a++: Click on "Yêu cầu" button of a specific event
+a -> b++: GET: /budget/own-transcation
+b -> c++: call getOwnRequest()
+c -> d++: call findAll()
+d -> e++: Query
+e --> d--: Return result
+d --> c--: Return response
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Display all of own transactions
+@enduml

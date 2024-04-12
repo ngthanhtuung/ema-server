@@ -1,0 +1,39 @@
+@startuml
+actor Manager as user
+participant Browser as a
+participant "Comment Controller" as b
+participant "Comment Service" as c
+participant "Comment Repository" as e
+database Database as f
+
+user -> a++: Click on "Chỉnh sửa" of a specific comment
+a -> b++: PUT: /:commentId
+b -> c++: call updateComment()
+c -> e++: finOwnUserComment()
+e -> f++: Query
+alt User's comment
+    f --> e--: Return result
+    e --> c--: Return result
+    c -> e++: call update()
+    e -> f++: Update
+    alt Success
+        f --> e: Return result
+        e --> c: Return result
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Chỉnh sửa bình luận thành công"
+    else Fail
+         f --> e: Return null
+         e --> c: Return result
+         c --> b: Return response
+         b --> a: Return response
+         a --> user: Display message "Chỉnh sửa bình luận thất bại"
+    end
+else Doesn't user comment
+    f --> e--: Return null
+    e --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Bạn không có quyền được chỉnh sửa bình luận trong công việc này"
+end
+@enduml

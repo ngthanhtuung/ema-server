@@ -1,0 +1,41 @@
+@startuml
+
+actor Customer as A
+participant "Browser" as B
+participant "Customer Contact Controller" as C
+participant "Customer Contact Service" as D
+participant "Customer Contact Repository" as E
+database "Database" as F
+
+autonumber 1
+A -> B: Click on specific contact
+activate B
+B -> C: GET /:id
+activate C
+C -> D: call getContactDetailsById()
+activate D
+D -> E: call findOne()
+activate E
+E -> F: Query
+alt Success
+autonumber 6.1
+    F --> E: Return data
+    E --> D: Return data
+    D --> C: Return data
+    C --> B: Return data
+    B --> A: Display contact information
+autonumber 7.1
+else Failure
+    F --> E: Return null
+    E --> D: Return null
+    D --> C: Return null
+    C --> B: Return error message "Không tìm thấy thông tin liên hệ này"
+    B --> A: Display error message "Không tìm thấy thông tin liên hệ này"
+end
+deactivate F
+deactivate E
+deactivate D
+deactivate C
+deactivate B
+
+@enduml

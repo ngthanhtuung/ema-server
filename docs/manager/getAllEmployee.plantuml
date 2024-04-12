@@ -1,0 +1,20 @@
+@startuml
+
+actor Manager as user
+participant Browser as a
+participant "Division Controller" as b
+participant "Division Service" as c
+participant "Division Repository" as d
+database Database as e
+
+user -> a++: Click on tab "Nhân viên"
+a -> b++: GET: /division
+b -> c++: call getAllUserByivision()
+c -> d++: call findAll()
+d -> e++: Query
+e --> d--: Return result
+d --> c--: Return response
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Display all of user in a division
+@enduml
