@@ -1,0 +1,43 @@
+@startuml
+actor Customer as A
+participant "Browser" as B
+participant "Contract Controller" as C
+participant "Contract Service" as D
+participant "File Service" as E
+participant "Notification Service" as F
+participant "Contract Repository" as G
+database "Database" as H
+
+A -> B++: Click on "Thanh toán hợp đồng" button of a specific contract
+B -> C++: POST: /:contractId/evidence
+C -> D++: call updateContractEvidence()
+D -> G++: call findOne()
+G -> H++: Query
+alt Contract found
+    H --> G--: Return result
+    G --> D--: Return result
+    D -> E++: call processContractSigned()
+    alt Upload success
+        E -> G++: call updateEvidence()
+        G -> H++: Update
+        H --> G: Return result
+        G --> D: Return result
+        D -> F++: call sendNotification()
+        F --> D--: Return result
+        D --> C: Return response
+        C --> B: Return response
+        B --> A: Display message "Hợp đồng được thanh toán thành công"
+    else Upload fail
+        E --> D--: Return error reponse
+        D --> C: Return response
+        C --> B: Return response
+        B --> A: Display error message "Lỗi không xác định"
+    end
+else Contract not found
+    H --> G--: Return null
+    G --> D--: Return response
+    D --> C--: Return response
+    C --> B--: Return response
+    B --> A--: Display error message "Không tìm thấy hợp đồng này"
+end
+@enduml

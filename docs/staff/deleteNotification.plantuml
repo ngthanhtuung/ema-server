@@ -1,0 +1,32 @@
+@startuml
+
+actor Staff as user
+participant Browser as a
+participant "Notification Controller" as b
+participant "Notification Service" as c
+participant "User Notification Service" as d
+participant "Notification Repository" as e
+database Database as f
+
+user -> a++: Click on "Xóa thông báo" text line of a specific notification
+a -> b++: DELETE: /notification/delete/:notificationId
+b -> c++: call deleteNotificationById()
+c -> d++: call updateNotificationStatusOfUser()
+d -> e++: call update()
+e -> f++: Update
+alt Success
+    f --> e: Return results
+    e --> d: Return response
+    d --> c: Return response
+    c --> b: Return response
+    b --> a: Return response
+    a --> user: Display message "Đã xóa thông báo thành công"
+else Fail
+    f --> e--: Return null
+    e --> d--: Return response
+    d --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Lỗi không xác định, vui lòng thử lại sau"
+end
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+
+actor Staff as user
+participant "Broswer" as a
+participant "AssignTask Controller" as b
+participant "AssignTask Service" as c
+participant "Task Service" as d
+participant "AssignTask Repository" as e
+participant "Notification Service" as f
+database "Database" as g
+
+user -> a++: Click to choose employee on list employee
+a -> b++: POST: /assign-task
+b -> c++: call assignMemberToTask()
+c -> d++: call findTaskById()
+d -> g++: Query
+alt Task existed
+    g --> d--: Return result
+    d --> c: Return result
+    c -> e++: call update()
+    e -> g++: Update
+    alt Success
+        g --> e: Return result
+        e --> c: Return result
+        c -> f++: call sendNotification()
+        f --> c--: Return result
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Cập nhật danh sách người tham gia công việc thành công"
+    else Fail
+        g --> e: Return null
+        e --> c--: Return response
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Cập nhật danh sách người tham gia công việc thành công"
+    end
+
+else Task doesn't existed
+     g --> d--: Return null
+     d --> c--: Return response
+     c --> b--: Return response
+     b --> a--: Return response
+     a --> user--: Display error message "Cập nhật danh sách người tham gia công việc thất bại"
+end
+@enduml

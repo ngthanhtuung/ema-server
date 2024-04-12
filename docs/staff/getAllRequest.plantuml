@@ -1,0 +1,20 @@
+@startuml
+
+actor Staff as user
+participant Browser as a
+participant "Budget Controller" as b
+participant "Budget Service" as c
+participant "Budget Repository" as d
+database "Database" as e
+
+user -> a++: Click on "Ngân sách" button of a specific event
+a -> b++: GET: /budget
+b -> c++: call getListBudgetForTask()
+c -> d++: call findAll()
+d -> e++: Query
+e --> d--: Return result
+d --> c--: Return response
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Display all transaction of a specific event
+@enduml

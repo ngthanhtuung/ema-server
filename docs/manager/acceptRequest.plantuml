@@ -1,0 +1,43 @@
+@startuml
+
+actor Manager as user
+participant Browser as a
+participant "Budget Controller" as b
+participant "Budget Service" as c
+participant "Budget Repository" as d
+participant "Notification Service" as e
+database Database as f
+
+user -> a++: Click on "Chấp thuận" button of a specific transaction
+a -> b++: PUT: /update-status-transaction/:transactionId
+b -> c++: call updateStatusTransaction()
+c -> d++: call findOne()
+d -> f++: Query
+alt Transaction existed
+    f --> d: Return result
+    d --> c: Return result
+    c -> d: call updateStatus()
+    d -> f: Update
+    alt Success
+        f --> d: Return result
+        d --> c: Return result
+        c -> e++: call sendNoitification()
+        e --> c--: Return result
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Giao dịch được chấp thuận thành công"
+    else Fail
+         f --> d: Return null
+         d --> c: Return response
+         c --> b: Return response
+         b --> a: Return response
+         a --> user: Display error message "Giao dịch xử lí thât bại"
+    end
+else Transaction doesn't existed
+    f --> d--: Return null
+    d --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Không thể tìm thấy giao dịch này"
+end
+@enduml

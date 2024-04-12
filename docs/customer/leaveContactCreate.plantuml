@@ -1,0 +1,43 @@
+@startuml
+
+actor Customer as A
+participant "Browser" as B
+participant "Customer Contact Controller" as C
+participant "Customer Contact Service" as D
+participant "Customer Contact Repository" as E
+database "Database" as F
+
+autonumber 1
+A -> B: Click on "Danh sách liên hệ" button
+activate B
+B -> C: GET /info
+activate C
+C -> D: call leaveMessage()
+activate D
+D -> E: call save()
+activate E
+E -> F: save data
+activate F
+
+alt Success
+autonumber 6.1
+    F --> E: Return data was stored
+    E --> D: Return data was stored
+    D --> C: "Leave message successfully"
+    C --> B: "Leave message successfully"
+    B --> A: "Tạo liên hệ thành công"
+autonumber 7.1
+else Failure
+    F --> E: Return null
+    E --> D: Return null
+    D --> C: "Leave message fail"
+    C --> B: "Leave message fail"
+    B --> A: "Leave message fail"
+end
+deactivate F
+deactivate E
+deactivate D
+deactivate C
+deactivate B
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+
+actor Manager as user
+
+participant Browser as a 
+participant UserController as b 
+participant UserService as c 
+participant UserRepository as d 
+database Database as e 
+
+user -> a: Click "Hồ sơ" button
+a -> b++: GET: /user/profile
+b -> c++: Call findByIdV2()
+c -> d++: Call getUserProfile()
+d -> e++: Query
+e --> d--: Return result
+alt Success
+    d --> c: Return user profile
+    c --> b: Return user profile
+    b --> a: Return success response
+    a --> user: Display profile
+else Fail 
+    d --> c--: Return null
+    c --> b--: Return null
+    b --> a--: Return fail response
+    a --> user: Display error message "Lỗi không xác định"
+end 
+@enduml

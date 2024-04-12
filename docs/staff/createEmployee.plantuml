@@ -1,0 +1,33 @@
+@startuml
+actor Staff as user
+
+participant Browser as a
+participant AuthController as b
+participant AuthService as c
+participant UserService as d
+participant UserRepository as e
+database Database as f
+
+user -> a++: Click "Thêm mới nhân viên" button
+a -> b++: POST: /auth/sign-up
+b -> c++: Call signUp()
+c -> d++: Call insertUser()
+d -> e++: Call insert()
+e -> f++: Insert
+
+alt Success
+    f --> e: Return result
+    e --> d: Return response
+    d --> c: Return response
+    c --> b: Return response
+    b --> a: Return success response
+    a --> user: Display message "Tạo thành công"
+else Fail
+    f --> e--: Return null
+    e --> d--: Return response
+    d --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return fail response
+    a --> user--: Display message "Tạo thất bại"
+end
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+actor Staff as user
+participant Browser as a
+participant "Comment Controller" as b
+participant "Comment Service" as c
+participant "Comment Repository" as e
+database Database as f
+
+user -> a++: Click on "Xóa bình luận" of a specific comment
+a -> b++: DELETE: /:commentId
+b -> c++: call deleteComment()
+c -> e++: finOwnUserComment()
+e -> f++: Query
+alt User's comment
+    f --> e--: Return result
+    e --> c--: Return result
+    c -> e++: call update()
+    e -> f++: Update
+    alt Success
+        f --> e: Return result
+        e --> c: Return result
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Xóa bình luận thành công"
+    else Fail
+         f --> e: Return null
+         e --> c: Return result
+         c --> b: Return response
+         b --> a: Return response
+         a --> user: Display message "Xóa bình luận thất bại"
+    end
+else Doesn't user comment
+    f --> e--: Return null
+    e --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Bạn không có quyền được xóa bình luận trong công việc này"
+end
+@enduml
