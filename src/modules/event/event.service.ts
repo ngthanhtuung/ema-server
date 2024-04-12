@@ -234,6 +234,7 @@ export class EventService extends BaseService<EventEntity> {
       };
       return plainToClass(EventResponse, finalRes);
     } catch (err) {
+      console.log('Error at getEventById', err);
       throw new InternalServerErrorException(err.message);
     }
   }
