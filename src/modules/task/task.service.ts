@@ -914,7 +914,9 @@ export class TaskService extends BaseService<TaskEntity> {
   @Cron(CronExpression.EVERY_MINUTE)
   async autoUpdateTask(): Promise<void> {
     try {
-      const currentDate = moment().add(7, 'hours').toDate();
+      const currentDate = moment()
+        .add(7, 'hours')
+        .format('YYYY-MM-DD HH:mm:ss.SSS');
       const tasks = await this.taskRepository.find({
         where: [
           { status: ETaskStatus.PENDING },
@@ -922,7 +924,12 @@ export class TaskService extends BaseService<TaskEntity> {
         ],
       });
       const overdueTasks = tasks.filter((task) => {
-        if (task?.endDate != undefined && task?.endDate <= currentDate) {
+        if (
+          task?.endDate != undefined &&
+          `${moment(task?.endDate)
+            .endOf('days')
+            .format('YYYY-MM-DD HH:mm:ss.SSS')}` <= currentDate
+        ) {
           return task;
         }
       });
