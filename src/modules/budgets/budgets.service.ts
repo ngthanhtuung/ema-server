@@ -582,7 +582,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         true,
       );
       console.log('totalUsed:', totalUsed);
-
       const totalTransactionUsed = totalUsed?.totalTransactionUsed || 0;
       const remainingBudget = budgetAvailable - totalTransactionUsed;
       console.log('remainingBudget:', remainingBudget);
@@ -603,12 +602,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         ((amount + totalTransactionUsed) / totalPriceBudget) * 100,
       );
       console.log('amountPercentage:', amountPercentage);
-
-      // if (amountPercentage > 100) {
-      //   throw new BadRequestException(
-      //     'Số tiền này vượt quá hạn mức quy định của kế hoạch, không thể mở thêm hạng mức cho hạng mục này',
-      //   );
-      // }
+      if (amountPercentage > 100) {
+        throw new BadRequestException(
+          'Số tiền này vượt quá hạn mức quy định của kế hoạch, không thể mở thêm hạng mức cho hạng mục này',
+        );
+      }
       const result = await queryRunner.manager.update(
         ItemEntity,
         { id: itemExisted?.id },
