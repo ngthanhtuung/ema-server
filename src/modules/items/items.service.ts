@@ -364,28 +364,28 @@ export class ItemsService extends BaseService<ItemEntity> {
       } else if (key === 'Thời gian bắt đầu' || key === 'Thời gian kết thúc') {
         const formattedDate = moment(trimValue).format('YYYY-MM-DD');
         const dateValue = moment(formattedDate, 'YYYY-MM-DD'); // Assuming date format is YYYY-MM-DD
-        if (!dateValue.isValid()) {
-          errorMessages.push(
-            `Lỗi tại dòng ${lineNumber} - ${key} không hợp lệ. Định dạng chuẩn YYYY-MM-DD`,
-          );
-          hasErrorInRecord = true;
-        } else if (
-          key === 'Thời gian kết thúc' &&
-          dateValue.isBefore(moment(trimValue, 'YYYY-MM-DD'))
-        ) {
-          errorMessages.push(
-            `Lỗi tại dòng ${lineNumber} - ${key} phải sau Thời gian bắt đầu`,
-          );
-          hasErrorInRecord = true;
-        } else if (
-          key === 'Thời gian kết thúc' &&
-          dateValue.isBefore(moment(), 'day')
-        ) {
-          errorMessages.push(
-            `Lỗi tại dòng ${lineNumber} - ${key} không được trước ngày hôm nay`,
-          );
-          hasErrorInRecord = true;
-        }
+        // if (!dateValue.isValid()) {
+        //   errorMessages.push(
+        //     `Lỗi tại dòng ${lineNumber} - ${key} không hợp lệ. Định dạng chuẩn YYYY-MM-DD`,
+        //   );
+        //   hasErrorInRecord = true;
+        // } else if (
+        //   key === 'Thời gian kết thúc' &&
+        //   dateValue.isBefore(moment(trimValue, 'YYYY-MM-DD'))
+        // ) {
+        //   errorMessages.push(
+        //     `Lỗi tại dòng ${lineNumber} - ${key} phải sau Thời gian bắt đầu`,
+        //   );
+        //   hasErrorInRecord = true;
+        // } else if (
+        //   key === 'Thời gian kết thúc' &&
+        //   dateValue.isBefore(moment(), 'day')
+        // ) {
+        //   errorMessages.push(
+        //     `Lỗi tại dòng ${lineNumber} - ${key} không được trước ngày hôm nay`,
+        //   );
+        //   hasErrorInRecord = true;
+        // }
       }
     });
     return { hasErrorInRecord, errorMessages };

@@ -508,104 +508,104 @@ export class DataSeed implements Seeder {
           id: eventType['identifiers'][0]['id'],
         },
       },
-      // {
-      //   eventName:
-      //     'Hội thảo chuyên đề: Xu hướng quảng cáo và tiếp thị trong năm 2024',
-      //   startDate: moment().format('YYYY-MM-DD'),
-      //   processingDate: moment().add(6, 'days').format('YYYY-MM-DD'),
-      //   endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-      //   coverUrl:
-      //     'https://treobangron.com.vn/wp-content/uploads/2022/09/banner-khai-truong-31.jpg',
-      //   location: 'Trung tâm Hội nghị Quốc tế, TP. Hồ Chí Minh',
-      //   description:
-      //     '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
-      //   estBudget: 200000000,
-      //   createdBy: user1['identifiers'][0]['id'],
-      //   eventType: {
-      //     id: eventType['identifiers'][1]['id'],
-      //   },
-      // },
-      // {
-      //   eventName: 'Khóa học: Kỹ năng viết content thu hút',
-      //   startDate: moment().add(1, 'days').format('YYYY-MM-DD'),
-      //   processingDate: moment().add(4, 'days').format('YYYY-MM-DD'),
-      //   endDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-      //   coverUrl:
-      //     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1ME4Atqq5Ga7DGksE37o0DOsTVciHir29Vw&usqp=CAU',
-      //   location: 'Trường Đại học Kinh tế TP. Hồ Chí Minh',
-      //   description:
-      //     '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
-      //   estBudget: 50000000,
-      //   createdBy: user1['identifiers'][0]['id'],
-      //   eventType: {
-      //     id: eventType['identifiers'][2]['id'],
-      //   },
-      // },
-      // {
-      //   eventName: 'Hội nghị thượng đỉnh marketing Việt Nam 2024',
-      //   startDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-      //   processingDate: moment().add(13, 'days').format('YYYY-MM-DD'),
-      //   endDate: moment().add(14, 'days').format('YYYY-MM-DD'),
-      //   coverUrl:
-      //     'https://thumbs.dreamstime.com/b/blue-golden-royal-awards-graphics-background-royal-awards-graphics-background-award-background-luxury-premium-graphics-blue-golden-268397993.jpg',
-      //   location: 'Trung tâm Hội nghị Quốc gia, Hà Nội',
-      //   description:
-      //     '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
-      //   estBudget: 300000000,
-      //   createdBy: user1['identifiers'][0]['id'],
-      //   eventType: {
-      //     id: eventType['identifiers'][4]['id'],
-      //   },
-      // },
-      // {
-      //   eventName: 'Lễ trao giải Marketing Awards 2024',
-      //   startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-      //   processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-      //   endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-      //   coverUrl:
-      //     'https://www.shutterstock.com/shutterstock/photos/2167924209/display_1500/stock-vector-golden-blue-purple-award-background-jubilee-night-decorative-invitation-trophy-on-stage-platform-2167924209.jpg',
-      //   location: 'Nhà hát Lớn, TP. Hồ Chí Minh',
-      //   description:
-      //     '[{"insert":"Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n"}]',
-      //   estBudget: 150000000,
-      //   createdBy: user1['identifiers'][0]['id'],
-      //   eventType: {
-      //     id: eventType['identifiers'][5]['id'],
-      //   },
-      // },
-      // {
-      //   eventName: 'Khóa học: SEO nâng cao',
-      //   startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-      //   processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-      //   endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-      //   coverUrl:
-      //     'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
-      //   location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
-      //   description:
-      //     '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
-      //   estBudget: 50000000,
-      //   createdBy: user1['identifiers'][0]['id'],
-      //   eventType: {
-      //     id: eventType['identifiers'][6]['id'],
-      //   },
-      // },
-      // {
-      //   eventName: 'Vui Lòng Điền Tên Event',
-      //   startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-      //   processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-      //   endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-      //   coverUrl:
-      //     'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
-      //   location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
-      //   description:
-      //     '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
-      //   estBudget: 50000000,
-      //   createdBy: user1['identifiers'][0]['id'],
-      //   eventType: {
-      //     id: eventType['identifiers'][6]['id'],
-      //   },
-      //   isTemplate: true,
-      // },
+      {
+        eventName:
+          'Hội thảo chuyên đề: Xu hướng quảng cáo và tiếp thị trong năm 2024',
+        startDate: moment().format('YYYY-MM-DD'),
+        processingDate: moment().add(6, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://treobangron.com.vn/wp-content/uploads/2022/09/banner-khai-truong-31.jpg',
+        location: 'Trung tâm Hội nghị Quốc tế, TP. Hồ Chí Minh',
+        description:
+          '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
+        estBudget: 200000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][1]['id'],
+        },
+      },
+      {
+        eventName: 'Khóa học: Kỹ năng viết content thu hút',
+        startDate: moment().add(1, 'days').format('YYYY-MM-DD'),
+        processingDate: moment().add(4, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1ME4Atqq5Ga7DGksE37o0DOsTVciHir29Vw&usqp=CAU',
+        location: 'Trường Đại học Kinh tế TP. Hồ Chí Minh',
+        description:
+          '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
+        estBudget: 50000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][2]['id'],
+        },
+      },
+      {
+        eventName: 'Hội nghị thượng đỉnh marketing Việt Nam 2024',
+        startDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+        processingDate: moment().add(13, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(14, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://thumbs.dreamstime.com/b/blue-golden-royal-awards-graphics-background-royal-awards-graphics-background-award-background-luxury-premium-graphics-blue-golden-268397993.jpg',
+        location: 'Trung tâm Hội nghị Quốc gia, Hà Nội',
+        description:
+          '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
+        estBudget: 300000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][4]['id'],
+        },
+      },
+      {
+        eventName: 'Lễ trao giải Marketing Awards 2024',
+        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://www.shutterstock.com/shutterstock/photos/2167924209/display_1500/stock-vector-golden-blue-purple-award-background-jubilee-night-decorative-invitation-trophy-on-stage-platform-2167924209.jpg',
+        location: 'Nhà hát Lớn, TP. Hồ Chí Minh',
+        description:
+          '[{"insert":"Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n"}]',
+        estBudget: 150000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][5]['id'],
+        },
+      },
+      {
+        eventName: 'Khóa học: SEO nâng cao',
+        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
+        location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
+        description:
+          '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
+        estBudget: 50000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][6]['id'],
+        },
+      },
+      {
+        eventName: 'Vui Lòng Điền Tên Event',
+        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+        coverUrl:
+          'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
+        location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
+        description:
+          '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
+        estBudget: 50000000,
+        createdBy: user1['identifiers'][0]['id'],
+        eventType: {
+          id: eventType['identifiers'][6]['id'],
+        },
+        isTemplate: true,
+      },
     ];
 
     const listCategories = [
@@ -718,6 +718,11 @@ export class DataSeed implements Seeder {
       .into(EventEntity)
       .values(listEvent)
       .execute();
+
+    const queryListTemplateTask =
+      "INSERT INTO tasks VALUES ('083b295f-09cf-466e-a177-8fbd4d87b8bb','2024-05-01 18:14:56.582489','2024-05-01 18:14:56.582489','Lập kế hoạch vận chuyển',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Lập kế hoạch vận chuyển\\\\n\\\"}]','LOW',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('10ea9e2a-b73e-4160-bfad-d67c06dde0be','2024-05-01 17:59:01.763978','2024-05-01 17:59:01.763978','Mời khách mời',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Gửi thư mời dựa trên danh sách khách mời đã tạo\\\\n\\\"}]','HIGH',NULL,0,'PENDING',0,NULL,'96356379-741b-4065-ae45-df8389362012',NULL,NULL,1,NULL,NULL),('35d67bdb-d493-4aa5-bcb0-a8d555e1739a','2024-05-01 17:59:26.680208','2024-05-01 17:59:26.680208','Thiết kế poster',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Thiết kế poster quảng bá\\\\n\\\"}]','MEDIUM',NULL,0,'PENDING',0,NULL,'96356379-741b-4065-ae45-df8389362012',NULL,NULL,1,NULL,NULL),('5d6f5ae0-87c4-4bb9-a846-14dd6e440580','2024-05-01 18:16:44.346648','2024-05-01 18:16:44.346648','Mời khách mời',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Mời khách mời\\\\n\\\"}]','MEDIUM',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('6d3c60ee-3da1-47d7-8552-4d416683f75d','2024-05-01 18:16:10.060817','2024-05-01 18:16:10.060817','Đặt cọc và đặt chỗ',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Đặt cọc và đặt chỗ\\\\n\\\"}]','MEDIUM',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('71b0d362-56db-47f0-b845-fd49af7b28a2','2024-05-01 18:14:36.454489','2024-05-01 18:14:36.454489','Xử lý kỹ thuật',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Xử lý kỹ thuật\\\\n\\\"}]','MEDIUM',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('75b46daa-d69b-4f7b-bc5a-b24df1fbb72a','2024-05-01 17:59:47.393262','2024-05-01 17:59:47.393262','Lên kế hoạch và nội dung chương trình',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Lên kế hoạch và nội dung chương trình\\\\n\\\"}]','HIGH',NULL,0,'PENDING',0,NULL,'96356379-741b-4065-ae45-df8389362012',NULL,NULL,1,NULL,NULL),('a735aa5f-3898-45ab-8d33-41e71ae3524a','2024-05-01 18:15:24.279099','2024-05-01 18:15:24.279099','Điều phối truyền thông',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Điều phối truyền thông\\\\n\\\"}]','LOW',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('adc5dc1a-57e7-41dc-a520-91d0e1e9e58e','2024-05-01 17:58:05.147209','2024-05-01 17:58:05.147209','Lên danh sách khách mời ',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Lên danh sách khách mời tham gia sự kiện \\\\n\\\"}]','LOW',NULL,0,'PENDING',0,NULL,'96356379-741b-4065-ae45-df8389362012',NULL,NULL,1,NULL,NULL),('b55bc9aa-fe25-4066-9819-86a2db516106','2024-05-01 18:15:49.179366','2024-05-01 18:15:49.179366','Đánh giá và phản hồi',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Đánh giá và phản hồi\\\\n\\\"}]','MEDIUM',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('c0ad960d-5726-4c4d-ad41-3d336ef458b8','2024-05-01 18:15:39.549597','2024-05-01 18:15:39.549597','Quản lý an ninh',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Quản lý an ninh\\\\n\\\"}]','LOW',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('d717010f-9f00-4a41-848b-f7088abee01f','2024-05-01 18:16:55.129443','2024-05-01 18:16:55.129443','Mời diễn giả',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Mời diễn giả\\\\n\\\"}]','LOW',NULL,0,'PENDING',0,NULL,'402e4c33-d62f-4f5b-a641-ae143ef70a2a',NULL,NULL,1,NULL,NULL),('e8d16bca-62c6-442b-8d60-51dd8dcd9e1c','2024-05-01 18:01:07.539320','2024-05-01 18:01:07.539320','Liên hệ với bên lắp đặt sân khấu ',NULL,NULL,NULL,'[{\\\"insert\\\":\\\"Liên hệ với bên lắp đặt sân khấu \\\\n\\\"}]','MEDIUM',NULL,0,'PENDING',0,NULL,'96356379-741b-4065-ae45-df8389362012',NULL,NULL,1,NULL,NULL);\n";
+    await connection.query(queryListTemplateTask);
+
     const mailTextId1 =
       '<p>Ch&agrave;o mừng bạn đến với hệ thống EMA, dưới đ&acirc;y l&agrave; t&agrave;i khoản đăng nhập v&agrave;o hệ thống.</p>\n<table border="1" cellpadding="1" cellspacing="1" style="width:378px">\n\t<tbody>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Username/Email</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${email}</strong></span></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="width:138px"><strong>Password</strong></td>\n\t\t\t<td style="width:224px"><span style="color:#c0392b"><strong>${password}</strong></span></td>\n\t\t</tr>\n\t</tbody>\n</table>\n<p><strong>Lưu &yacute;:&nbsp;</strong>Khi đăng nhập lần đầu ti&ecirc;n v&agrave;o hệ thống, xin vui l&ograve;ng đổi mật khẩu.</p>\n<p>Đội ngũ hỗ trợ của ch&uacute;ng t&ocirc;i (EMA System).</p>\n<p>&nbsp;</p>';
     const mailTitleId1 = 'EMA - Tài khoản đăng nhập hệ thống';
