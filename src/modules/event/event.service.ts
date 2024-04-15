@@ -395,6 +395,7 @@ export class EventService extends BaseService<EventEntity> {
           contract: true,
         },
       });
+      console.log('Data at getAllEventByCustomer: ', data);
       return data;
     } catch (err) {
       throw new InternalServerErrorException(err.message);

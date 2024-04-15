@@ -61,6 +61,9 @@ export class ContractEntity extends BaseEntity {
   @Column({ type: 'date', nullable: false })
   paymentDate: Date;
 
+  @Column({ type: 'json', nullable: true })
+  paymentMilestone: Array<object>;
+
   @CreateDateColumn()
   @Transform(({ value }) => {
     return moment(value).format('YYYY-MM-DD HH:mm:ss');

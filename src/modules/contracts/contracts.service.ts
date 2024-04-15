@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+/* @ts-ignore */
 import {
   ContractRejectNote,
   FilterContract,
@@ -121,6 +123,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       customerContact: {
         id: contactId,
       },
+      paymentMilestone: customerInfo.paymentMilestone,
     });
     return contract?.generatedMaps[0]['id'];
   }
@@ -186,6 +189,7 @@ export class ContractsService extends BaseService<ContractEntity> {
     user: UserEntity,
   ): Promise<object | undefined> {
     try {
+      const startTime = moment(); // Record start time
       const queryRunner = this.dataSource.createQueryRunner();
       // Get Information of Contact
       const contactExisted = await this.findContact(contactId);
@@ -218,6 +222,19 @@ export class ContractsService extends BaseService<ContractEntity> {
         ),
         this.sendContractAlert(user, customerInfo, contractCode),
       ]);
+      const endTime = moment(); // Record end time
+      const executionTime = moment.duration(endTime.diff(startTime)); // Calculate execution time
+      console.log(
+        'Execution time: ',
+        executionTime.minutes(),
+        'minutes',
+        executionTime.seconds(),
+        'seconds',
+      );
+      if (queryRunner && !queryRunner.isReleased) {
+        await queryRunner.release();
+        console.log('Query runner released');
+      }
       return downloadObject;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -291,6 +308,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.dateOfSigning as dateOfSigning',
         'contracts.companyRepresentative as companyRepresentative',
         'contracts.paymentMethod as paymentMethod',
+        'contracts.paymentMilestone as paymentMilestone',
         'contracts.createdAt as createdAt',
         'contracts.createdBy as createdBy',
         'contracts.updatedAt as updateAt',
@@ -913,6 +931,21 @@ export class ContractsService extends BaseService<ContractEntity> {
         throw new NotFoundException('Hợp đồng này không tồn tại');
       }
       const dataFinal = contractExisted?.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        item.startDate = moment(item.startDate)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD');
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        item.processingDate = moment(item.processingDate)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD');
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        item.endDate = moment(item.endDate)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD');
         item.files?.sort((a, b) => {
           const dateA = moment(a.createdAt).format('YYYY-MM-DD HH:mm:ss');
           const dateB = moment(b.createdAt).format('YYYY-MM-DD HH:mm:ss');
@@ -982,6 +1015,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           customerPhoneNumber: data.customerPhoneNumber,
           customerAddress: data.customerAddress,
           paymentMethod: data.paymentMethod,
+          paymentMilestone: data.paymentMilestone,
           eventName: data.eventName,
           startDate: data.startDate,
           processingDate: data.startDate,
@@ -1099,7 +1133,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       );
       const formattedDateProcessing = this.sharedService.formatDateToString(
         contractRequest?.processingDate,
-        'DD/MM/YYYY HH:mm:ss',
+        'DD/MM/YYYY',
       );
       const dataPlan: any = await this.planService.getPlanByCustomerContactId(
         contactId,
@@ -1139,6 +1173,9 @@ export class ContractsService extends BaseService<ContractEntity> {
       const contractValueByName = this.sharedService.moneyToWord(
         parseFloat(String(plannedTotal)),
       );
+      const formattedPaymentMilestone = this.formatPaymentMilestone(
+        contractRequest?.paymentMilestone,
+      );
       if (doc) {
         doc?.render({
           companyRepresentativeName: user?.profile?.fullName,
@@ -1159,6 +1196,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           contractValueByName: contractValueByName,
           paymentMethod: contractRequest?.paymentMethod,
           plan: plan,
+          paymentMilestone: formattedPaymentMilestone,
           plannedTotalPrice: plannedTotalPriceFormatted,
           plannedBackup: plannedBackupFormatted,
           plannedVAT: plannedVATFormatted,
@@ -1181,6 +1219,7 @@ export class ContractsService extends BaseService<ContractEntity> {
    * @returns
    */
   private formattedDataGetAllContract(rawData: any): any {
+    console.log('Raw data: ', rawData);
     const groupedData = {};
     rawData.forEach((item) => {
       if (!groupedData[item.id]) {
@@ -1193,6 +1232,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           customerAddress: item.customerAddress,
           dateOfSigning: item.dateOfSigning,
           customerContactId: item.customerContactId,
+          paymentMilestone: item.paymentMilestone,
           paymentMethod: item.paymentMethod,
           createdAt: item.createdAt,
           createdBy: item.createdBy,
@@ -1247,5 +1287,28 @@ export class ContractsService extends BaseService<ContractEntity> {
       }
     });
     return Object.values(groupedData);
+  }
+
+  private formatPaymentMilestone(paymentMilestone: any) {
+    const newFormattedData = [];
+    let index = 1;
+    for (const data of paymentMilestone) {
+      const newData = {
+        index,
+        name: data.name,
+        startDate: this.sharedService.formatDateToString(
+          data.startDate,
+          'DD/MM/YYYY',
+        ),
+        endDate: this.sharedService.formatDateToString(
+          data.endDate,
+          'DD/MM/YYYY',
+        ),
+        amount: this.sharedService.formattedCurrency(data.amount),
+      };
+      index++;
+      newFormattedData.push(newData);
+    }
+    return newFormattedData;
   }
 }
