@@ -150,8 +150,8 @@ export class SharedService {
   }
 
   public moneyToWord(amount: number): string {
-    const config = new ReadingConfig();
-    config.unit = ['đồng'];
+    // const config = new ReadingConfig();
+    // config.unit = ['đồng'];
     try {
       // const result = doReadNumber(config, amount.toString());
       // return result.charAt(0).toUpperCase() + result.slice(1);
