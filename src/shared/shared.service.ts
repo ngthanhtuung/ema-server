@@ -6,13 +6,7 @@ import * as moment from 'moment';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import * as jwt from 'jsonwebtoken';
-// import {
-//   InvalidFormatError,
-//   InvalidNumberError,
-//   NotEnoughUnitError,
-//   ReadingConfig,
-//   doReadNumber,
-// } from 'read-vietnamese-number';
+import * as VNnum2words from 'vn-num2words';
 
 @Injectable()
 export class SharedService {
@@ -150,12 +144,9 @@ export class SharedService {
   }
 
   public moneyToWord(amount: number): string {
-    // const config = new ReadingConfig();
-    // config.unit = ['đồng'];
     try {
-      // const result = doReadNumber(config, amount.toString());
-      // return result.charAt(0).toUpperCase() + result.slice(1);
-      return 'Đang fix lỗi này';
+      const result = VNnum2words(amount);
+      return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng';
     } catch (err) {
       return undefined;
     }

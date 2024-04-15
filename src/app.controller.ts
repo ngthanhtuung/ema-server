@@ -10,7 +10,7 @@ import {
   Render,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Public } from './decorators/public.decorator';
 import * as firebaseAdmin from 'firebase-admin';
 import { AuthService } from './auth/auth.service';
@@ -21,9 +21,12 @@ import { JwtService } from '@nestjs/jwt';
 @Controller()
 @ApiTags('TESTING API')
 export class AppController {
+  s;
+
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
+    private readonly sharedService: SharedService,
   ) {}
 
   @Get('/customer_contract_info')
@@ -69,6 +72,24 @@ export class AppController {
   ): Promise<unknown> {
     try {
       return await this.authService.loginGoogle(accessToken.token);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  @Get('/test-convert-money')
+  @Public()
+  @ApiQuery({
+    name: 'money',
+    type: Number,
+    required: true,
+  })
+  async testConvertMoneyToString(
+    @Query('money') money: number,
+  ): Promise<string> {
+    try {
+      const convert = this.sharedService.moneyToWord(money);
+      return convert;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
