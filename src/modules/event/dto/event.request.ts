@@ -14,6 +14,27 @@ import {
 } from 'src/common/enum/enum';
 import { TaskCreateReq } from 'src/modules/task/dto/task.request';
 
+export class PaymentMilestone {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2024-11-10' })
+  startDate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ default: '2024-11-10' })
+  endDate: string;
+
+  @ApiProperty({})
+  @IsNumber()
+  amount: number;
+}
+
 export class EventCreateRequest {
   @IsString()
   @IsNotEmpty()
@@ -157,6 +178,13 @@ export class EventCreateRequestContract {
     default: EContractPaymentMethod.CASH,
   })
   paymentMethod: string;
+
+  @IsArray()
+  @ApiProperty({
+    type: [PaymentMilestone],
+  })
+  @IsOptional()
+  paymentMilestone?: Array<PaymentMilestone>;
 
   @IsString()
   @IsNotEmpty()
