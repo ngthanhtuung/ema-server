@@ -6,13 +6,13 @@ import * as moment from 'moment';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import * as jwt from 'jsonwebtoken';
-import {
-  InvalidFormatError,
-  InvalidNumberError,
-  NotEnoughUnitError,
-  ReadingConfig,
-  doReadNumber,
-} from 'read-vietnamese-number';
+// import {
+//   InvalidFormatError,
+//   InvalidNumberError,
+//   NotEnoughUnitError,
+//   ReadingConfig,
+//   doReadNumber,
+// } from 'read-vietnamese-number';
 
 @Injectable()
 export class SharedService {
@@ -153,9 +153,9 @@ export class SharedService {
     const config = new ReadingConfig();
     config.unit = ['đồng'];
     try {
-      const result = doReadNumber(config, amount.toString());
-      return result.charAt(0).toUpperCase() + result.slice(1);
-      // return 'Đang fix lỗi này';
+      // const result = doReadNumber(config, amount.toString());
+      // return result.charAt(0).toUpperCase() + result.slice(1);
+      return 'Đang fix lỗi này';
     } catch (err) {
       return undefined;
     }
