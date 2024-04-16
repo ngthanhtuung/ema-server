@@ -1,6 +1,8 @@
 # Base image
 FROM node:18-alpine
 
+ENV TZ="Asia/Bangkok"
+RUN date
 # Install LibreOffice and fonts
 RUN apk update \
     && apk add --no-cache libreoffice ttf-dejavu \
