@@ -1,0 +1,15 @@
+@startuml
+start
+:Click on "Khách hàng" tab in navbar;
+:Click on a specific request;
+:Open a pop-up;
+:Click on "Đồng ý" button;
+if (Update success?) then (success)
+    :Return response;
+    :Redirect to customer contact request page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

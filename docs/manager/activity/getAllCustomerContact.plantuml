@@ -1,0 +1,12 @@
+@startuml
+start
+:Click on "Khách hàng" tab at the homepage;
+if (Get list success?) then (success)
+    :Return response;
+    :Redirect to customer contract request page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

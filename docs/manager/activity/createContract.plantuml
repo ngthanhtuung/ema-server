@@ -1,0 +1,15 @@
+@startuml
+start
+:Open contract page;
+:Input all of the information;
+:Click on "Tạo hợp đồng";
+if (create success?) then (success)
+    :Return response;
+    :Show success message in toast message;
+    :Redirect to customer contact request page";
+else (fail)
+    :Return error response;
+    :Show error message from server in toast message;
+endif
+stop
+@enduml

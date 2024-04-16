@@ -1,0 +1,41 @@
+@startuml
+
+actor Manager as user
+participant ":Browser" as a
+participant ":Item Controller" as b
+participant ":Item Service" as c
+participant ":Item Repository" as d
+database ":Database" as e
+
+user -> a++: Click on "Chỉnh sửa" of a specific item in plan
+a -> b++: PUT: /item/:itemId
+b -> c++: call updateItem()
+c -> d++: call findOne()
+d --> e++: Query
+alt Item existed
+    e --> d: Return result
+    d --> c: Return result
+    c -> d: call update()
+    d -> e: UPDATE
+    alt Success
+        e --> d: Return result
+        d --> c: Return response
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Cập nhật thành công"
+    else Fail
+        e --> d: Return null
+        d --> c: Return response
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Cập nhật thất bại"
+    end
+else Item doesn't existed
+    e --> d--: Return null
+    d --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Return response
+end
+
+@enduml

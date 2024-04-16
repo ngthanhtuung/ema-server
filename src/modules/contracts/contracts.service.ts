@@ -990,6 +990,11 @@ export class ContractsService extends BaseService<ContractEntity> {
             moment(dateA, 'YYYY-MM-DD HH:mm:ss'),
           );
         });
+        item.milestones?.sort((a, b) => {
+          const dateA = moment(a.endDate).format('YYYY-MM-DD');
+          const dateB = moment(b.endDate).format('YYYY-MM-DD');
+          return moment(dateA, 'YYYY-MM-DD').diff(moment(dateB, 'YYYY-MM-DD'));
+        });
         return item;
       });
       return dataFinal;

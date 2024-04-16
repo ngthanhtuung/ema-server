@@ -1,5 +1,5 @@
 @startuml
-actor Staff as user
+actor Manager as user
 participant ":Browser" as a
 participant ":Event Controller" as b
 participant ":Event Service" as c
