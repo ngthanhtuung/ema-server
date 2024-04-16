@@ -1,8 +1,5 @@
 import { Request } from 'express';
 import { ConversationsEntity } from 'src/modules/conversations/conversations.entity';
-import { GroupsEntity } from 'src/modules/groups/groups.entity';
-import { GroupsMessageEntity } from 'src/modules/groups_messages/groups_messages.entity';
-import { GroupsMessageAttachmentEntity } from 'src/modules/groups_messages_attachments/groups_messages_attachments.entity';
 import { MessageEntity } from 'src/modules/messages/messages.entity';
 import { MessageAttachmentsEntity } from 'src/modules/messages_attachments/messages_attachments.entity';
 import { UserEntity } from 'src/modules/user/user.entity';
@@ -104,11 +101,6 @@ export type CreateGroupMessageParams = {
   groupId: number;
 };
 
-export type CreateGroupMessageResponse = {
-  message: GroupsMessageEntity;
-  group: GroupsEntity;
-};
-
 export type DeleteGroupMessageParams = {
   userId: number;
   groupId: number;
@@ -125,16 +117,6 @@ export type RemoveGroupRecipientParams = {
   id: number;
   removeUserId: number;
   issuerId: number;
-};
-
-export type AddGroupUserResponse = {
-  group: GroupsEntity;
-  user: UserEntity;
-};
-
-export type RemoveGroupUserResponse = {
-  group: GroupsEntity;
-  user: UserEntity;
 };
 
 export type AccessParams = {
@@ -188,11 +170,6 @@ export interface Attachment extends Express.Multer.File {}
 export type UploadMessageAttachmentParams = {
   file: Attachment;
   messageAttachment: MessageAttachmentsEntity;
-};
-
-export type UploadGroupMessageAttachmentParams = {
-  file: Attachment;
-  messageAttachment: GroupsMessageAttachmentEntity;
 };
 
 export type GetConversationMessagesParams = {

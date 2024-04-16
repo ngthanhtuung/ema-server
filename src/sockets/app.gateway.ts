@@ -31,14 +31,11 @@ import { ConversationsEntity } from 'src/modules/conversations/conversations.ent
 import { MessageEntity } from 'src/modules/messages/messages.entity';
 import { IConversationsService } from 'src/modules/conversations/interface/conversations';
 import { OnEvent } from '@nestjs/event-emitter';
-import { IGroupService } from 'src/modules/groups/interfaces/group';
 @UseGuards(WsGuard)
 @WebSocketGateway(3006, {
   cors: {
     origin: '*',
   },
-  pingInterval: 10000,
-  pingTimeout: 15000,
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -52,8 +49,6 @@ export class AppGateway
     protected readonly userService: UserService,
     @Inject(Services.GATEWAY_SESSION_MANAGER)
     readonly sessions: IGatewaySessionManager,
-    @Inject(Services.GROUPS)
-    private readonly groupsService: IGroupService,
     @Inject(Services.CONVERSATIONS)
     private readonly conversationService: IConversationsService,
   ) {}

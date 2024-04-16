@@ -38,9 +38,6 @@ import { ContractsModule } from './modules/contracts/contracts.module';
 import { GatewayModule } from './sockets/gateway.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
-import { GroupsModule } from './modules/groups/groups.module';
-import { GroupsMessagesModule } from './modules/groups_messages/groups_messages.module';
-import { GroupsMessagesAttachmentsModule } from './modules/groups_messages_attachments/groups_messages_attachments.module';
 import { MessagesAttachmentsModule } from './modules/messages_attachments/messages_attachments.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MapModule } from './modules/map/map.module';
@@ -100,18 +97,15 @@ import { ThrottlerModule } from '@nestjs/throttler';
     SharedModule,
     MessagesModule,
     ConversationsModule,
-    GroupsModule,
-    GroupsMessagesModule,
-    GroupsMessagesAttachmentsModule,
     MessagesAttachmentsModule,
     MapModule,
     CategoriesModule,
-    ThrottlerModule.forRoot([
-      {
-        ttl: 6000,
-        limit: 100,
-      },
-    ]),
+    // ThrottlerModule.forRoot([
+    //   {
+    //     ttl: 6000,
+    //     limit: 100,
+    //   },
+    // ]),
   ],
   controllers: [AppController],
   providers: [
@@ -120,10 +114,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerBehindProxyGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerBehindProxyGuard,
+    // },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },

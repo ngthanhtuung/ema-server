@@ -5,7 +5,6 @@ import { NotificationModule } from 'src/modules/notification/notification.module
 import { AppGateway } from './app.gateway';
 import { GatewaySessionManager } from './gateway.session';
 import { Services } from 'src/utils/constants';
-import { GroupsModule } from 'src/modules/groups/groups.module';
 import { ConversationsModule } from 'src/modules/conversations/conversations.module';
 
 @Module({
@@ -13,7 +12,6 @@ import { ConversationsModule } from 'src/modules/conversations/conversations.mod
     UserModule,
     DeviceModule,
     forwardRef(() => NotificationModule),
-    GroupsModule,
     ConversationsModule,
   ],
   providers: [

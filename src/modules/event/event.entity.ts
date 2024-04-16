@@ -11,7 +11,6 @@ import {
 import { BaseEntity } from '../base/base.entity';
 import { EEventStatus } from 'src/common/enum/enum';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
-import { FeedbackEntity } from '../feedbacks/feedbacks.entity';
 import { ContractEntity } from '../contracts/contracts.entity';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { Transform } from 'class-transformer';
@@ -78,9 +77,6 @@ export class EventEntity extends BaseEntity {
     onDelete: 'CASCADE',
   })
   assignEvents: AssignEventEntity[];
-
-  @OneToMany(() => FeedbackEntity, (feedback) => feedback.event)
-  feedbacks: FeedbackEntity[];
 
   @OneToOne(() => ContractEntity, (contract) => contract.event)
   @JoinColumn()

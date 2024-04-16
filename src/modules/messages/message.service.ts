@@ -25,7 +25,7 @@ export class MessageService implements IMessageService {
     @InjectRepository(MessageEntity)
     private readonly messageRepository: Repository<MessageEntity>,
     @Inject(Services.CONVERSATIONS)
-    private readonly conversationService: IConversationsService, // @Inject(Services.MESSAGE_ATTACHMENTS) // private readonly messageAttachmentsService: IMessageAttachmentsService,
+    private readonly conversationService: IConversationsService,
   ) {}
 
   /**

@@ -1,12 +1,5 @@
 import { BaseEntity } from 'src/modules/base/base.entity';
-import {
-  Column,
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { DeviceEntity } from '../device/device.entity';
 import { DivisionEntity } from '../division/division.entity';
 import { CommentEntity } from '../comment/comment.entity';
@@ -16,7 +9,6 @@ import { ProfileEntity } from '../profile/profile.entity';
 import { RoleEntity } from '../roles/roles.entity';
 import { UserNotificationsEntity } from '../user_notifications/user_notifications.entity';
 import { MessageEntity } from '../messages/messages.entity';
-import { GroupsEntity } from '../groups/groups.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity extends BaseEntity {
@@ -96,7 +88,4 @@ export class UserEntity extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: true })
   socketId: string;
-
-  @ManyToMany(() => GroupsEntity, (group) => group.users)
-  groups: GroupsEntity[];
 }
