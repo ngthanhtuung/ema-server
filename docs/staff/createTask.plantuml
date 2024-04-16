@@ -1,13 +1,13 @@
 @startuml
 
 actor Staff as user
-participant "Browser" as a
-participant "Task Controller" as b
-participant "Task Service" as c
-participant "Assign Task Service" as d
-participant "Notification Service" as e
-participant "Task Repository" as f
-database "Database" as g
+participant ":Browser" as a
+participant ":Task Controller" as b
+participant ":Task Service" as c
+participant ":Assign Task Service" as d
+participant ":Notification Service" as e
+participant ":Task Repository" as f
+database ":Database" as g
 
 user -> a++: Click on "Thêm công việc mới" button
 a -> b++: POST: /createTask

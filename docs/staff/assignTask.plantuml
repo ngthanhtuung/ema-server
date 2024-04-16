@@ -1,13 +1,13 @@
 @startuml
 
 actor Staff as user
-participant "Broswer" as a
-participant "AssignTask Controller" as b
-participant "AssignTask Service" as c
-participant "Task Service" as d
-participant "AssignTask Repository" as e
-participant "Notification Service" as f
-database "Database" as g
+participant ":Broswer" as a
+participant ":AssignTask Controller" as b
+participant ":AssignTask Service" as c
+participant ":Task Service" as d
+participant ":AssignTask Repository" as e
+participant ":Notification Service" as f
+database ":Database" as g
 
 user -> a++: Click to choose employee on list employee
 a -> b++: POST: /assign-task

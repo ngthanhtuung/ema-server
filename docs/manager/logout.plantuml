@@ -2,9 +2,9 @@
 
 actor Manager as user
 
-participant Browser as a
-participant AuthController as b
-participant AuthService as c
+participant ":Browser" as a
+participant ":AuthController" as b
+participant ":AuthService" as c
 
 user -> a: 1. Click on "Đăng xuất" button
 a -> b++: 2. Send a request

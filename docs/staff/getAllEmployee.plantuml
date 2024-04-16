@@ -1,11 +1,11 @@
 @startuml
 
 actor Staff as user
-participant Browser as a
-participant "Division Controller" as b
-participant "Division Service" as c
-participant "Division Repository" as d
-database Database as e
+participant ":Browser" as a
+participant ":Division Controller" as b
+participant ":Division Service" as c
+participant ":Division Repository" as d
+database ":Database" as e
 
 user -> a++: Click on tab "Nhân viên"
 a -> b++: GET: /division

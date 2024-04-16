@@ -1,12 +1,12 @@
 @startuml
 
 actor Staff as user
-participant "Browser" as a
-participant "Task Controller" as b
-participant "Task Service" as c
-participant "Notification Service" as d
-participant "Task Repository" as e
-database "Database" as f
+participant ":Browser" as a
+participant ":Task Controller" as b
+participant ":Task Service" as c
+participant ":Notification Service" as d
+participant ":Task Repository" as e
+database ":Database" as f
 
 user -> a++: Click to choose status of task
 a -> b++: PUT: /updateTaskStatus

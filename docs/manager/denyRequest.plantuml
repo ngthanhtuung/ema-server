@@ -1,12 +1,12 @@
 @startuml
 
 actor Manager as user
-participant Browser as a
-participant "Budget Controller" as b
-participant "Budget Service" as c
-participant "Budget Repository" as d
-participant "Notification Service" as e
-database Database as f
+participant ":Browser" as a
+participant ":Budget Controller" as b
+participant ":Budget Service" as c
+participant ":Budget Repository" as d
+participant ":Notification Service" as e
+database ":Database" as f
 
 user -> a++: Click on "Từ chối" button and fill the rejected reason of a specific transaction
 a -> b++: PUT: /update-status-transaction/:transactionId

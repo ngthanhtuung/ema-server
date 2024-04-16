@@ -1,11 +1,11 @@
 @startuml
 
 actor Manager as user
-participant Browser as a
-participant "Budget Controller" as b
-participant "Budget Service" as c
-participant "Budget Repository" as d
-database "Database" as e
+participant ":Browser" as a
+participant ":Budget Controller" as b
+participant ":Budget Service" as c
+participant ":Budget Repository" as d
+database ":Database" as e
 
 user -> a++: Click on "Ngân sách" button of a specific event
 a -> b++: GET: /budget

@@ -1,12 +1,12 @@
 @startuml
 actor Manager as user
 
-participant Browser as a
-participant AuthController as b
-participant AuthService as c
-participant UserService as d
-participant UserRepository as e
-database Database as f
+participant ":Browser" as a
+participant ":AuthController" as b
+participant ":AuthService" as c
+participant ":UserService" as d
+participant ":UserRepository" as e
+database ":Database" as f
 
 user -> a++: Click "Thêm mới nhân viên" button
 a -> b++: POST: /auth/sign-up
