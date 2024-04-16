@@ -16,6 +16,7 @@ import * as moment from 'moment-timezone';
 import { ContractFileEntity } from './contract_files.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { EContactInformation, EContractStatus } from '../../common/enum/enum';
+import { PaymentMilestoneEntity } from './payment_milestone.entity';
 
 @Entity({ name: 'contracts' })
 export class ContractEntity extends BaseEntity {
@@ -61,9 +62,6 @@ export class ContractEntity extends BaseEntity {
   @Column({ type: 'date', nullable: false })
   paymentDate: Date;
 
-  @Column({ type: 'json', nullable: true })
-  paymentMilestone: Array<object>;
-
   @CreateDateColumn()
   @Transform(({ value }) => {
     return moment(value).format('YYYY-MM-DD HH:mm:ss');
@@ -106,4 +104,13 @@ export class ContractEntity extends BaseEntity {
   )
   @JoinColumn()
   customerContact: CustomerContactEntity;
+
+  @OneToMany(
+    () => PaymentMilestoneEntity,
+    (milestones) => milestones.contract,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  milestones: PaymentMilestoneEntity[];
 }

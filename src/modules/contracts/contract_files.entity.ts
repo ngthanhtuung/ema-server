@@ -2,6 +2,7 @@ import { BaseEntity } from '../base/base.entity';
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { EContractStatus, EEventStatus } from '../../common/enum/enum';
 import { ContractEntity } from './contracts.entity';
+import { PaymentMilestoneEntity } from './payment_milestone.entity';
 
 @Entity({ name: 'contract_files' })
 export class ContractFileEntity extends BaseEntity {

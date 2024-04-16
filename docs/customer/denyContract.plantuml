@@ -1,10 +1,10 @@
 @startuml
 actor Customer as A
-participant "Browser" as B
-participant "Contract Controller" as C
-participant "Contract Service" as D
-participant "Contract Repository" as E
-database "Database" as F
+participant ":Browser" as B
+participant ":Contract Controller" as C
+participant ":Contract Service" as D
+participant ":Contract Repository" as E
+database ":Database" as F
 
 A -> B++: Click on "Từ chối" button and fill the rejected reason of a specific contract
 B -> C++: PUT: /file/:contractFileId/status

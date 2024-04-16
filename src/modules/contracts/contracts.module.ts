@@ -11,10 +11,15 @@ import { ItemsModule } from '../items/items.module';
 import { NotificationModule } from '../notification/notification.module';
 import { CustomerContactsModule } from '../customer_contacts/customer_contacts.module';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
+import { PaymentMilestoneEntity } from './payment_milestone.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ContractEntity, ContractEvidenceEntity]),
+    TypeOrmModule.forFeature([
+      ContractEntity,
+      ContractEvidenceEntity,
+      PaymentMilestoneEntity,
+    ]),
     SharedModule,
     UserModule,
     FileModule,
