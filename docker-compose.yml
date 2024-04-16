@@ -33,6 +33,8 @@ services:
       - $PORT:$PORT  # Replace with the actual environment variable or specific port number
       - "3006:3006"  # Ensure this matches the previous mapping
     stdin_open: true
+    environment:
+      - TZ=Asia/Bangkok
     tty: true
 volumes:
   db:
