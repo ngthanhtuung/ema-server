@@ -959,6 +959,9 @@ export class ContractsService extends BaseService<ContractEntity> {
         },
         relations: {
           files: true,
+          milestones: {
+            evidences: true,
+          },
         },
       });
       if (!contractExisted) {
@@ -1058,6 +1061,11 @@ export class ContractsService extends BaseService<ContractEntity> {
           updatedBy: user.id,
           updatedAt: moment().tz('Asia/Bangkok').format('YYYY-MM-DD HH:mm:ss'),
         },
+      );
+      await this.updatePaymentMilestone(
+        contractExisted,
+        data.paymentMilestone,
+        user.id,
       );
       if (updatedContractInfo.affected > 0) {
         return 'Cập nhật thành công thông tin hợp đồng';
@@ -1413,6 +1421,27 @@ export class ContractsService extends BaseService<ContractEntity> {
       return false;
     } catch (err) {
       return false;
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  private async updatePaymentMilestone(
+    contract: ContractEntity,
+    data: any,
+    oUserId: string,
+  ): Promise<boolean> {
+    try {
+      const deleteResult = await this.paymentMilestoneRepository.delete({
+        contract: {
+          id: contract.id,
+        },
+      });
+      if (deleteResult.affected > 0) {
+        await this.createPaymentMilestone(contract.id, data, oUserId);
+        return true;
+      }
+      return false;
+    } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
   }
