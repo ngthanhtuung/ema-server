@@ -1,0 +1,51 @@
+@startuml
+
+actor Manager as user
+participant ":Browser" as a
+participant ":Contract Controller" as b
+participant ":Contract Service" as c
+participant ":Contract Repository" as d
+participant ":Contact Service" as e
+participant ":MailService" as f
+participant ":File Service" as g
+database ":Database" as h
+
+user -> a++: Click on "Chỉnh sửa hợp đồng" button
+a -> b++: PUT: /contract/info/:contractId
+b -> c++: call generateNewContract()
+c -> e++: call findContact()
+e -> h++: Query
+alt Contact exist
+    g --> e: Return result
+    e --> c: Return result
+    c -> d++: call save()
+    d -> h: CREATE
+    alt Success
+        h --> d: Return result
+        d --> c--: Return result
+        c -> c: call generateContractDocs()
+        c -> g++: call uploadContract()
+        alt Upload success
+            g --> c: Return result
+            c -> f++: call sendEmailToCustomer()
+            f --> c--: Return result
+            c --> b: Return result
+            b --> a: Return response
+            a --> user: Display message "Hợp đồng được tạo thành công"
+        else Upload fail
+             g --> c--: Return result
+             c --> b: Return result
+             b --> a: Return response
+             a --> user: Display message "Tạo hợp đồng thất bại"
+        end
+
+    else Fail
+    end
+else Contact doesn't exist
+    h --> e--: Return null
+    e --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Tạo hợp đồng thất bại"
+end
+@enduml

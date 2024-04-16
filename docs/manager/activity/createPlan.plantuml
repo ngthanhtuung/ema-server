@@ -1,0 +1,14 @@
+@startuml
+start
+:Open plan page;
+:Import CSV file;
+:Click on "Tạo kế hoạch" button;
+if (create success?) then (success)
+   :Return response;
+   :Redirect to plan page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

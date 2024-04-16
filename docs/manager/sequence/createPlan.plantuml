@@ -1,0 +1,28 @@
+@startuml
+
+actor Manager as user
+participant ":Browser" as a
+participant ":Item Controller" as b
+participant ":Item Service" as c
+participant ":Item Repository" as d
+database ":Database" as e
+
+user -> a ++: Import CSV file
+a -> b++: POST: /item/import-csv
+c -> d++: call readCSVFile()
+d --> c--: Return result
+c --> b --: Return result
+b --> a--: Return result
+a --> user--: Display information of CSV file
+user -> a++: Click on "Tạo" button
+a -> b++: POST: /item
+b -> c++: call createEventPlan()
+c -> d++: call save()
+d -> e++: Create
+e --> d--: Return result
+d --> c--: Return response
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Display message "Tạo kế hoạch thành công"
+
+@enduml

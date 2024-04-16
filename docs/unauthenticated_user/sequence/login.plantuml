@@ -1,0 +1,32 @@
+@startuml
+autonumber
+actor "Unauthenticated User" as Guest
+participant Browser as A
+participant AuthController as B
+participant AuthService as C
+participant JwtService as D
+participant UserService as E
+participant UserRepository as F
+database Database 
+
+Guest -> A++: Input email and password
+A -> B++: Send request
+B -> C++: login()
+C -> E++: findUserByEmail()
+E -> F++: findByEmail()
+F -> Database++: Query the database
+Database --> F--: Return result
+alt User exist
+    F --> E: Return user
+    E --> C: Return user
+    C -> D++: generateJwtToken()
+    D --> C--: Return token
+    C --> B: Return success response
+    B --> A: Return success response
+else User does not exist
+    F --> E: Return null
+    E --> C: Return null
+    C --> B: Return null
+    B --> A: Return fail response
+end
+@enduml

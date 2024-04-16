@@ -1,0 +1,43 @@
+@startuml
+
+actor Manager as user
+participant ":Browser" as a
+participant ":Budget Controller" as b
+participant ":Budget Service" as c
+participant ":Budget Repository" as d
+participant ":Notification Service" as e
+database ":Database" as f
+
+user -> a++: Click on "Yêu cầu" tab of a specific event
+a -> b ++: PUT: /:transactionId/update-budget-percentage
+b -> c++: call updateItemPercentage()
+c -> d++: call findOne()
+d -> f++: Query
+alt Transaction existed
+    f --> d: Return result
+    d --> c: Return result
+    c --> d: call update()
+    d -> f: Update
+    alt Success
+        f --> d: Return result
+        d --> c: Return result
+        c -> e++: call sendNotification
+        e --> c--: Return notification result
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display message "Đã nâng hạng mức thành công"
+    else Fail
+        f --> d: Return null
+        d --> c: Return response
+        c --> b: Return response
+        b --> a: Return response
+        a --> user: Display error message "Cập nhập hạn mức thất bại"
+    end
+else Transaction does not existed
+    f --> d--: Return null
+    d --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Không tìm thấy giao dịch này"
+end
+@enduml

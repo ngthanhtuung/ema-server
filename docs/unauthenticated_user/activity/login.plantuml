@@ -1,0 +1,14 @@
+@startuml
+start
+:Open login page;
+:Input email and password;
+:Click on "Đăng nhập" button;
+:Validate user;
+if (User existed) then (yes)
+  :Return response;
+  :Redirect to hompage;
+else (no)
+  :Show the error server in a toast message;
+endif
+stop
+@enduml

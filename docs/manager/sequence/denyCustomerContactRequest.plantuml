@@ -1,0 +1,27 @@
+@startuml
+actor Manager as user
+participant ":Browser" as a
+participant ":Customer Contact Controller" as b
+participant ":Customer Contact Service" as c
+participant ":Customer Contact Repository" as d
+database ":Database" as e
+
+user -> a++: Click on "Từ chối" button of a specific request and input reject reason
+a -> b++: PUT: /customer-contact/:contactId/status
+b -> c++: call updateStatus()
+c -> d++: call update()
+d -> e++: UPDATE
+alt Success
+    e --> d: Return result
+    d --> c: Return response
+    c --> b: Return responses
+    b --> a: Return response
+    a --> user: Display error message "Thông tin được chấp nhận thành công"
+else Fail
+    e --> d--: Return null
+    d --> c--: Return response
+    c --> b--: Return response
+    b --> a--: Return response
+    a --> user--: Display error message "Thất bại"
+end
+@enduml

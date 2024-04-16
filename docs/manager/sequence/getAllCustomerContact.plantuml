@@ -1,0 +1,19 @@
+@startuml
+actor Manager as user
+participant ":Browser" as a
+participant ":Customer Contact Controller" as b
+participant ":Customer Contact Service" as c
+participant ":Customer Contact Repository" as d
+database ":Database" as e
+
+user -> a++: Click on "Khách hàng" tab
+a -> b++: GET: /customer-contacts/info
+b -> c++: call getAllContacts()
+c -> d++: call find()
+d -> e++: Query
+e --> d--: Return result
+d --> c--: Return response
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Display all of the customer contact information
+@enduml
