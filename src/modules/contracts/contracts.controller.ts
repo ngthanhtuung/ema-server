@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -152,10 +153,16 @@ export class ContractsController {
     enum: EContractEvidenceType,
     required: true,
   })
+  @ApiQuery({
+    name: 'paymentMilestoneId',
+    required: false,
+    description: 'Field này cần được thêm vào khi cập nhật thanh toán hợp đồng',
+  })
   @UseInterceptors(FilesInterceptor('files'))
   async updateContractEvidence(
     @UploadedFiles() files: Express.Multer.File[],
     @Param('contractId') id: string,
+    @Query('paymentMilestoneId') paymentMilestoneId: string,
     @Query('type') type: EContractEvidenceType,
     @GetUser() user: string,
   ): Promise<unknown | undefined> {
@@ -169,6 +176,7 @@ export class ContractsController {
     );
     return await this.contractService.updateContractEvidence(
       id,
+      paymentMilestoneId,
       type,
       fileDtos,
       user,

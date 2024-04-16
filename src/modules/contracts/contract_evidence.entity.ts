@@ -4,6 +4,7 @@ import { ContractEntity } from './contracts.entity';
 import { Transform } from 'class-transformer';
 import moment from 'moment';
 import { EContractEvidenceType } from '../../common/enum/enum';
+import { PaymentMilestoneEntity } from './payment_milestone.entity';
 
 @Entity({ name: 'contract_evidences' })
 export class ContractEvidenceEntity extends BaseEntity {
@@ -36,4 +37,9 @@ export class ContractEvidenceEntity extends BaseEntity {
 
   @ManyToOne(() => ContractEntity, (contract) => contract.evidences)
   contract: ContractEntity;
+
+  @ManyToOne(() => PaymentMilestoneEntity, (milestone) => milestone.evidences, {
+    onDelete: 'CASCADE',
+  })
+  milestone: PaymentMilestoneEntity;
 }

@@ -2,11 +2,11 @@
 
 actor Customer as user
 
-participant Browser as a 
-participant UserController as b 
-participant UserService as c 
-participant UserRepository as d 
-database Database as e 
+participant ":Browser" as a
+participant ":UserController" as b
+participant ":UserService" as c
+participant ":UserRepository" as d
+database ":Database" as e
 
 user -> a: Click "Hồ sơ" button
 a -> b++: GET: /user/profile

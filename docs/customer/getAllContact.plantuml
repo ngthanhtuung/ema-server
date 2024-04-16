@@ -1,11 +1,11 @@
 @startuml
 
 actor Customer as A
-participant "Browser" as B
-participant "Customer Contact Controller" as C
-participant "Customer Contact Service" as D
-participant "Customer Contact Repository" as E
-database "Database" as F
+participant ":Browser" as B
+participant ":Customer Contact Controller" as C
+participant ":Customer Contact Service" as D
+participant ":Customer Contact Repository" as E
+database ":Database" as F
 
 autonumber 1
 A -> B: Click on "Cập nhật" of a specific contact

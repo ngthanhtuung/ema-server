@@ -43,13 +43,18 @@ import { FileService } from 'src/file/file.service';
 import { ContractEvidenceEntity } from './contract_evidence.entity';
 import * as moment from 'moment-timezone';
 import * as libre from 'libreoffice-convert';
-import { EventCreateRequestContract } from '../event/dto/event.request';
+import {
+  EventCreateRequestContract,
+  PaymentMilestone,
+} from '../event/dto/event.request';
 import { ItemsService } from '../items/items.service';
 import { ContractFileEntity } from './contract_files.entity';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationContractRequest } from '../notification/dto/notification.request';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
+import { v4 as uuidv4 } from 'uuid';
+import { PaymentMilestoneEntity } from './payment_milestone.entity';
 
 @Injectable()
 export class ContractsService extends BaseService<ContractEntity> {
@@ -58,6 +63,8 @@ export class ContractsService extends BaseService<ContractEntity> {
     private readonly contractRepository: Repository<ContractEntity>,
     @InjectRepository(ContractEvidenceEntity)
     private readonly contractEvidenceEntity: Repository<ContractEvidenceEntity>,
+    @InjectRepository(PaymentMilestoneEntity)
+    private readonly paymentMilestoneRepository: Repository<PaymentMilestoneEntity>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly sharedService: SharedService,
@@ -123,7 +130,6 @@ export class ContractsService extends BaseService<ContractEntity> {
       customerContact: {
         id: contactId,
       },
-      paymentMilestone: customerInfo.paymentMilestone,
     });
     return contract?.generatedMaps[0]['id'];
   }
@@ -210,6 +216,11 @@ export class ContractsService extends BaseService<ContractEntity> {
           customerInfo,
           contactId,
           user,
+        );
+        await this.createPaymentMilestone(
+          contractId,
+          customerInfo.paymentMilestone,
+          user.id,
         );
       }
       await Promise.all([
@@ -298,6 +309,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       query.leftJoinAndSelect('contracts.event', 'event');
       query.leftJoinAndSelect('contracts.files', 'files');
       query.leftJoinAndSelect('contracts.customerContact', 'customerContact');
+      query.leftJoinAndSelect('contracts.milestones', 'milestone');
       query.select([
         'contracts.id as id',
         'contracts.customerName as customerName',
@@ -308,7 +320,12 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.dateOfSigning as dateOfSigning',
         'contracts.companyRepresentative as companyRepresentative',
         'contracts.paymentMethod as paymentMethod',
-        'contracts.paymentMilestone as paymentMilestone',
+        'milestone.name as milestoneName',
+        'milestone.startDate as milestoneStartDate',
+        'milestone.endDate as milestoneEndDate',
+        'milestone.amount as milestoneAmount',
+        'milestone.status as milestoneStatus',
+        'milestone.createdBy as milestoneCreatedBy',
         'contracts.createdAt as createdAt',
         'contracts.createdBy as createdBy',
         'contracts.updatedAt as updateAt',
@@ -351,6 +368,8 @@ export class ContractsService extends BaseService<ContractEntity> {
           .execute(),
         query.getCount(),
       ]);
+
+      console.log('Result: ', result);
       const listUser = await Promise.all(
         result.map((contract) => {
           if (contract.companyRepresentative) {
@@ -406,6 +425,7 @@ export class ContractsService extends BaseService<ContractEntity> {
    */
   async updateContractEvidence(
     contractId: string,
+    paymentMilestoneId: string,
     type: EContractEvidenceType,
     files: FileRequest[],
     user: string,
@@ -439,9 +459,18 @@ export class ContractsService extends BaseService<ContractEntity> {
             returnMessage = 'Cập nhật hợp đồng đã ký thành công';
             break;
           case EContractEvidenceType.CONTRACT_PAID:
+            if (!paymentMilestoneId) {
+              throw new InternalServerErrorException(
+                'paymentMilestoneId is required',
+              );
+            }
+            const paymentMilestone = await this.findPaymentMilestoneById(
+              paymentMilestoneId,
+            );
             await this.processContractPaid(
               file,
               contract,
+              paymentMilestone,
               contractSuccess,
               user,
               queryRunner,
@@ -562,31 +591,36 @@ export class ContractsService extends BaseService<ContractEntity> {
   async processContractPaid(
     file,
     contract,
+    paymentMilestone,
     contractSuccess,
     user,
     queryRunner,
     number,
   ) {
-    if (contract.status !== EContractStatus.WAIT_FOR_PAID) {
-      throw new BadRequestException(
-        'Hợp đồng này chưa thể thanh toán, vui lòng kiểm tra lại trạng thái của hợp đồng',
-      );
-    }
+    // if (contract.status !== EContractStatus.WAIT_FOR_PAID) {
+    //   throw new BadRequestException(
+    //     'Hợp đồng này chưa thể thanh toán, vui lòng kiểm tra lại trạng thái của hợp đồng',
+    //   );
+    // }
     const buf = await this.fileService.uploadFile(
       file,
       `contract/transaction/${contractSuccess[0]?.contractCode}`, //file path to upload on Firebase
-      `${contractSuccess[0]?.contractCode} - ${number} - PAID`,
+      `${contractSuccess[0]?.contractCode} - ${number} - PAID - ${paymentMilestone?.name}`,
     );
     if (!buf) return undefined;
     await queryRunner.manager.insert(ContractEvidenceEntity, {
       contract: contract,
-      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number} - PAID`,
+      evidenceFileName: `${contractSuccess[0]?.contractCode} - ${number} - PAID - ${paymentMilestone?.name}`,
       evidenceFileSize: buf['fileSize'],
       evidenceFileType: buf['fileType'],
       evidenceUrl: buf['downloadUrl'],
       evidenceType: EContractEvidenceType.CONTRACT_PAID,
       createdBy: user.id,
+      milestone: {
+        id: paymentMilestone.id,
+      },
     });
+    await this.updatePaymentMilestoneSucess(paymentMilestone?.id);
   }
 
   /**
@@ -1015,7 +1049,6 @@ export class ContractsService extends BaseService<ContractEntity> {
           customerPhoneNumber: data.customerPhoneNumber,
           customerAddress: data.customerAddress,
           paymentMethod: data.paymentMethod,
-          paymentMilestone: data.paymentMilestone,
           eventName: data.eventName,
           startDate: data.startDate,
           processingDate: data.startDate,
@@ -1032,6 +1065,30 @@ export class ContractsService extends BaseService<ContractEntity> {
       throw new InternalServerErrorException(
         'Cập nhật thông tin hợp đồng thất bại',
       );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  private async createPaymentMilestone(
+    contractId: string,
+    data: PaymentMilestone[],
+    oUserId: string,
+  ): Promise<boolean> {
+    try {
+      const newData = data.map((item) => {
+        const milestone = {
+          ...item,
+          contract: {
+            id: contractId,
+          },
+          createdBy: oUserId,
+        };
+        return milestone;
+      });
+      const result = await this.paymentMilestoneRepository.save(newData);
+      console.log('Result: ', result);
+      return true;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
@@ -1232,7 +1289,6 @@ export class ContractsService extends BaseService<ContractEntity> {
           customerAddress: item.customerAddress,
           dateOfSigning: item.dateOfSigning,
           customerContactId: item.customerContactId,
-          paymentMilestone: item.paymentMilestone,
           paymentMethod: item.paymentMethod,
           createdAt: item.createdAt,
           createdBy: item.createdBy,
@@ -1242,6 +1298,7 @@ export class ContractsService extends BaseService<ContractEntity> {
           companyRepresentative: item.companyRepresentative,
           event: {},
           files: [],
+          paymentMilestone: [],
         };
       }
       if (
@@ -1284,6 +1341,23 @@ export class ContractsService extends BaseService<ContractEntity> {
           rejectNote: item.rejectNote,
           contractFileStatus: item.contractFileStatus,
         });
+        if (
+          item.milestoneName !== null &&
+          item.milestoneStartDate !== null &&
+          item.milestoneEndDate !== null &&
+          item.milestoneAmount !== null &&
+          item.milestoneCreatedBy !== null &&
+          item.milestoneStatus !== null
+        ) {
+          groupedData[item.id].paymentMilestone.push({
+            name: item.milestoneName,
+            startDate: item.milestoneStartDate,
+            endDate: item.milestoneEndDate,
+            amount: item.milestoneAmount,
+            createdBy: item.milestoneCreatedBy,
+            status: item.milestoneStatus,
+          });
+        }
       }
     });
     return Object.values(groupedData);
@@ -1310,5 +1384,36 @@ export class ContractsService extends BaseService<ContractEntity> {
       newFormattedData.push(newData);
     }
     return newFormattedData;
+  }
+
+  private async findPaymentMilestoneById(id: string): Promise<any> {
+    try {
+      const result = await this.paymentMilestoneRepository.findOne({
+        where: {
+          id: id,
+        },
+      });
+      return result;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  private async updatePaymentMilestoneSucess(id: string): Promise<boolean> {
+    try {
+      const result = await this.paymentMilestoneRepository.update(
+        {
+          id,
+        },
+        { status: true },
+      );
+      if (result.affected > 0) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }

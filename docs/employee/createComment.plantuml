@@ -1,11 +1,11 @@
 @startuml
 actor Employee as user
-participant Browser as a
-participant "Comment Controller" as b
-participant "Comment Service" as c
-participant "Task Service" as d
-participant "Comment Repository" as e
-database Database as f
+participant ":Browser" as a
+participant ":Comment Controller" as b
+participant ":Comment Service" as c
+participant ":Task Service" as d
+participant ":Comment Repository" as e
+database ":Database" as f
 
 user -> a++: Fill the bank at comment text input of a specific task
 a -> b++: POST: /comment

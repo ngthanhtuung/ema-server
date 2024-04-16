@@ -1,12 +1,12 @@
 @startuml
 actor Customer as A
-participant "Browser" as B
-participant "Contract Controller" as C
-participant "Contract Service" as D
-participant "File Service" as E
-participant "Notification Service" as F
-participant "Contract Repository" as G
-database "Database" as H
+participant ":Browser" as B
+participant ":Contract Controller" as C
+participant ":Contract Service" as D
+participant ":File Service" as E
+participant ":Notification Service" as F
+participant ":Contract Repository" as G
+database ":Database" as H
 
 A -> B++: Click on "Thanh toán hợp đồng" button of a specific contract
 B -> C++: POST: /:contractId/evidence
