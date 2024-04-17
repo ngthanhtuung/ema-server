@@ -1,0 +1,15 @@
+@startuml
+start
+:Click on "Danh sách liên hệ" on navbar;
+:Click on "Cập nhật" of a specific customer contact;
+:Input the information;
+:Click on "Cập nhật" button;
+if (get success) then (yes)
+    :Return response;
+    :Redirect to customer contact page;
+else (no)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

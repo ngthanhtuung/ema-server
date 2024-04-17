@@ -1,0 +1,22 @@
+@startuml
+actor Admin as user
+
+participant ":Browser" as a
+participant ":DivisionController" as b
+participant ":DivisionService" as c
+participant ":DivisionRepository" as d
+database ":Database" as e
+
+user -> a++: Click "Trang" button
+user -> a: Select "Số lượng hiển thị"
+a -> b++: Send a request
+b -> c++: Call getAllDivision()
+c -> d++: Call getDivisions()
+d -> e++: Query
+
+e --> d--: Return result
+d --> c--: Return result
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Return response
+@endumls

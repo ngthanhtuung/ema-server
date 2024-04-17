@@ -1,0 +1,14 @@
+@startuml
+start
+:Click on "Danh sách hợp đồng" on navbar;
+:Click on a specific contract;
+:Click on "Chấp nhận" button;
+if (update success) then (success)
+    :Return response;
+    :Redirect to contract details page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

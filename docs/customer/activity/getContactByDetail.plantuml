@@ -1,0 +1,14 @@
+@startuml
+start
+:Click on "Danh sách hợp đồng" on navbar;
+:Redirect to "Danh sách hợp đồng" page;
+:Click on "Xem chi tiết" of a specific contract;
+if (get success) then (yes)
+    :Return response;
+    :Redirect to contract details page;
+else (no)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

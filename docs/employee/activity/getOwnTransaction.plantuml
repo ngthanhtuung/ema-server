@@ -1,0 +1,12 @@
+@startuml
+start
+:Click on "Yêu cầu của tôi" at "Ngân sách" page;
+if (get success?) then (success)
+    :Return response;
+    :Redirect to "Yêu cầu của tôi" page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

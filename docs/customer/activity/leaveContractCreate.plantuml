@@ -1,0 +1,14 @@
+@startuml
+start
+:Click on "Tạo liên hệ" on navbar;
+:Input the information;
+:Click on "Tạo" button;
+if (create success) then (yes)
+    :Return response;
+    :Redirect to customer contact page;
+else (no)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

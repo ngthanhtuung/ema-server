@@ -1,0 +1,13 @@
+@startuml
+start
+:Open user button on navbar;
+:Click "Cập nhật hồ sơ" button;
+:Fill then information which want to update;
+if (Update profile) then (success)
+    :Display message "Cập nhật thông tin thành công";
+else (fail)
+    :Display message "Cập nhật thông tin thất bại";
+endif
+stop
+@enduml
+

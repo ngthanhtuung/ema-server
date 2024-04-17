@@ -1,4 +1,14 @@
 @startuml
 start
+:Open plan page;
+:Import the new CSV file;
+:Click on "Cập nhật kế hoạch" button;
+if (create success?) then (success)
+   :Return response;
+   :Redirect to plan page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
 stop
 @enduml

@@ -1,0 +1,12 @@
+@startuml
+start
+:Click on "Danh sách hợp đồng" on navbar;
+if (get success) then (yes)
+    :Return response;
+    :Redirect to customer contact page;
+else (no)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

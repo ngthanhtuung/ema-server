@@ -1,0 +1,20 @@
+@startuml
+actor Employee as user
+participant ":Browser" as a
+participant ":Task Controller" as b
+participant ":Task Service" as c
+participant ":Task Repository" as d
+participant ":Database" as e
+
+user -> a++: Click on "Lịch trình" tab
+a -> b++: GET: /task/filterByDate
+b -> c++: call getListTaskInfoByDateOfUser()
+c -> d++: call find()
+d -> e++: Query
+e --> d--: Return result
+d --> c--: Return response
+c --> b--: Return response
+b --> a--: Return response
+a --> user--: Display all of the schedule
+@enduml
+
