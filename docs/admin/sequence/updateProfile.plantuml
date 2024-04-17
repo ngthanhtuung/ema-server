@@ -1,6 +1,6 @@
 @startuml
 
-actor Authenticated_User as user 
+actor Admin as user 
 
 participant Browser as a
 participant UserController as b 

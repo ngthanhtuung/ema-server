@@ -1,6 +1,6 @@
 @startuml
 
-actor Admin as manager
+actor Admin as user
 
 participant ":Browser" as a
 participant ":UserController" as b
@@ -8,7 +8,7 @@ participant ":UserService" as c
 participant ":UserRepository" as d
 database ":Database" as e
 
-manager -> a: Click on specific user
+user -> a++: Click on specific user
 a -> b++: Send a request
 b -> c++: call findByIdV2()
 c -> d++: call getUserInfo()

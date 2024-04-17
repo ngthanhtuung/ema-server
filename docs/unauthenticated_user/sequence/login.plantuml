@@ -24,9 +24,9 @@ alt User exist
     C --> B: Return success response
     B --> A: Return success response
 else User does not exist
-    F --> E: Return null
-    E --> C: Return null
-    C --> B: Return null
-    B --> A: Return fail response
+    F --> E--: Return null
+    E --> C--: Return null
+    C --> B--: Return null
+    B --> A--: Return fail response
 end
 @enduml

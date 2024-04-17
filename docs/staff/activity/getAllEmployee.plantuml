@@ -1,7 +1,7 @@
 @startuml
 start
 :Click on "Nhân sự" tab on navbar;
-if (get success) then (success)
+if (get success?) then (success)
     :Return response;
     :Redirect to "Nhân sự" page;
 else (fail)

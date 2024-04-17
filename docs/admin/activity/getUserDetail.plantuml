@@ -1,0 +1,12 @@
+@startuml
+start
+:Click on a specific user;
+if (get success) then (success)
+    :Return response;
+    :Redirect to user details;
+else (fail)
+    :Return error response;
+    :Show error message from server in toast message;
+endif
+stop
+@enduml

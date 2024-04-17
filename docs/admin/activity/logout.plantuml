@@ -1,0 +1,12 @@
+@startuml
+start
+:Open user button on navbar;
+:Click on "Đăng xuất" button;
+if (Logout successful?) then (yes)
+    :Clear access token;
+    :Redirect to login page;
+else (no)
+    :Show error message;
+endif
+stop
+@enduml
