@@ -1,4 +1,19 @@
 @startuml
 start
+:Open contract page;
+:Click on a specific contract;
+:Click on "..." icon;
+:A option list will be displayed;
+:Click on "Chỉnh sửa" button;
+:Input the updated contract information;
+:Click on "Cập nhật" button;
+if (create success?) then (success)
+    :Return response;
+    :Show success message in toast message;
+    :Redirect to customer contact request page";
+else (fail)
+    :Return error response;
+    :Show error message from server in toast message;
+endif
 stop
 @enduml

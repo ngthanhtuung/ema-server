@@ -1,0 +1,28 @@
+@startuml
+actor Admin as user
+
+participant ":Browser" as a
+participant ":DivisionController" as b
+participant ":DivisionService" as c
+participant ":DivisionRepository" as d
+database ":Database" as e
+
+user -> a++: Click "Cập nhật" button
+a -> b++: Send a request
+b -> c++: Call updateDivision()
+c -> d++: Call update()
+d -> e++: Update
+
+e --> d--: Return result
+alt Update success 
+    d --> c: Return result
+    c --> b: Return success response
+    b --> a: Return success response
+    a --> user: Return success response
+else Update fail
+    d --> c--: Return result
+    c --> b--: Return fail response
+    b --> a--: Return fail response
+    a --> user--: Return error message
+end
+@endumls

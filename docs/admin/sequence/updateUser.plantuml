@@ -1,0 +1,28 @@
+@startuml
+
+actor Admin as user
+
+participant Browser as a
+participant UserController as b 
+participant UserService as c 
+participant UserRepository as d 
+database Database as e 
+
+user -> a++: Click "Cập nhật" on specific user
+a -> b++: Send a request
+b -> c++: Call updateProfile()
+c -> d++: Call updateProfile()
+d -> e++: Update
+e --> d--: Return result
+alt Success
+    d --> c: Return true
+    c --> b: Return true
+    b --> a: Return success response
+    a --> user: Return success response
+else Fail 
+    d --> c--: Return false
+    c --> b--: Return false
+    b --> a--: Return fail response
+    a --> user--: Return success response
+end 
+@enduml

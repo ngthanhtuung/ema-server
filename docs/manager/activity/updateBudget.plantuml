@@ -1,4 +1,18 @@
 @startuml
 start
+:Click on "Yêu cầu" tab in Ngân sách page;
+:Click on a specific request;
+:Open a pop-up;
+:Click on "Chấp nhận" button;
+:A pop-up will be displayed;
+:Input the amount which want to update;
+:Click on "Cập nhật" button;
+if (Update success?) then (success)
+    :Return response;
+    :Redirect to "Ngân sách" page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
 stop
 @enduml

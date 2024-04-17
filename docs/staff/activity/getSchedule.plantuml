@@ -1,0 +1,12 @@
+@startuml
+start
+:Click on "Lịch trình" tab at navbar;
+if (get success?) then (success)
+    :Return response;
+    :Redirect to "Lịch trình" page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

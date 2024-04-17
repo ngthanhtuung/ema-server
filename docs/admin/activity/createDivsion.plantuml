@@ -1,0 +1,15 @@
+@startuml
+start
+:Click on "Đội nhóm" tab on navbar;
+:Click on "Thêm mới" button;
+:Input the information;
+:Click on "Tạo" button;
+if (create success) then (sucess)
+    :Return response;
+    :Redirect to "Đội nhóm" page;
+else (fail)
+    :Return error response;
+    :Show error message from server in toast message;
+endif
+stop
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+start
+:Click on the bell button on navbar;
+:A pop-up is displayed;
+:Click on "Xem tất cả" text;
+:Redirect to notification page;
+:Click on "..." icon at the top right;
+:Click on "Xem tất cả" button;
+if (Seen notification?) then (success)
+    :Return response;
+    :Displays all notifications that have been read;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

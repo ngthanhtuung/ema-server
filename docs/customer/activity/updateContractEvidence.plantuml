@@ -1,0 +1,17 @@
+@startuml
+start
+:Click on "Danh sách hợp đồng" on navbar;
+:Redirect to "Danh sách hợp đồng" page;
+:Click on "Xem chi tiết" of a specific contract;
+:Click on "Ký kết hợp đồng" button;
+:Import file contract signed;
+:Click on "Gửi" button;
+if (update success) then (success)
+    :Return response;
+    :Redirect to contract details page;
+else (fail)
+    :Return error response;
+    :Show error message from server in a toast message;
+endif
+stop
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+start
+:Click on "Nhân sự" tab on navbar;
+:Click on a specific user;
+:Input the information;
+:Click on "Cập nhật" button;
+if (update success) then (sucess)
+    :Return response;
+    :Redirect to "Nhân sự" page;
+else (fail)
+    :Return error response;
+    :Show error message from server in toast message;
+endif
+stop
+@enduml
