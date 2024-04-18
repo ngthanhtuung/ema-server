@@ -53,4 +53,10 @@ export class ItemEntity extends BaseEntity {
 
   @OneToMany(() => TaskEntity, (tasks) => tasks.item, { onDelete: 'CASCADE' })
   tasks: TaskEntity[];
+
+  @Column({ type: 'datetime', nullable: true })
+  plannedStartDate: Date;
+
+  @Column({ type: 'datetime', nullable: true })
+  plannedEndDate: Date;
 }

@@ -24,6 +24,14 @@ export class ItemArrayRequest {
   @ApiProperty()
   @IsString()
   plannedUnit: string;
+
+  @ApiProperty()
+  @IsString()
+  plannedStartDate: string;
+
+  @ApiProperty()
+  @IsString()
+  plannedEndDate: string;
 }
 
 export class CreateItemRequest {

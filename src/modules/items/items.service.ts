@@ -102,6 +102,8 @@ export class ItemsService extends BaseService<ItemEntity> {
           plannedAmount: currentItem?.plannedAmount,
           plannedPrice: currentItem?.plannedPrice,
           plannedUnit: currentItem?.plannedUnit,
+          plannedStartDate: currentItem?.plannedStartDate,
+          plannedEndDate: currentItem?.plannedEndDate,
           createdBy: currentItem?.createdBy,
           updatedBy: currentItem?.updatedBy,
         });
@@ -180,6 +182,8 @@ export class ItemsService extends BaseService<ItemEntity> {
         'Đơn vị tính',
         'Số Lượng',
         'Đơn giá',
+        'Thời gian bắt đầu',
+        'Thời gian kết thúc',
         'Thành Tiền',
       ];
       const columnName = [...Array(26)].map((_, index) =>
@@ -201,18 +205,20 @@ export class ItemsService extends BaseService<ItemEntity> {
           STT: `=IF(${columnName[headers.indexOf('Hạng mục')]}${
             i + 2
           }="","",ROW()-ROW(${columnName[headers.indexOf('STT')]}$2)+1)`,
-          'Loại hạng mục': value.categoryName,
+          'Loại hạng mục': value?.categoryName,
         };
         (value?.items || []).forEach((item) => {
           const row = {
             ...originalRow,
-            'Hạng mục': item.itemName,
-            'Diễn giải': item.description,
-            'Độ ưu tiên': item.priority,
-            'Đơn vị tính': item.plannedUnit,
-            'Số Lượng': item.plannedAmount,
-            'Đơn giá': item.plannedPrice,
-            'Thành Tiền': item.plannedAmount * item.plannedPrice,
+            'Hạng mục': item?.itemName,
+            'Diễn giải': item?.description,
+            'Độ ưu tiên': item?.priority,
+            'Đơn vị tính': item?.plannedUnit,
+            'Số Lượng': item?.plannedAmount,
+            'Đơn giá': item?.plannedPrice,
+            'Thời gian bắt đầu': item?.plannedStartDate,
+            'Thời gian kết thúc': item?.plannedEndDate,
+            'Thành Tiền': item?.plannedAmount * item?.plannedPrice,
           };
           data.push(row);
           i++;
@@ -386,13 +392,13 @@ export class ItemsService extends BaseService<ItemEntity> {
         if (!customerInfoExisted) {
           throw new NotFoundException('Customer contact not found');
         }
-        if (customerInfoExisted.status !== EContactInformation.ACCEPT) {
+        if (customerInfoExisted?.status !== EContactInformation.ACCEPT) {
           throw new NotFoundException(
             'Thông tin khách hàng cần được chấp nhận trước khi lên kế hoạch cho sự kiện',
           );
         }
         customerContactPayload = customerInfoExisted;
-        processById = customerInfoExisted.processedBy;
+        processById = customerInfoExisted?.processedBy;
         console.log('processById:', processById);
         console.log('customerContactPayload:', customerContactPayload);
 
@@ -413,15 +419,17 @@ export class ItemsService extends BaseService<ItemEntity> {
           }
           const listNewItem = plan?.items?.map((itemData) => {
             return {
-              itemName: itemData.itemName,
-              description: itemData.description,
-              priority: itemData.priority,
-              plannedAmount: itemData.plannedAmount,
-              plannedPrice: itemData.plannedPrice,
-              plannedUnit: itemData.plannedUnit,
+              itemName: itemData?.itemName,
+              description: itemData?.description,
+              priority: itemData?.priority,
+              plannedAmount: itemData?.plannedAmount,
+              plannedPrice: itemData?.plannedPrice,
+              plannedUnit: itemData?.plannedUnit,
               category,
               customerInfo: customerInfoExisted,
               createdBy: user?.id,
+              plannedStartDate: itemData?.plannedStartDate,
+              plannedEndDate: itemData?.plannedEndDate,
             };
           });
           return queryRunner.manager.insert(ItemEntity, listNewItem);
@@ -473,14 +481,16 @@ export class ItemsService extends BaseService<ItemEntity> {
         ItemEntity,
         { id: itemId },
         {
-          itemName: data.itemName,
-          description: data.description,
-          plannedAmount: data.plannedAmount,
-          plannedPrice: data.plannedPrice,
-          plannedUnit: data.plannedUnit,
-          priority: data.priority,
+          itemName: data?.itemName,
+          description: data?.description,
+          plannedAmount: data?.plannedAmount,
+          plannedPrice: data?.plannedPrice,
+          plannedUnit: data?.plannedUnit,
+          priority: data?.priority,
+          plannedStartDate: data?.plannedStartDate,
+          plannedEndDate: data?.plannedEndDate,
           category: updateCategory,
-          updatedBy: user.id,
+          updatedBy: user?.id,
         },
       );
       if (updateItem.affected > 0) {
@@ -601,7 +611,7 @@ export class ItemsService extends BaseService<ItemEntity> {
       let totalPrice = 0;
       if (listPlan.length > 0) {
         for (const item of listPlan) {
-          totalPrice += item.plannedPrice * item.plannedAmount;
+          totalPrice += (item?.plannedPrice || 0) * (item?.plannedAmount || 0);
         }
         const backupPrice = totalPrice * 0.05;
         const taxPrice = (totalPrice + backupPrice) * 0.1;
@@ -609,7 +619,7 @@ export class ItemsService extends BaseService<ItemEntity> {
         return grandTotalPrice;
       }
       throw new BadRequestException(
-        'Hợp đồng này chưua có kế hoạch, vui lòng tạo kế hoạch',
+        'Hợp đồng này chưa có kế hoạch, vui lòng tạo kế hoạch',
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -657,6 +667,8 @@ export class ItemsService extends BaseService<ItemEntity> {
         const plannedAmount = parseFloat(obj['Số Lượng']);
         const plannedPrice = parseFloat(obj['Đơn giá']);
         const plannedUnit = obj['Đơn vị tính'];
+        const plannedStartDate = obj['Thời gian bắt đầu'];
+        const plannedEndDate = obj['Thời gian kết thúc'];
         // Find existing category in accumulator
         let category = acc.find(
           (item) => item?.categoryName === categoryObject?.categoryName,
@@ -678,6 +690,8 @@ export class ItemsService extends BaseService<ItemEntity> {
           plannedAmount,
           plannedPrice,
           plannedUnit,
+          plannedStartDate,
+          plannedEndDate,
         });
         category.items.sort((a, b) => a?.priority - b?.priority);
         return acc;
