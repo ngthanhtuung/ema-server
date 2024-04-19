@@ -90,6 +90,8 @@ export class EventCreateRequest {
         priority: 'low',
         itemId: 'test',
         itemPercentage: 80,
+        startDate: '2024-04-30',
+        endDate: '2024-05-05',
       },
     ],
   })

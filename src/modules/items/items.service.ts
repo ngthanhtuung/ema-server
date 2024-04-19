@@ -27,6 +27,7 @@ import * as iconv from 'iconv-lite';
 import { CustomerContactEntity } from '../customer_contacts/customer_contacts.entity';
 import { CreateCategoryRequest } from '../categories/dto/categories.request';
 import { EventTypesService } from '../event_types/event_types.service';
+import * as moment from 'moment';
 
 @Injectable()
 export class ItemsService extends BaseService<ItemEntity> {
@@ -360,6 +361,31 @@ export class ItemsService extends BaseService<ItemEntity> {
           );
           hasErrorInRecord = true;
         }
+      } else if (key === 'Thời gian bắt đầu' || key === 'Thời gian kết thúc') {
+        const formattedDate = moment(trimValue).format('YYYY-MM-DD');
+        const dateValue = moment(formattedDate, 'YYYY-MM-DD'); // Assuming date format is YYYY-MM-DD
+        if (!dateValue.isValid()) {
+          errorMessages.push(
+            `Lỗi tại dòng ${lineNumber} - ${key} không hợp lệ. Định dạng chuẩn YYYY-MM-DD`,
+          );
+          hasErrorInRecord = true;
+        } else if (
+          key === 'Thời gian kết thúc' &&
+          dateValue.isBefore(moment(trimValue, 'YYYY-MM-DD'))
+        ) {
+          errorMessages.push(
+            `Lỗi tại dòng ${lineNumber} - ${key} phải sau Thời gian bắt đầu`,
+          );
+          hasErrorInRecord = true;
+        } else if (
+          key === 'Thời gian kết thúc' &&
+          dateValue.isBefore(moment(), 'day')
+        ) {
+          errorMessages.push(
+            `Lỗi tại dòng ${lineNumber} - ${key} không được trước ngày hôm nay`,
+          );
+          hasErrorInRecord = true;
+        }
       }
     });
     return { hasErrorInRecord, errorMessages };
@@ -657,23 +683,26 @@ export class ItemsService extends BaseService<ItemEntity> {
       const convertResult = parsedResult.reduce((acc, obj) => {
         // Extract relevant fields
         const categoryName = obj['Loại hạng mục'];
-        console.log('categoryName:', categoryName);
-
+        // console.log('categoryName:', categoryName);
         const categoryObject: any = categoriesMapObj.get(categoryName);
-        console.log('categoryObject:', categoryObject);
+        // console.log('categoryObject:', categoryObject);
         const itemName = obj['Hạng mục'];
         const description = obj['Diễn giải'];
         const priority = parseInt(obj['Độ ưu tiên']);
         const plannedAmount = parseFloat(obj['Số Lượng']);
         const plannedPrice = parseFloat(obj['Đơn giá']);
         const plannedUnit = obj['Đơn vị tính'];
-        const plannedStartDate = obj['Thời gian bắt đầu'];
-        const plannedEndDate = obj['Thời gian kết thúc'];
+        const plannedStartDate = moment(obj['Thời gian bắt đầu']).format(
+          'YYYY-MM-DD',
+        );
+        const plannedEndDate = moment(obj['Thời gian kết thúc']).format(
+          'YYYY-MM-DD',
+        );
         // Find existing category in accumulator
         let category = acc.find(
           (item) => item?.categoryName === categoryObject?.categoryName,
         );
-        console.log('category:', category);
+        // console.log('category:', category);
         // If category doesn't exist, create it
         if (!category) {
           category = {
