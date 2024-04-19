@@ -33,7 +33,7 @@ async function bootstrap(): Promise<void> {
 
   // setup swagger
   const config = new DocumentBuilder()
-    .setTitle('Human Resource for The Event Organizer System')
+    .setTitle('EMA - API Service')
     .setDescription(
       'The Human Resource for The Event Organizer System API description',
     )
