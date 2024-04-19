@@ -199,6 +199,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       const queryRunner = this.dataSource.createQueryRunner();
       // Get Information of Contact
       const contactExisted = await this.findContact(contactId);
+
       const contractCode = this.sharedService.generateContractCode();
       // Generate Contract Docs
       const buf = await this.generateContractDocs(
@@ -1208,6 +1209,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       const dataPlan: any = await this.planService.getPlanByCustomerContactId(
         contactId,
       );
+      console.log('Data plan in generate contract: ', dataPlan);
       const plan = dataPlan?.plan;
       if (plan?.length <= 0) {
         throw new BadRequestException(
@@ -1225,6 +1227,14 @@ export class ContractsService extends BaseService<ContractEntity> {
           );
           item.itemTotalPrice = this.sharedService.formattedCurrency(
             parseFloat(String(itemTotalPrice)),
+          );
+          item.plannedStartDate = this.sharedService.formatDateToString(
+            item.plannedStartDate,
+            'DD/MM/YYYY',
+          );
+          item.plannedEndDate = this.sharedService.formatDateToString(
+            item.plannedEndDate,
+            'DD/MM/YYYY',
           );
           item.index = index++;
         });
