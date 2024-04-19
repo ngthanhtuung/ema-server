@@ -568,12 +568,8 @@ export class EventService extends BaseService<EventEntity> {
           eventDivision: {
             id: data?.generatedMaps?.[0]?.id,
           },
-          startDate: startDate
-            ? moment(startDate).tz('Asia/Bangkok').toDate()
-            : undefined,
-          endDate: endDate
-            ? moment(endDate).tz('Asia/Bangkok').toDate()
-            : undefined,
+          startDate: startDate ? moment(startDate).toDate() : undefined,
+          endDate: endDate ? moment(endDate).toDate() : undefined,
           description: desc,
           estimationTime: estimationTime,
           priority: priority,
