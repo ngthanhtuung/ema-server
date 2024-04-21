@@ -74,8 +74,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     data: CreateTransactionRequest,
     oUser: string,
   ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const user = JSON.parse(oUser);
       const taskExisted = await queryRunner.manager.findOne(TaskEntity, {
         where: {
@@ -163,6 +163,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -277,8 +279,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     user: string,
     rejectReason?: TransactionRejectNote,
   ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const oUser = JSON.parse(user);
       const transactionExisted = await this.transactionRepository.findOne({
         where: {
@@ -401,7 +403,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             return `Từ chối giao dịch ${transactionExisted.transactionCode} thành công. Lý do: ${rejectReason.rejectNote}`;
           }
           throw new BadRequestException('Giao dịch này được duyệt thất bại');
-          break;
         case ETransaction.SUCCESS:
           if (!checkUserInTask) {
             throw new ForbiddenException(
@@ -426,10 +427,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           throw new InternalServerErrorException(
             'Cập nhật trạng thái giao dịch thất bại',
           );
-          break;
       }
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 

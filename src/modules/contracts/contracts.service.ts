@@ -684,8 +684,8 @@ export class ContractsService extends BaseService<ContractEntity> {
     status: EContractStatus,
     user: string,
   ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const oUser = JSON.parse(user);
       const contractFileExisted = await queryRunner.manager.findOne(
         ContractFileEntity,
@@ -794,6 +794,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -807,8 +809,8 @@ export class ContractsService extends BaseService<ContractEntity> {
     customerContactId: string,
     user: UserEntity,
   ): Promise<object | undefined> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const contactExisted = await queryRunner.manager.findOne(
         CustomerContactEntity,
         {
@@ -866,6 +868,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       return newContract;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -877,8 +881,8 @@ export class ContractsService extends BaseService<ContractEntity> {
   async getContractFileByCustomerContactId(
     customerContactId: string,
   ): Promise<object | undefined> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const contactExisted = await queryRunner.manager.findOne(
         CustomerContactEntity,
         {
@@ -909,6 +913,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       return contractResponse;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -951,9 +957,10 @@ export class ContractsService extends BaseService<ContractEntity> {
    * @returns
    */
   async getAllContractFileByCustomer(user: string): Promise<ContractEntity[]> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
       const oUser = JSON.parse(user);
-      const queryRunner = this.dataSource.createQueryRunner();
+
       const contractExisted = await queryRunner.manager.find(ContractEntity, {
         where: {
           customerEmail: oUser?.email,
@@ -1001,6 +1008,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       return dataFinal;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -1009,8 +1018,8 @@ export class ContractsService extends BaseService<ContractEntity> {
     data: UpdateContractInfo,
     user: UserEntity,
   ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const contractExisted = await queryRunner.manager.findOne(
         ContractEntity,
         {
@@ -1081,6 +1090,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
