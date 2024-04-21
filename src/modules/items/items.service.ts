@@ -48,8 +48,8 @@ export class ItemsService extends BaseService<ItemEntity> {
    * @returns
    */
   async getPlanByCustomerContactId(customerContactId: string): Promise<object> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const customerContactExisted = await queryRunner.manager.findOne(
         CustomerContactEntity,
         {
@@ -118,6 +118,8 @@ export class ItemsService extends BaseService<ItemEntity> {
       return response;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -582,8 +584,8 @@ export class ItemsService extends BaseService<ItemEntity> {
     customerContactId: string,
     user: UserEntity,
   ): Promise<string> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const contactExisted = await queryRunner.manager.findOne(
         CustomerContactEntity,
         {
@@ -619,14 +621,16 @@ export class ItemsService extends BaseService<ItemEntity> {
       return 'Update plan successfully';
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 
   async getTotalPriceOfPlan(customerContactId: string): Promise<number> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const listPlan = await queryRunner.manager.find(ItemEntity, {
         where: {
           customerInfo: {
@@ -649,6 +653,8 @@ export class ItemsService extends BaseService<ItemEntity> {
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 

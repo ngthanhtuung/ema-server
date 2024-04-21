@@ -194,9 +194,9 @@ export class ContractsService extends BaseService<ContractEntity> {
     contactId: string,
     user: UserEntity,
   ): Promise<object | undefined> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
       const startTime = moment(); // Record start time
-      const queryRunner = this.dataSource.createQueryRunner();
       // Get Information of Contact
       const contactExisted = await this.findContact(contactId);
 
@@ -250,6 +250,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       return downloadObject;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -431,8 +433,8 @@ export class ContractsService extends BaseService<ContractEntity> {
     files: FileRequest[],
     user: string,
   ): Promise<unknown | undefined> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const contract = await this.getContract(contractId);
       if (!contract) {
         throw new InternalServerErrorException('Contract not found');
@@ -513,6 +515,8 @@ export class ContractsService extends BaseService<ContractEntity> {
       return returnMessage;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 
