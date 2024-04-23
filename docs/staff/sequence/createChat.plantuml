@@ -1,0 +1,25 @@
+@startuml
+
+actor Staff as user
+participant ":Browser" as a
+participant ":Conversation Controller" as b
+participant ":Conversation Service" as c
+participant ":Events" as d
+participant ":Socket" as e
+participant ":Database" as f
+
+user -> a: Request to create conversation
+a -> b: HTTP POST request
+alt Success
+    b -> c: Create conversation
+    c -> c: Persist conversation in database
+    c -> d: Emit 'conversation.create' event
+    d -> e: Emit event to socket
+    e --> user: Event received by socket
+    c -> f: Store conversation in database
+else Error
+    b -> b: Handle error
+    b --> a: Error response
+    a --> user: Display error message for manager
+end
+@enduml
