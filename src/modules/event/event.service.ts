@@ -733,14 +733,39 @@ export class EventService extends BaseService<EventEntity> {
         if (mode === undefined || mode === EEventStatus.ALL) {
           events = await this.eventRepository.find({
             where: {
+              assignEvents: {
+                division: {
+                  id: JSON.parse(user).divisionID,
+                },
+              },
               isTemplate: false,
             },
             select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+            relations: {
+              assignEvents: {
+                division: true,
+                tasks: true,
+              },
+            },
           });
         } else {
           events = await this.eventRepository.find({
-            where: { status: mode, isTemplate: false },
+            where: {
+              status: mode,
+              isTemplate: false,
+              assignEvents: {
+                division: {
+                  id: JSON.parse(user).divisionID,
+                },
+              },
+            },
             select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+            relations: {
+              assignEvents: {
+                division: true,
+                tasks: true,
+              },
+            },
           });
         }
       }
