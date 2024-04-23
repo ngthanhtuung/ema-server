@@ -1,0 +1,20 @@
+@startuml
+
+actor Employee as user
+participant ":Browser" as a
+participant ":Conversation Controller" as b
+participant ":Conversation Service" as c
+participant ":Conversation Repository" as d
+database ":Database" as e
+
+user -> a++: Request to get all conversations
+a -> b++: GET: /conversations
+b -> c++: Retrieve all conversations
+c -> d++: Query conversations from database
+d -> e++: Query database
+e --> d--: Conversations data
+d --> c--: Conversations data
+c --> b--: Conversations data
+b --> a--: Conversations data
+a --> user--: Conversations data
+@enduml
