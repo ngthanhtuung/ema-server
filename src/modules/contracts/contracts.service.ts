@@ -418,6 +418,100 @@ export class ContractsService extends BaseService<ContractEntity> {
     }
   }
 
+  async getContractByCustomerContactId(
+    customerContactId: string,
+  ): Promise<undefined> {
+    try {
+      const query = this.generalBuilderContracts();
+      query.leftJoinAndSelect('contracts.event', 'event');
+      query.leftJoinAndSelect('contracts.files', 'files');
+      query.leftJoinAndSelect('contracts.customerContact', 'customerContact');
+      query.leftJoinAndSelect('contracts.milestones', 'milestone');
+      query.select([
+        'contracts.id as id',
+        'contracts.customerName as customerName',
+        'contracts.customerNationalId as customerNationalId',
+        'contracts.customerEmail as customerEmail',
+        'contracts.customerPhoneNumber as customerPhoneNumber',
+        'contracts.customerAddress as customerAddress',
+        'contracts.dateOfSigning as dateOfSigning',
+        'contracts.companyRepresentative as companyRepresentative',
+        'contracts.paymentMethod as paymentMethod',
+        'milestone.name as milestoneName',
+        'milestone.startDate as milestoneStartDate',
+        'milestone.endDate as milestoneEndDate',
+        'milestone.amount as milestoneAmount',
+        'milestone.status as milestoneStatus',
+        'milestone.createdBy as milestoneCreatedBy',
+        'contracts.createdAt as createdAt',
+        'contracts.createdBy as createdBy',
+        'contracts.updatedAt as updateAt',
+        'contracts.updatedBy as updateBy',
+        'contracts.status as contractStatus',
+        'customerContact.id as customerContactId',
+        'event.id as eventId',
+        'event.eventName as eventName',
+        'event.startDate as startDate',
+        'event.endDate as endDate',
+        'event.location as location',
+        'event.processingDate as processingDate',
+        'event.status as status',
+        'event.eventType as eventType',
+        'event.createdAt as eventCreatedAt',
+        'event.createdBy as eventCreatedBy',
+        'files.id as contractFileId',
+        'files.contractCode as contractCode',
+        'files.contractFileName as contractFileName',
+        'files.contractFileSize as contractFile',
+        'files.contractFileUrl as contractFileUrl',
+        'files.rejectNote as rejectNote',
+        'files.status as contractFileStatus',
+      ]);
+      query.where('customerContact.id = :customerContactId', {
+        customerContactId: customerContactId,
+      });
+      const result = await query.execute();
+      const listUser = await Promise.all(
+        result.map((contract) => {
+          if (contract.companyRepresentative) {
+            return this.userService.findByIdV2(contract.companyRepresentative);
+          }
+          return contract;
+        }),
+      );
+      const userMap = {};
+      listUser.forEach((user) => {
+        userMap[user?.id] = {
+          id: user?.id,
+          fullName: user?.fullName,
+          email: user.email,
+          phoneNumber: user?.phoneNumber,
+          dob: user?.dob,
+          avatar: user?.avatar,
+          status: user?.status,
+        };
+      });
+      const contractWithCompanyRepresentative = (result || []).map(
+        (contract) => {
+          if (contract?.companyRepresentative) {
+            const userDetails = listUser?.[contract?.companyRepresentative];
+            return {
+              ...contract,
+              userDetails,
+            };
+          }
+          return contract;
+        },
+      );
+      const formatData = this.formattedDataGetAllContract(
+        contractWithCompanyRepresentative,
+      );
+      return formatData[0];
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
   /**
    * updateContractEvidence
    * @param contractId
@@ -1314,7 +1408,6 @@ export class ContractsService extends BaseService<ContractEntity> {
    * @returns
    */
   private formattedDataGetAllContract(rawData: any): any {
-    console.log('Raw data: ', rawData);
     const groupedData = {};
     rawData.forEach((item) => {
       if (!groupedData[item.id]) {
@@ -1389,12 +1482,21 @@ export class ContractsService extends BaseService<ContractEntity> {
         ) {
           groupedData[item.id].paymentMilestone.push({
             name: item.milestoneName,
-            startDate: item.milestoneStartDate,
-            endDate: item.milestoneEndDate,
+            startDate: moment(item.milestoneStartDate)
+              .tz('Asia/Bangkok')
+              .format('YYYY-MM-DD HH:mm:ss'),
+            endDate: moment(item.milestoneEndDate)
+              .tz('Asia/Bangkok')
+              .format('YYYY-MM-DD HH:mm:ss'),
             amount: item.milestoneAmount,
             createdBy: item.milestoneCreatedBy,
             status: item.milestoneStatus,
           });
+          for (const id in groupedData) {
+            groupedData[id].paymentMilestone.sort((a, b) =>
+              moment(a.endDate).diff(moment(b.endDate)),
+            );
+          }
         }
       }
     });

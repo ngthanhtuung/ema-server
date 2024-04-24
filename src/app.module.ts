@@ -31,7 +31,6 @@ import { StatisticModule } from './modules/statistic/statistic.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RolesModule } from './modules/roles/roles.module';
 import { UserNotificationsModule } from './modules/user_notifications/user_notifications.module';
-import { SettingsModule } from './modules/settings/settings.module';
 import { CustomerContactsModule } from './modules/customer_contacts/customer_contacts.module';
 import { EventTypesModule } from './modules/event_types/event_types.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
@@ -47,6 +46,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ThrottlerBehindProxyGuard } from './utils/throttler';
 import { ThrottlerModule } from '@nestjs/throttler';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -71,7 +71,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
       exclude: ['/api*'],
     }),
     AuthenticationModule,
-    SettingsModule,
     CustomerContactsModule,
     UserModule,
     ProfileModule,

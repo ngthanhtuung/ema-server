@@ -22,6 +22,9 @@ import * as moment from 'moment-timezone';
 import { UserService } from '../user/user.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
 import { EventTypesService } from '../event_types/event_types.service';
+import { ContractsService } from '../contracts/contracts.service';
+import { forwardRef } from '@nestjs/common/utils';
+import { Inject } from '@nestjs/common/decorators';
 
 @Injectable()
 export class CustomerContactsService {
@@ -32,6 +35,8 @@ export class CustomerContactsService {
     @InjectDataSource()
     private dataSource: DataSource,
     private eventTypeService: EventTypesService,
+    @Inject(forwardRef(() => ContractsService))
+    private contractService: ContractsService,
   ) {}
 
   /**
@@ -176,10 +181,15 @@ export class CustomerContactsService {
       if (!data) {
         throw new ContactNotFoundException();
       }
+      const contract =
+        await this.contractService.getContractByCustomerContactId(contactId);
+      console.log('Contract: ', contract);
       const user = await this.userService.findByEmailV2(data?.[0]?.email);
+      const contractInfo = contract ? contract : {};
       return {
         ...data[0],
         customerInfo: user,
+        contract: contractInfo,
       };
     } catch (err) {
       throw new InternalServerErrorException(err.message);
