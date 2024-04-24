@@ -22,6 +22,7 @@ import * as moment from 'moment-timezone';
 import {
   EPriority,
   ETaskStatus,
+  ETransaction,
   ETypeNotification,
 } from 'src/common/enum/enum';
 import { NotificationCreateRequest } from '../notification/dto/notification.request';
@@ -943,6 +944,67 @@ export class TaskService extends BaseService<TaskEntity> {
           }),
         );
       }
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async cancelTask(eventId: string): Promise<boolean> {
+    try {
+      const listTasks = await this.getTaskByStatus(eventId, [
+        ETaskStatus.PENDING,
+        ETaskStatus.PROCESSING,
+      ]);
+      console.log('List tasks: ', listTasks);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const getItems = listTasks.filter((task) => task.parentTask === null);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const taskPromise = listTasks.map((task) => {
+        return this.taskRepository.update(
+          {
+            id: task.id,
+          },
+          {
+            status: ETaskStatus.CANCEL,
+          },
+        );
+      });
+      const updateTask = await Promise.all(taskPromise);
+      if (updateTask.length > 0) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  private async getTaskByStatus(
+    eventId: string,
+    taskStatus: ETaskStatus[],
+  ): Promise<unknown> {
+    try {
+      const listIdEventDivison: any =
+        await this.assignEventService.getListIdEventDivision(eventId);
+      const arrayPromise = listIdEventDivison?.map((element) => {
+        return this.taskRepository.find({
+          where: {
+            eventDivision: {
+              id: element?.id,
+            },
+          },
+          relations: ['transactions'],
+        });
+      });
+      const result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+      const listTasks = [];
+      taskStatus.map((status) => {
+        const tasks = result.filter((task) => task.status === status);
+        listTasks.push(tasks);
+      });
+      return listTasks[0];
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

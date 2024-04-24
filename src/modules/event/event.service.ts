@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ContractsService } from './../contracts/contracts.service';
 import {
   BadRequestException,
   Injectable,
@@ -28,12 +27,12 @@ import {
 } from './dto/event.request';
 import { AssignEventEntity } from '../assign-event/assign-event.entity';
 import {
+  EContactInformation,
+  EContractStatus,
+  EEventDate,
   EEventStatus,
   ERole,
-  EEventDate,
   EStatusAssignee,
-  EContractStatus,
-  EContactInformation,
 } from 'src/common/enum/enum';
 import { AssignEventService } from '../assign-event/assign-event.service';
 import { EventTypeEntity } from '../event_types/event_types.entity';
@@ -705,6 +704,11 @@ export class EventService extends BaseService<EventEntity> {
       const eventExisted = await this.getEventById(eventID);
       if (!eventExisted) {
         throw new NotFoundException("Event don't exist!!!");
+      }
+      if (status === EEventStatus.CANCEL) {
+        const cancelTask = await this.taskService.cancelTask(eventID);
+        await this.eventRepository.update({ id: eventID }, { status: status });
+        return 'Update status successfully!!!';
       }
       await this.eventRepository.update({ id: eventID }, { status: status });
       return 'Update status successfully!!!';
