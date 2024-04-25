@@ -43,6 +43,8 @@ import { ContractEntity } from '../contracts/contracts.entity';
 import { TaskEntity } from '../task/task.entity';
 import { ItemEntity } from '../items/items.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { BudgetsService } from '../budgets/budgets.service';
+import { FilterBigTaskAndItem } from '../budgets/dto/budget.request';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -53,6 +55,7 @@ export class EventService extends BaseService<EventEntity> {
     private dataSource: DataSource,
     private readonly assignEventService: AssignEventService,
     private readonly taskService: TaskService,
+    private readonly budgetService: BudgetsService,
   ) {
     super(eventRepository);
   }
@@ -720,13 +723,14 @@ export class EventService extends BaseService<EventEntity> {
   async eventStatistics(mode: EEventStatus, user: string): Promise<unknown> {
     try {
       let events;
-      if (JSON.parse(user).role === ERole.MANAGER) {
+      const userRole = JSON.parse(user).role;
+      if (userRole === ERole.MANAGER) {
+        // ROLE MANAGER
         if (mode === undefined || mode === EEventStatus.ALL) {
           events = await this.eventRepository.find({
             where: { isTemplate: false },
             select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
           });
-          console.log('Event at statistic: ', events);
         } else {
           events = await this.eventRepository.find({
             where: { status: mode, isTemplate: false },
@@ -734,15 +738,23 @@ export class EventService extends BaseService<EventEntity> {
           });
         }
       } else {
+        const divisionId = JSON.parse(user).divisionId;
+        //REMAIN ROLE
         if (mode === undefined || mode === EEventStatus.ALL) {
+          // events = await this.eventRepository.find({
+          //   where: {
+          //     isTemplate: false,
+          //   },
+          //   select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
+          // });
           events = await this.eventRepository.find({
             where: {
+              isTemplate: false,
               assignEvents: {
                 division: {
-                  id: JSON.parse(user).divisionID,
+                  id: divisionId,
                 },
               },
-              isTemplate: false,
             },
             select: ['id', 'eventName', 'startDate', 'endDate', 'status'],
             relations: {
@@ -774,7 +786,10 @@ export class EventService extends BaseService<EventEntity> {
         }
       }
       const eventStatisticPromises = events.map(async (event) => {
-        const taskStatistic = await this.taskService.getTaskStatistic(event.id);
+        const taskStatistic = await this.taskService.getTaskStatistic(
+          event.id,
+          user,
+        );
         const peopleInTaskStatistic =
           await this.taskService.getNumOfPeopleInTaskStatistic(event.id);
         return {
@@ -912,6 +927,50 @@ export class EventService extends BaseService<EventEntity> {
           'Update status event have status Processing to update Done',
         );
       }
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async eventStatisticsById(eventId: string): Promise<unknown> {
+    try {
+      const eventExisted = await this.eventRepository.findOne({
+        where: {
+          id: eventId,
+        },
+      });
+      if (!eventExisted) {
+        throw new NotFoundException('Sự kiện này không tồn tại');
+      }
+      const taskInEventStatistics = await this.taskService.getTaskStatistic(
+        eventId,
+      );
+      const listBudget = await this.budgetService.getAllTransactionRequest(
+        {
+          eventID: eventId,
+        },
+        'ALL',
+      );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const totalTransactionUsed = listBudget.reduce((total, currentItem) => {
+        return total + currentItem.totalTransactionUsed;
+      }, 0);
+      const response = {
+        tasks: taskInEventStatistics,
+        budget: {
+          total: eventExisted.estBudget,
+          totalUsed: totalTransactionUsed,
+          remainBudget: eventExisted.estBudget - totalTransactionUsed,
+          totalBudgetUsedPercentage:
+            (totalTransactionUsed / eventExisted.estBudget) * 100,
+          totalBudgetRemaningPercentage:
+            ((eventExisted.estBudget - totalTransactionUsed) /
+              eventExisted.estBudget) *
+            100,
+        },
+      };
+      return response;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

@@ -93,10 +93,19 @@ export class EventController {
     enum: EEventStatus,
     required: false,
   })
+  @ApiQuery({
+    name: 'eventId',
+    type: 'string',
+    required: false,
+  })
   async eventStatistic(
     @Query('mode') mode: EEventStatus,
+    @Query('eventId') eventId: string,
     @GetUser() user: string,
   ): Promise<unknown> {
+    if (eventId) {
+      return await this.eventService.eventStatisticsById(eventId);
+    }
     console.log('Mode: ', mode);
     return await this.eventService.eventStatistics(mode, user);
   }

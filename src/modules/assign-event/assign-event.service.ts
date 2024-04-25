@@ -131,7 +131,7 @@ export class AssignEventService extends BaseService<AssignEventEntity> {
           select: ['id'],
         });
       }
-      console.log('idEventDivision:', idEventDivision);
+      // console.log('idEventDivision:', idEventDivision);
       return idEventDivision;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
