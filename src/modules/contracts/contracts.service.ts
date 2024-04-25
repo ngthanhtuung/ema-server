@@ -688,7 +688,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       evidenceFileType: bufSign['fileType'],
       evidenceType: EContractEvidenceType.CONTRACT_SIGNED,
       evidenceUrl: bufSign['downloadUrl'],
-      createdBy: user.id,
+      createdBy: JSON.parse(user).id,
     });
   }
 
