@@ -928,7 +928,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         CustomerContactEntity,
         {
           where: { id: customerContactId, status: EContactInformation.ACCEPT },
-          relations: ['contract', 'eventType'],
+          relations: ['contract', 'eventType', 'contract.milestones'],
         },
       );
       const contractFiles: any = await this.getContractFileByCustomerContactId(
@@ -972,6 +972,9 @@ export class ContractsService extends BaseService<ContractEntity> {
         customerPhoneNumber: contractExisted.customerPhoneNumber,
         paymentMethod: contractExisted.paymentMethod,
         paymentDate: moment(contractExisted.paymentDate).format('YYYY-MM-DD'),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        paymentMilestone: contractExisted.milestones,
       };
       const newContract = await this.generateNewContract(
         dataObject,
