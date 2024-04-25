@@ -629,6 +629,8 @@ export class TaskService extends BaseService<TaskEntity> {
       );
     } catch (error) {
       throw new InternalServerErrorException(error.message);
+    } finally {
+      await queryRunner.release();
     }
 
     return true;
@@ -795,12 +797,14 @@ export class TaskService extends BaseService<TaskEntity> {
       return result.length > 0 ? true : false;
     } catch (err) {
       return false;
+    } finally {
+      await queryRunner.release();
     }
   }
 
   async countTaskInEvent(eventId: string): Promise<number> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const query = await queryRunner.manager.query(`
       SELECT COUNT(t.id) AS count
       FROM ema.tasks t
@@ -815,6 +819,8 @@ export class TaskService extends BaseService<TaskEntity> {
       return Number(result) || 0;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 

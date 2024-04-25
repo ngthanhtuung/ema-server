@@ -317,20 +317,20 @@ export class BudgetsService extends BaseService<TransactionEntity> {
             'Total used at accept transaction: ',
             totalTransactionUser,
           );
-          if (
-            transactionExisted?.amount >
-            budgetAvailable - totalTransactionUser
-          ) {
-            let errorMessage =
-              'Số tiền yêu cầu của giao dịch này vượt quá hạn mức còn lại. ';
-            if (oUser.role.roleName === ERole.MANAGER) {
-              errorMessage += ' Vui lòng mở thêm hạn mức';
-            } else {
-              errorMessage +=
-                ' Vui lòng tạo một giao dịch với số tiền này để quản lý mở thêm hạn mức chi tiêu cho công việc này';
-            }
-            throw new BadRequestException(errorMessage);
-          }
+          // if (
+          //   transactionExisted?.amount >
+          //   budgetAvailable - totalTransactionUser
+          // ) {
+          //   let errorMessage =
+          //     'Số tiền yêu cầu của giao dịch này vượt quá hạn mức còn lại. ';
+          //   if (oUser.role.roleName === ERole.MANAGER) {
+          //     errorMessage += ' Vui lòng mở thêm hạn mức';
+          //   } else {
+          //     errorMessage +=
+          //       ' Vui lòng tạo một giao dịch với số tiền này để quản lý mở thêm hạn mức chi tiêu cho công việc này';
+          //   }
+          //   throw new BadRequestException(errorMessage);
+          // }
           const resultAccepted = await queryRunner.manager.update(
             TransactionEntity,
             { id: transactionId },
@@ -533,9 +533,10 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     amount: number,
     user: string,
   ): Promise<unknown> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
       const oUser = JSON.parse(user);
-      const queryRunner = this.dataSource.createQueryRunner();
+
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
         {
@@ -603,11 +604,11 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       );
       console.log('amountPercentage:', amountPercentage);
 
-      if (amountPercentage > 100) {
-        throw new BadRequestException(
-          'Số tiền này vượt quá hạn mức quy định của kế hoạch, không thể mở thêm hạng mức cho hạng mục này',
-        );
-      }
+      // if (amountPercentage > 100) {
+      //   throw new BadRequestException(
+      //     'Số tiền này vượt quá hạn mức quy định của kế hoạch, không thể mở thêm hạng mức cho hạng mục này',
+      //   );
+      // }
       const result = await queryRunner.manager.update(
         ItemEntity,
         { id: itemExisted?.id },
@@ -628,6 +629,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       throw new InternalServerErrorException('Cập nhật hạng mức thất bại');
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -643,8 +646,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     files: FileRequest[],
     user: UserEntity,
   ): Promise<unknown | undefined> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
       const transaction = await queryRunner.manager.findOne(TransactionEntity, {
         where: { id: transactionId },
       });
@@ -690,6 +693,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       return listBufSign.length > 0 ? listBufSign : undefined;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -774,8 +779,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   async getEvidenceByTransactionId(
     transactionId: string,
   ): Promise<TransactionEvidenceEntity[]> {
+    const queryRunner = await this.createQueryRunner();
     try {
-      const queryRunner = await this.createQueryRunner();
       const evidence = await queryRunner.manager.find(
         TransactionEvidenceEntity,
         {
@@ -785,6 +790,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       return evidence;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -796,8 +803,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
   async getDetailTransactionById(
     transactionId: string,
   ): Promise<unknown | undefined> {
+    const queryRunner = await this.createQueryRunner();
     try {
-      const queryRunner = await this.createQueryRunner();
       const transactionExisted = await queryRunner.manager.findOne(
         TransactionEntity,
         {
@@ -811,6 +818,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       return transactionExisted;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -824,8 +833,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     transactionId: string,
     user: string,
   ): Promise<string> {
+    const queryRunner = await this.createQueryRunner();
     try {
-      const queryRunner = await this.createQueryRunner();
       const oUser = JSON.parse(user);
       const transactionExisted: any = await this.getDetailTransactionById(
         transactionId,
@@ -846,6 +855,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       throw new BadRequestException('Xóa giao dịch thất bại');
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
@@ -854,9 +865,9 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     files: FileRequest[],
     oUser: string,
   ): Promise<string> {
+    const queryRunner = await this.createQueryRunner();
     try {
       const user = JSON.parse(oUser);
-      const queryRunner = await this.createQueryRunner();
       const transactionExisted = await this.transactionRepository.findOne({
         where: {
           id: transactionId,
@@ -887,11 +898,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
       );
       if (deleteResult.affected > 0) {
-        const createdResult = await this.createContractEvidence(
-          transactionId,
-          files,
-          user,
-        );
+        await this.createContractEvidence(transactionId, files, user);
         return `Cập nhật bằng chứng cho giao dịch ${transactionId} thành công`;
       }
       throw new BadRequestException(
@@ -899,6 +906,8 @@ export class BudgetsService extends BaseService<TransactionEntity> {
       );
     } catch (err) {
       throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release(); // Release the query runner if it was created in this function
     }
   }
 
