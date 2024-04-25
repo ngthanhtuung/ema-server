@@ -83,7 +83,6 @@ export class BudgetsService extends BaseService<TransactionEntity> {
         },
         relations: ['assignTasks'],
       });
-      console.log('Task existed at createTransactioin: ', taskExisted);
       if (!taskExisted) {
         throw new NotFoundException('Không thể tìm thấy công việc này');
       }

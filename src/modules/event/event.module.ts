@@ -8,6 +8,7 @@ import { FileModule } from 'src/file/file.module';
 import { TaskModule } from '../task/task.module';
 import { ContractsModule } from '../contracts/contracts.module';
 import { CustomerContactsModule } from '../customer_contacts/customer_contacts.module';
+import { BudgetsModule } from '../budgets/budgets.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CustomerContactsModule } from '../customer_contacts/customer_contacts.m
     TaskModule,
     ContractsModule,
     CustomerContactsModule,
+    BudgetsModule,
   ],
   controllers: [EventController],
   providers: [EventService],

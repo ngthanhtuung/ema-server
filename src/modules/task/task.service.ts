@@ -22,8 +22,8 @@ import * as moment from 'moment-timezone';
 import {
   EPriority,
   ETaskStatus,
-  ETransaction,
   ETypeNotification,
+  SortEnum,
 } from 'src/common/enum/enum';
 import { NotificationCreateRequest } from '../notification/dto/notification.request';
 import { AssignTaskEntity } from '../assign-task/assign-task.entity';
@@ -818,11 +818,18 @@ export class TaskService extends BaseService<TaskEntity> {
     }
   }
 
-  async getTaskStatistic(eventId: string): Promise<unknown> {
+  async getTaskStatistic(eventId: string, user?: string): Promise<unknown> {
     try {
+      // const taskTest = await this.filterTaskByAssignee({
+      //   assignee: JSON.parse(user).id,
+      //   eventID: eventId,
+      // });
+      // console.log('Task test: ', taskTest);
+      // const subTasks = taskTest.map((task) => task.subTask);
+      // console.log('Sub tasks: ', subTasks);
       const listIdEventDivison: any =
         await this.assignEventService.getListIdEventDivision(eventId);
-      console.log('listIdEventDivison:', listIdEventDivison);
+      // console.log('listIdEventDivison:', listIdEventDivison);
       const arrayPromise = listIdEventDivison?.map((item) => {
         return this.taskRepository.find({
           where: {
@@ -837,6 +844,9 @@ export class TaskService extends BaseService<TaskEntity> {
         total: result.length,
         pending: result.filter((task) => task.status === ETaskStatus.PENDING)
           .length,
+        processing: result.filter(
+          (task) => task.status === ETaskStatus.PROCESSING,
+        ).length,
         done: result.filter((task) => task.status === ETaskStatus.DONE).length,
         cancel: result.filter((task) => task.status === ETaskStatus.CANCEL)
           .length,
@@ -853,7 +863,7 @@ export class TaskService extends BaseService<TaskEntity> {
     try {
       const listIdEventDivison: any =
         await this.assignEventService.getListIdEventDivision(eventId);
-      console.log('listIdEventDivison:', listIdEventDivison);
+      // console.log('listIdEventDivison:', listIdEventDivison);
       const arrayPromise = listIdEventDivison?.map((item) => {
         return this.taskRepository.find({
           where: {
