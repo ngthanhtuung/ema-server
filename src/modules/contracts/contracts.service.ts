@@ -53,7 +53,6 @@ import { CustomerContactEntity } from '../customer_contacts/customer_contacts.en
 import { NotificationService } from '../notification/notification.service';
 import { NotificationContractRequest } from '../notification/dto/notification.request';
 import { CustomerContactsService } from '../customer_contacts/customer_contacts.service';
-import { v4 as uuidv4 } from 'uuid';
 import { PaymentMilestoneEntity } from './payment_milestone.entity';
 
 @Injectable()
@@ -264,7 +263,18 @@ export class ContractsService extends BaseService<ContractEntity> {
     try {
       const contract = await this.contractRepository.findOne({
         where: { event: { id: eventId } },
+        relations: ['evidences', 'milestones', 'milestones.evidences'],
       });
+      const contractSigned = contract.evidences.filter(
+        (evidences) =>
+          evidences.evidenceType === EContractEvidenceType.CONTRACT_SIGNED,
+      );
+      delete contract.evidences;
+      const sortedMilestones = contract.milestones.sort((a, b) => {
+        // Sorting milestones by endDate in ascending order using moment()
+        return moment(a.endDate).diff(moment(b.endDate));
+      });
+      delete contract.milestones;
       let newContract = {};
       if (!contract) {
         return newContract;
@@ -286,7 +296,12 @@ export class ContractsService extends BaseService<ContractEntity> {
         avatar: contractWithUserDetails.avatar,
         status: contractWithUserDetails.status,
       };
-      newContract = { ...contract, companyRepresentative };
+      newContract = {
+        ...contract,
+        contractSigned,
+        paymentMilestones: sortedMilestones,
+        companyRepresentative,
+      };
       return newContract;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
@@ -714,7 +729,7 @@ export class ContractsService extends BaseService<ContractEntity> {
       evidenceFileType: buf['fileType'],
       evidenceUrl: buf['downloadUrl'],
       evidenceType: EContractEvidenceType.CONTRACT_PAID,
-      createdBy: user.id,
+      createdBy: JSON.parse(user).id,
       milestone: {
         id: paymentMilestone.id,
       },
