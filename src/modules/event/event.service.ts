@@ -44,7 +44,6 @@ import { TaskEntity } from '../task/task.entity';
 import { ItemEntity } from '../items/items.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BudgetsService } from '../budgets/budgets.service';
-import { FilterBigTaskAndItem } from '../budgets/dto/budget.request';
 
 @Injectable()
 export class EventService extends BaseService<EventEntity> {
@@ -708,7 +707,7 @@ export class EventService extends BaseService<EventEntity> {
       if (!eventExisted) {
         throw new NotFoundException("Event don't exist!!!");
       }
-      if (status === EEventStatus.CANCEL) {
+      if (status === EEventStatus.CANCEL || status === EEventStatus.DONE) {
         const cancelTask = await this.taskService.cancelTask(eventID);
         await this.eventRepository.update({ id: eventID }, { status: status });
         return 'Update status successfully!!!';
