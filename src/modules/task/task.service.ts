@@ -783,22 +783,9 @@ export class TaskService extends BaseService<TaskEntity> {
       `);
       console.log(query[0].count);
       const result = query[0].count;
-      // const result = await this.taskRepository.find({
-      //   // where: [
-      //   //   { assignTasks: { assignee: userId } },
-      //   //   { assignTasks: { taskMaster: userId } },
-      //   // ],
-      //   where: [
-      //     { id: taskId, assignTasks: { assignee: userId } },
-      //     { id: taskId, assignTasks: { taskMaster: userId } },
-      //   ],
-      // });
-
       return result.length > 0 ? true : false;
     } catch (err) {
       return false;
-    } finally {
-      await queryRunner.release();
     }
   }
 

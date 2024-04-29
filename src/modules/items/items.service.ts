@@ -245,13 +245,11 @@ export class ItemsService extends BaseService<ItemEntity> {
   async readCSVFile(file: Express.Multer.File): Promise<object> {
     try {
       this.validateFileFormat(file);
-      console.log('file:', file);
       const categories: CategoryEntity[] =
         await this.categoriesService.getCategories();
       const { results, errors, totalRecords, totalErrorsRecords } =
         await this.processCSVData(file);
       let convertResult = results;
-      console.log('results:', results);
 
       if (results.length > 0) {
         convertResult = await this.convertResultFromCSV(

@@ -164,7 +164,6 @@ export class CommentService extends BaseService<CommentEntity> {
             content: `${loginUser.fullName} đã comment vào ${task?.title}`,
             type: notificationType,
             userIdAssignee: assigne,
-            // userIdTaskMaster: [loginUser?.id],
             userIdTaskMaster: [taskMasterId],
             eventID: task?.eventDivision?.event?.id,
             parentTaskId: task?.parentTask || task?.parent?.id,
@@ -185,6 +184,7 @@ export class CommentService extends BaseService<CommentEntity> {
       }
       throw new BadRequestException(COMMENT_ERROR_MESSAGE.COMMENT_DENIED);
     } catch (err) {
+      console.error('Error at createComment Service: ', err);
       throw new InternalServerErrorException(err.message);
     }
   }
