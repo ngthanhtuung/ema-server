@@ -854,7 +854,8 @@ export class EventService extends BaseService<EventEntity> {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async autoUpdateTask(): Promise<void> {
     try {
-      const currentDate = moment().add(7, 'hours').format('YYYY-MM-DD');
+      // const currentDate = moment().add(7, 'hours').format('YYYY-MM-DD');
+      const currentDate = moment().tz('Asia/Bangkok').format('YYYY-MM-DD');
       console.log('currentDate:', currentDate);
       const listEvent = await this.eventRepository.find({
         where: [

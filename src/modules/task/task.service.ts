@@ -919,7 +919,8 @@ export class TaskService extends BaseService<TaskEntity> {
   async autoUpdateTask(): Promise<void> {
     try {
       const currentDate = moment()
-        .add(7, 'hours')
+        .tz('Asia/Bangkok')
+        // .add(7, 'hours')
         .format('YYYY-MM-DD HH:mm:ss.SSS');
       const tasks = await this.taskRepository.find({
         where: [

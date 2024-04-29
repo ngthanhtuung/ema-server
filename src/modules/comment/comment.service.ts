@@ -78,7 +78,8 @@ export class CommentService extends BaseService<CommentEntity> {
         .getMany();
       const finalData = result?.map((item: any) => {
         item.createdAt = moment(item.createdAt)
-          .add(7, 'hours')
+          .tz('Asia/Bangkok')
+          // .add(7, 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
         return item;
       });
