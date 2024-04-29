@@ -33,22 +33,17 @@ export class BaseService<T extends BaseEntity> {
   ): Promise<void> {
     // establish real database connection using our new query runner
     await queryRunner.connect();
-
-    // lets now open a new transaction:
     await queryRunner.startTransaction();
-
+    console.log('Query Runner is release: ', isRelease);
     try {
       await fn(queryRunner);
-      // commit transaction now:
       await queryRunner.commitTransaction();
     } catch (err) {
       console.error(err);
-      // since we have errors let's rollback changes we made
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      if (isRelease === undefined) {
-        // you need to release query runner which is manually created:
+      if (!queryRunner.release()) {
         await queryRunner.release();
       }
     }

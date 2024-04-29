@@ -783,22 +783,9 @@ export class TaskService extends BaseService<TaskEntity> {
       `);
       console.log(query[0].count);
       const result = query[0].count;
-      // const result = await this.taskRepository.find({
-      //   // where: [
-      //   //   { assignTasks: { assignee: userId } },
-      //   //   { assignTasks: { taskMaster: userId } },
-      //   // ],
-      //   where: [
-      //     { id: taskId, assignTasks: { assignee: userId } },
-      //     { id: taskId, assignTasks: { taskMaster: userId } },
-      //   ],
-      // });
-
       return result.length > 0 ? true : false;
     } catch (err) {
       return false;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -932,7 +919,8 @@ export class TaskService extends BaseService<TaskEntity> {
   async autoUpdateTask(): Promise<void> {
     try {
       const currentDate = moment()
-        .add(7, 'hours')
+        .tz('Asia/Bangkok')
+        // .add(7, 'hours')
         .format('YYYY-MM-DD HH:mm:ss.SSS');
       const tasks = await this.taskRepository.find({
         where: [

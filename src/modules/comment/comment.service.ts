@@ -78,7 +78,8 @@ export class CommentService extends BaseService<CommentEntity> {
         .getMany();
       const finalData = result?.map((item: any) => {
         item.createdAt = moment(item.createdAt)
-          .add(7, 'hours')
+          .tz('Asia/Bangkok')
+          // .add(7, 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
         return item;
       });
@@ -164,7 +165,6 @@ export class CommentService extends BaseService<CommentEntity> {
             content: `${loginUser.fullName} đã comment vào ${task?.title}`,
             type: notificationType,
             userIdAssignee: assigne,
-            // userIdTaskMaster: [loginUser?.id],
             userIdTaskMaster: [taskMasterId],
             eventID: task?.eventDivision?.event?.id,
             parentTaskId: task?.parentTask || task?.parent?.id,
@@ -185,6 +185,7 @@ export class CommentService extends BaseService<CommentEntity> {
       }
       throw new BadRequestException(COMMENT_ERROR_MESSAGE.COMMENT_DENIED);
     } catch (err) {
+      console.error('Error at createComment Service: ', err);
       throw new InternalServerErrorException(err.message);
     }
   }
