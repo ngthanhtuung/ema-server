@@ -425,9 +425,6 @@ export class ItemsService extends BaseService<ItemEntity> {
         }
         customerContactPayload = customerInfoExisted;
         processById = customerInfoExisted?.processedBy;
-        console.log('processById:', processById);
-        console.log('customerContactPayload:', customerContactPayload);
-
         //Create plan
         const categoriesPromise = planData.map((plan) =>
           queryRunner.manager.findOne(CategoryEntity, {
@@ -435,7 +432,6 @@ export class ItemsService extends BaseService<ItemEntity> {
           }),
         );
         const categories = await Promise.all(categoriesPromise);
-        console.log('categories:', categories);
         const listPromiseItems = planData.map((plan, index) => {
           const category = categories[index];
           if (!category) {
@@ -480,6 +476,7 @@ export class ItemsService extends BaseService<ItemEntity> {
     user: UserEntity,
   ): Promise<string> {
     try {
+      console.log('Running at updateItem service');
       const queryRunner = this.dataSource.createQueryRunner();
       const itemExisted = await this.itemsRepository.findOne({
         where: { id: itemId },
@@ -584,6 +581,7 @@ export class ItemsService extends BaseService<ItemEntity> {
   ): Promise<string> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
+      console.log('Running at updatePlan');
       const contactExisted = await queryRunner.manager.findOne(
         CustomerContactEntity,
         {
@@ -603,11 +601,12 @@ export class ItemsService extends BaseService<ItemEntity> {
         );
       }
       const callback = async (queryRunner: QueryRunner): Promise<void> => {
-        await queryRunner.manager.delete(ItemEntity, {
+        const result = await queryRunner.manager.delete(ItemEntity, {
           customerInfo: {
             id: customerContactId,
           },
         });
+        console.log('Delete result: ', result.affected);
         await this.createEventPlan(
           planData,
           customerContactId,
