@@ -126,7 +126,7 @@ export class MailService {
         contractCode,
       );
       const data = {
-        from: 'EMA System <ema.event@gmail.com>',
+        from: 'noreply <ema.event@gmail.com>',
         to: [toUser],
         subject: newMailTitle,
         html: htmlMail,
