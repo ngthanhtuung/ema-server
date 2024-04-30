@@ -43,9 +43,7 @@ export class BaseService<T extends BaseEntity> {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      if (!queryRunner.release()) {
-        await queryRunner.release();
-      }
+      await queryRunner.release();
     }
   }
 }
