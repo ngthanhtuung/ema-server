@@ -34,7 +34,6 @@ export class BaseService<T extends BaseEntity> {
     // establish real database connection using our new query runner
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    console.log('Query Runner is release: ', isRelease);
     try {
       await fn(queryRunner);
       await queryRunner.commitTransaction();
@@ -43,7 +42,9 @@ export class BaseService<T extends BaseEntity> {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      await queryRunner.release();
+      if (isRelease === undefined) {
+        await queryRunner.release();
+      }
     }
   }
 }

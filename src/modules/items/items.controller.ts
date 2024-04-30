@@ -132,6 +132,7 @@ export class ItemsController {
     @Body() data: UpdateItemRequest,
     @GetUser() user: string,
   ): Promise<string> {
+    console.log('Running at Update Plan Controller');
     return this.itemsService.updateItem(itemId, data, JSON.parse(user));
   }
 

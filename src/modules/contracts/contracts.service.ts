@@ -386,8 +386,6 @@ export class ContractsService extends BaseService<ContractEntity> {
           .execute(),
         query.getCount(),
       ]);
-
-      console.log('Result: ', result);
       const listUser = await Promise.all(
         result.map((contract) => {
           if (contract.companyRepresentative) {
@@ -452,6 +450,10 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.dateOfSigning as dateOfSigning',
         'contracts.companyRepresentative as companyRepresentative',
         'contracts.paymentMethod as paymentMethod',
+        'contracts.eventName as contractEventName',
+        'contracts.startDate as contractStartDate',
+        'contracts.processingDate as contractProcessingDate',
+        'contracts.endDate as contractEndDate',
         'milestone.name as milestoneName',
         'milestone.startDate as milestoneStartDate',
         'milestone.endDate as milestoneEndDate',
@@ -1439,9 +1441,23 @@ export class ContractsService extends BaseService<ContractEntity> {
           dateOfSigning: item.dateOfSigning,
           customerContactId: item.customerContactId,
           paymentMethod: item.paymentMethod,
-          createdAt: item.createdAt,
+          eventName: item.contractEventName,
+          startDate: moment(item.contractStartDate)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD'),
+          processingDate: moment(item.contractProcessingDate)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD'),
+          endDate: moment(item.contractEndDate)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD'),
+          createdAt: moment(item.createdAt)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD HH:mm:ss'),
           createdBy: item.createdBy,
-          updateAt: item.updateAt,
+          updateAt: moment(item.updateAt)
+            .tz('Asia/Bangkok')
+            .format('YYYY-MM-DD HH:mm:ss'),
           updateBy: item.updateBy,
           contractStatus: item.contractStatus,
           companyRepresentative: item.companyRepresentative,
