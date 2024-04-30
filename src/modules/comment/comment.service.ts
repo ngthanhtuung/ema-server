@@ -161,8 +161,8 @@ export class CommentService extends BaseService<CommentEntity> {
 
           // Send Notification
           const dataNotification: NotificationCreateRequest = {
-            title: `Đã có một comment mới `,
-            content: `${loginUser.fullName} đã comment vào ${task?.title}`,
+            title: `Bạn có một bình luận mới`,
+            content: `${loginUser.fullName} đã bình luận vào ${task?.title}`,
             type: notificationType,
             userIdAssignee: assigne,
             userIdTaskMaster: [taskMasterId],
@@ -172,8 +172,6 @@ export class CommentService extends BaseService<CommentEntity> {
             avatar: loginUser?.avatar,
             messageSocket: 'notification',
           };
-
-          console.log('Data notification: ', dataNotification);
           await this.notificationService.createNotification(
             dataNotification,
             loginUser?.id,
@@ -185,7 +183,6 @@ export class CommentService extends BaseService<CommentEntity> {
       }
       throw new BadRequestException(COMMENT_ERROR_MESSAGE.COMMENT_DENIED);
     } catch (err) {
-      console.error('Error at createComment Service: ', err);
       throw new InternalServerErrorException(err.message);
     }
   }
