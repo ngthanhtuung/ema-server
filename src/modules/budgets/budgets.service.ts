@@ -238,7 +238,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           fullName: user?.fullName,
           email: user.email,
           phoneNumber: user?.phoneNumber,
-          dob: user?.dob,
+          dob: moment(user?.dob).tz('Asia/Bangkok').format('YYYY-MM-DD'),
           avatar: user?.avatar,
           status: user?.status,
         };
@@ -985,9 +985,13 @@ WHERE id = (SELECT eventDivisionId FROM tasks where id = '${taskId}');`;
         rejectNote: transaction.rejectNote,
         status: transaction.status,
         processedBy: transaction.processedBy,
-        createdAt: transaction.createdAt,
+        createdAt: moment(transaction.createdAt)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD HH:mm:ss'),
         createdBy: transaction.createdBy,
-        updatedAt: transaction.updatedAt,
+        updatedAt: moment(transaction.updatedAt)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM-DD HH:mm:ss'),
         updatedBy: transaction.updatedBy,
       });
     });
