@@ -243,10 +243,10 @@ export class DataSeed implements Seeder {
         description:
           'Thiết kế và phát triển các tài liệu quảng cáo cho các sự kiện, bao gồm logo, banner, và website.',
       },
-      {
-        divisionName: 'Nhóm Kế Hoạch',
-        description: 'Lập kế hoạch và phát triển chiến lược cho các sự kiện',
-      },
+      // {
+      //   divisionName: 'Nhóm Kế Hoạch',
+      //   description: 'Lập kế hoạch và phát triển chiến lược cho các sự kiện',
+      // },
       {
         divisionName: 'Nhóm Marketing',
         description:
@@ -261,11 +261,11 @@ export class DataSeed implements Seeder {
         description:
           'Hỗ trợ kỹ thuật cho các sự kiện, bao gồm âm thanh, ánh sáng, và video.',
       },
-      {
-        divisionName: 'Nhóm Tài chính',
-        description:
-          'Quản lý ngân sách cho các sự kiện.Theo dõi chi tiêu và thanh toán hóa đơn.',
-      },
+      // {
+      //   divisionName: 'Nhóm Tài chính',
+      //   description:
+      //     'Quản lý ngân sách cho các sự kiện.Theo dõi chi tiêu và thanh toán hóa đơn.',
+      // },
       {
         divisionName: 'Nhóm Dịch vụ khách hàng',
         description:
@@ -337,7 +337,7 @@ export class DataSeed implements Seeder {
     const dataUser = [];
     const dataProfile = [];
     // =============================== Account Staff ===============================
-    const createStafUser = async (index: number, email: string) => {
+    const createStaffUser = async (index: number, email: string) => {
       const staffUser = {
         email,
         password: hashPassword,
@@ -353,10 +353,10 @@ export class DataSeed implements Seeder {
       dataUser.push(staffUser);
     };
 
-    for (let index = 0; index < 8; index++) {
+    for (let index = 0; index < listDataDivision.length; index++) {
       const email =
         index === 0 ? `banhquy.dev@gmail.com` : `ema_staff${index}@gmail.com`;
-      await createStafUser(index, email);
+      await createStaffUser(index, email);
     }
     // =============================== Account Employee ==============================
     let count = 8;
@@ -378,7 +378,7 @@ export class DataSeed implements Seeder {
       dataUser.push(employee);
       count++;
     };
-    for (let index1 = 0; index1 < 8; index1++) {
+    for (let index1 = 0; index1 < listDataDivision.length; index1++) {
       for (let index2 = 0; index2 < 15; index2++) {
         const email =
           index2 === 0 && index1 === 0
@@ -412,13 +412,13 @@ export class DataSeed implements Seeder {
 
       dataProfile.push(staffProfile);
     };
-    for (let index = 0; index < 8; index++) {
+    for (let index = 0; index < listDataDivision.length; index++) {
       createStaffProfile(index);
     }
     console.log('dataProfile:', dataProfile.length);
 
     // Employee
-    let count2 = 8;
+    let count2 = listDataDivision.length;
     const createEmployeeProfile = (index2: number) => {
       // console.log('index2 + count2:', index2 + count2);
       const employeeProfile = {
@@ -434,7 +434,7 @@ export class DataSeed implements Seeder {
       dataProfile.push(employeeProfile);
     };
     // console.log('dataProfile 2:', dataProfile.length);
-    for (let index1 = 0; index1 < 8; index1++) {
+    for (let index1 = 0; index1 < listDataDivision.length; index1++) {
       for (let index2 = 0; index2 < 15; index2++) {
         createEmployeeProfile(index2);
       }
@@ -662,56 +662,56 @@ export class DataSeed implements Seeder {
       .into(ProfileEntity)
       .values(dataProfileCustomer)
       .execute();
-    const listContact = [
-      {
-        fullName: 'Nguyễn Quốc Sỹ',
-        email: 'quocsy25112@gmail.com',
-        address: 'FPT Shop, 495A Trương Định, Tân Mai, Hoàng Mai, Hà Nội',
-        note: '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
-        phoneNumber: '0983709791',
-        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-        budget: 100000000,
-        eventType: {
-          id: eventType['identifiers'][3]['id'],
-        },
-        createdBy: customer['identifiers'][0]['id'],
-      },
-      {
-        fullName: 'Nguyễn Quốc Sỹ',
-        email: 'quocsy25112@gmail.com',
-        address: 'FPT Shop, 1 Vĩnh Hưng, Vĩnh Hưng, Hoàng Mai, Hà Nội',
-        note: '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
-        phoneNumber: '0983709791',
-        startDate: moment().add(6, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(13, 'days').format('YYYY-MM-DD'),
-        budget: 100000000,
-        eventType: {
-          id: eventType['identifiers'][2]['id'],
-        },
-        createdBy: customer['identifiers'][0]['id'],
-      },
-      {
-        fullName: 'Nguyễn Quốc Sỹ',
-        email: 'quocsy25112@gmail.com',
-        address: 'Nhà Văn Hóa Sinh Viên ĐHQG TPHCM',
-        note: '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
-        phoneNumber: '0983709791',
-        startDate: moment().add(3, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(4, 'days').format('YYYY-MM-DD'),
-        budget: 100000000,
-        eventType: {
-          id: eventType['identifiers'][4]['id'],
-        },
-        createdBy: customer['identifiers'][0]['id'],
-      },
-    ];
-    await connection
-      .createQueryBuilder()
-      .insert()
-      .into(CustomerContactEntity)
-      .values(listContact)
-      .execute();
+    // const listContact = [
+    //   {
+    //     fullName: 'Nguyễn Quốc Sỹ',
+    //     email: 'quocsy25112@gmail.com',
+    //     address: 'FPT Shop, 495A Trương Định, Tân Mai, Hoàng Mai, Hà Nội',
+    //     note: '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
+    //     phoneNumber: '0983709791',
+    //     startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+    //     endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+    //     budget: 100000000,
+    //     eventType: {
+    //       id: eventType['identifiers'][3]['id'],
+    //     },
+    //     createdBy: customer['identifiers'][0]['id'],
+    //   },
+    //   {
+    //     fullName: 'Nguyễn Quốc Sỹ',
+    //     email: 'quocsy25112@gmail.com',
+    //     address: 'FPT Shop, 1 Vĩnh Hưng, Vĩnh Hưng, Hoàng Mai, Hà Nội',
+    //     note: '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
+    //     phoneNumber: '0983709791',
+    //     startDate: moment().add(6, 'days').format('YYYY-MM-DD'),
+    //     endDate: moment().add(13, 'days').format('YYYY-MM-DD'),
+    //     budget: 100000000,
+    //     eventType: {
+    //       id: eventType['identifiers'][2]['id'],
+    //     },
+    //     createdBy: customer['identifiers'][0]['id'],
+    //   },
+    //   {
+    //     fullName: 'Nguyễn Quốc Sỹ',
+    //     email: 'quocsy25112@gmail.com',
+    //     address: 'Nhà Văn Hóa Sinh Viên ĐHQG TPHCM',
+    //     note: '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
+    //     phoneNumber: '0983709791',
+    //     startDate: moment().add(3, 'days').format('YYYY-MM-DD'),
+    //     endDate: moment().add(4, 'days').format('YYYY-MM-DD'),
+    //     budget: 100000000,
+    //     eventType: {
+    //       id: eventType['identifiers'][4]['id'],
+    //     },
+    //     createdBy: customer['identifiers'][0]['id'],
+    //   },
+    // ];
+    // await connection
+    //   .createQueryBuilder()
+    //   .insert()
+    //   .into(CustomerContactEntity)
+    //   .values(listContact)
+    //   .execute();
     await connection
       .createQueryBuilder()
       .insert()
