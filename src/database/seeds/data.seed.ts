@@ -85,8 +85,86 @@ const lastName = [
   'Hà',
 ];
 
+const networkNumber = [
+  '032',
+  '033',
+  '034',
+  '035',
+  '036',
+  '037',
+  '038',
+  '039',
+  '086',
+  '096',
+  '097',
+  '098',
+  '081',
+  '082',
+  '083',
+  '084',
+  '085',
+  '088',
+  '091',
+  '094',
+  '070',
+  '076',
+  '077',
+  '078',
+  '079',
+  '089',
+  '090',
+  '093',
+];
+
+const address = [
+  'Phường 1, Quận 1, Thành phố Hồ Chí Minh',
+  'Phường 2, Quận 2, Thành phố Hồ Chí Minh',
+  'Phường 3, Quận 3, Thành phố Hồ Chí Minh',
+  'Phường 4, Quận 4, Thành phố Hồ Chí Minh',
+  'Phường 5, Quận 5, Thành phố Hồ Chí Minh',
+  'Phường 6, Quận 6, Thành phố Hồ Chí Minh',
+  'Phường 7, Quận 7, Thành phố Hồ Chí Minh',
+  'Phường 8, Quận 8, Thành phố Hồ Chí Minh',
+  'Phường 9, Quận 9, Thành phố Hồ Chí Minh',
+  'Phường 10, Quận 10, Thành phố Hồ Chí Minh',
+  'Phường An Phú, Quận 2, Thành phố Hồ Chí Minh',
+  'Phường Bình An, Quận 2, Thành phố Hồ Chí Minh',
+  'Phường Tân Thuận Đông, Quận 7, Thành phố Hồ Chí Minh',
+  'Phường Bình Trưng Tây, Quận 2, Thành phố Hồ Chí Minh',
+  'Phường Tân Định, Quận 1, Thành phố Hồ Chí Minh',
+  'Phường Phú Mỹ Hưng, Quận 7, Thành phố Hồ Chí Minh',
+  'Phường Phú Hữu, Quận 9, Thành phố Hồ Chí Minh',
+  'Phường Hiệp Phú, Quận 9, Thành phố Hồ Chí Minh',
+  'Phường Tân Phú, Quận 7, Thành phố Hồ Chí Minh',
+  'Phường Thảo Điền, Quận 2, Thành phố Hồ Chí Minh',
+  'Phường Chánh Nghĩa, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Hòa Phú, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Phú Lợi, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Phú Thọ, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Tân An, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Tân Bình, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Tân Định, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Tân Hiệp, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Tân Hòa, Thủ Dầu Một, Thành phố Bình Dương',
+  'Phường Tân Long, Thủ Dầu Một, Thành phố Bình Dương',
+];
+
 const randomGender = () => {
   return Math.random() < 0.5 ? 'male' : 'female';
+};
+
+const randomDOB = () => {
+  const date = faker.date.between({
+    from: '1980-01-01',
+    to: '2000-12-31',
+  });
+  console.log('Date: ', moment(date).format('YYYY-MM-DD'));
+  return moment(date).format('YYYY-MM-DD');
+};
+
+const randomNetworkNumber = () => {
+  const index = Math.floor(Math.random() * networkNumber.length);
+  return networkNumber[index];
 };
 
 const randomFirstName = (gender) => {
@@ -106,6 +184,11 @@ const randomFullName = () => {
   const firstName = randomFirstName(gender);
   const lastName = randomLastName();
   return `${firstName} ${lastName}`;
+};
+
+const randomAddress = () => {
+  const index = Math.floor(Math.random() * address.length);
+  return address[index];
 };
 
 export class DataSeed implements Seeder {
@@ -227,22 +310,22 @@ export class DataSeed implements Seeder {
       {
         fullName: 'Đoàn Vũ Quang Huy',
         id: user1['identifiers'][0]['id'],
-        dob: faker.date.anytime(),
+        dob: randomDOB(),
         nationalId: faker.string.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
-        address: faker.location.street(),
-        phoneNumber: faker.phone.number(),
-        avatar: 'https://picsum.photos/200/300',
+        address: randomAddress(),
+        phoneNumber: faker.phone.number(`${randomNetworkNumber()}#######`),
+        avatar: faker.image.avatar(),
       },
       {
         fullName: 'Nguyễn Thanh Tùng',
         id: user1['identifiers'][1]['id'],
-        dob: faker.date.anytime(),
+        dob: randomDOB(),
         nationalId: faker.string.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
-        address: faker.location.street(),
-        phoneNumber: faker.phone.number(),
-        avatar: 'https://i.pravatar.cc/300',
+        address: randomAddress(),
+        phoneNumber: faker.phone.number(`${randomNetworkNumber()}#######`),
+        avatar: faker.image.avatar(),
       },
     ];
     await connection
@@ -317,15 +400,14 @@ export class DataSeed implements Seeder {
     // Staff
     const createStaffProfile = (index: number) => {
       const staffProfile = {
-        fullName: randomFullName(),
+        fullName: index === 0 ? 'Nguyễn Trọng Nguyên Vũ' : randomFullName(),
         id: user['identifiers'][index]['id'],
-        dob: faker.date.anytime(),
+        dob: randomDOB(),
         nationalId: faker.string.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
-        address: faker.location.street(),
-        phoneNumber: faker.phone.number(),
-        avatar:
-          'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/avatars/76/76f731c937b02b3f72fd9b9a09fd7f69e35443de_full.jpg',
+        address: randomAddress(),
+        phoneNumber: faker.phone.number(`${randomNetworkNumber()}#######`),
+        avatar: faker.image.avatar(),
       };
 
       dataProfile.push(staffProfile);
@@ -338,29 +420,27 @@ export class DataSeed implements Seeder {
     // Employee
     let count2 = 8;
     const createEmployeeProfile = (index2: number) => {
-      console.log('index2 + count2:', index2 + count2);
-
+      // console.log('index2 + count2:', index2 + count2);
       const employeeProfile = {
         fullName: randomFullName(),
         id: user['identifiers']?.[index2 + count2]?.['id'],
-        dob: faker.date.anytime(),
+        dob: randomDOB(),
         nationalId: faker.string.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
-        address: faker.location.street(),
-        phoneNumber: faker.phone.number(),
-        avatar:
-          'https://i0.wp.com/www.muscleandfitness.com/wp-content/uploads/2015/03/John_Cena.jpg?quality=86&strip=all',
+        address: randomAddress(),
+        phoneNumber: faker.phone.number(`${randomNetworkNumber()}#######`),
+        avatar: faker.image.avatar(),
       };
       dataProfile.push(employeeProfile);
     };
-    console.log('dataProfile 2:', dataProfile.length);
+    // console.log('dataProfile 2:', dataProfile.length);
     for (let index1 = 0; index1 < 8; index1++) {
       for (let index2 = 0; index2 < 15; index2++) {
         createEmployeeProfile(index2);
       }
       count2 += 15;
     }
-    console.log('dataProfile:', dataProfile);
+    // console.log('dataProfile:', dataProfile);
     await connection
       .createQueryBuilder()
       .insert()
@@ -422,110 +502,110 @@ export class DataSeed implements Seeder {
         location: 'Đại học FPT, Cơ sở Thành Phố Hồ Chí Minh',
         description:
           '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
-        estBudget: 100000000,
+        estBudget: 120000000,
         createdBy: user1['identifiers'][0]['id'],
         eventType: {
           id: eventType['identifiers'][0]['id'],
         },
       },
-      {
-        eventName:
-          'Hội thảo chuyên đề: Xu hướng quảng cáo và tiếp thị trong năm 2024',
-        startDate: moment().format('YYYY-MM-DD'),
-        processingDate: moment().add(6, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-        coverUrl:
-          'https://treobangron.com.vn/wp-content/uploads/2022/09/banner-khai-truong-31.jpg',
-        location: 'Trung tâm Hội nghị Quốc tế, TP. Hồ Chí Minh',
-        description:
-          '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
-        estBudget: 200000000,
-        createdBy: user1['identifiers'][0]['id'],
-        eventType: {
-          id: eventType['identifiers'][1]['id'],
-        },
-      },
-      {
-        eventName: 'Khóa học: Kỹ năng viết content thu hút',
-        startDate: moment().add(1, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(4, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        coverUrl:
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1ME4Atqq5Ga7DGksE37o0DOsTVciHir29Vw&usqp=CAU',
-        location: 'Trường Đại học Kinh tế TP. Hồ Chí Minh',
-        description:
-          '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
-        estBudget: 50000000,
-        createdBy: user1['identifiers'][0]['id'],
-        eventType: {
-          id: eventType['identifiers'][2]['id'],
-        },
-      },
-      {
-        eventName: 'Hội nghị thượng đỉnh marketing Việt Nam 2024',
-        startDate: moment().add(7, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(13, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(14, 'days').format('YYYY-MM-DD'),
-        coverUrl:
-          'https://thumbs.dreamstime.com/b/blue-golden-royal-awards-graphics-background-royal-awards-graphics-background-award-background-luxury-premium-graphics-blue-golden-268397993.jpg',
-        location: 'Trung tâm Hội nghị Quốc gia, Hà Nội',
-        description:
-          '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
-        estBudget: 300000000,
-        createdBy: user1['identifiers'][0]['id'],
-        eventType: {
-          id: eventType['identifiers'][4]['id'],
-        },
-      },
-      {
-        eventName: 'Lễ trao giải Marketing Awards 2024',
-        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-        coverUrl:
-          'https://www.shutterstock.com/shutterstock/photos/2167924209/display_1500/stock-vector-golden-blue-purple-award-background-jubilee-night-decorative-invitation-trophy-on-stage-platform-2167924209.jpg',
-        location: 'Nhà hát Lớn, TP. Hồ Chí Minh',
-        description:
-          '[{"insert":"Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n"}]',
-        estBudget: 150000000,
-        createdBy: user1['identifiers'][0]['id'],
-        eventType: {
-          id: eventType['identifiers'][5]['id'],
-        },
-      },
-      {
-        eventName: 'Khóa học: SEO nâng cao',
-        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-        coverUrl:
-          'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
-        location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
-        description:
-          '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
-        estBudget: 50000000,
-        createdBy: user1['identifiers'][0]['id'],
-        eventType: {
-          id: eventType['identifiers'][6]['id'],
-        },
-      },
-      {
-        eventName: 'Vui Lòng Điền Tên Event',
-        startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
-        processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
-        endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
-        coverUrl:
-          'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
-        location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
-        description:
-          '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
-        estBudget: 50000000,
-        createdBy: user1['identifiers'][0]['id'],
-        eventType: {
-          id: eventType['identifiers'][6]['id'],
-        },
-        isTemplate: true,
-      },
+      // {
+      //   eventName:
+      //     'Hội thảo chuyên đề: Xu hướng quảng cáo và tiếp thị trong năm 2024',
+      //   startDate: moment().format('YYYY-MM-DD'),
+      //   processingDate: moment().add(6, 'days').format('YYYY-MM-DD'),
+      //   endDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+      //   coverUrl:
+      //     'https://treobangron.com.vn/wp-content/uploads/2022/09/banner-khai-truong-31.jpg',
+      //   location: 'Trung tâm Hội nghị Quốc tế, TP. Hồ Chí Minh',
+      //   description:
+      //     '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
+      //   estBudget: 200000000,
+      //   createdBy: user1['identifiers'][0]['id'],
+      //   eventType: {
+      //     id: eventType['identifiers'][1]['id'],
+      //   },
+      // },
+      // {
+      //   eventName: 'Khóa học: Kỹ năng viết content thu hút',
+      //   startDate: moment().add(1, 'days').format('YYYY-MM-DD'),
+      //   processingDate: moment().add(4, 'days').format('YYYY-MM-DD'),
+      //   endDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+      //   coverUrl:
+      //     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1ME4Atqq5Ga7DGksE37o0DOsTVciHir29Vw&usqp=CAU',
+      //   location: 'Trường Đại học Kinh tế TP. Hồ Chí Minh',
+      //   description:
+      //     '[{"insert":"Hội thảo chuyên đề này sẽ tập trung vào việc chia sẻ những xu hướng mới nhất trong ngành quảng cáo và tiếp thị, giúp các doanh nghiệp cập nhật những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n\\n Các chuyên gia hàng đầu trong ngành sẽ chia sẻ kiến thức và kinh nghiệm của họ về các chủ đề như quảng cáo kỹ thuật số, marketing nội dung, SEO, và mạng xã hội. \\n\\nHội thảo cũng sẽ cung cấp cho các doanh nghiệp cơ hội để giao lưu và học hỏi lẫn nhau.\\n"}]',
+      //   estBudget: 50000000,
+      //   createdBy: user1['identifiers'][0]['id'],
+      //   eventType: {
+      //     id: eventType['identifiers'][2]['id'],
+      //   },
+      // },
+      // {
+      //   eventName: 'Hội nghị thượng đỉnh marketing Việt Nam 2024',
+      //   startDate: moment().add(7, 'days').format('YYYY-MM-DD'),
+      //   processingDate: moment().add(13, 'days').format('YYYY-MM-DD'),
+      //   endDate: moment().add(14, 'days').format('YYYY-MM-DD'),
+      //   coverUrl:
+      //     'https://thumbs.dreamstime.com/b/blue-golden-royal-awards-graphics-background-royal-awards-graphics-background-award-background-luxury-premium-graphics-blue-golden-268397993.jpg',
+      //   location: 'Trung tâm Hội nghị Quốc gia, Hà Nội',
+      //   description:
+      //     '[{"insert":"Hội nghị thượng đỉnh marketing Việt Nam 2024 là sự kiện lớn nhất dành cho các nhà marketing trong nước. Đây là nơi để các nhà marketing gặp gỡ, giao lưu và học hỏi lẫn nhau. Hội nghị cũng sẽ cung cấp cho các nhà marketing những thông tin cập nhật về những xu hướng mới nhất trong ngành và những chiến lược hiệu quả nhất để thu hút khách hàng tiềm năng và tăng doanh thu.\\n"}]',
+      //   estBudget: 300000000,
+      //   createdBy: user1['identifiers'][0]['id'],
+      //   eventType: {
+      //     id: eventType['identifiers'][4]['id'],
+      //   },
+      // },
+      // {
+      //   eventName: 'Lễ trao giải Marketing Awards 2024',
+      //   startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+      //   processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+      //   endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+      //   coverUrl:
+      //     'https://www.shutterstock.com/shutterstock/photos/2167924209/display_1500/stock-vector-golden-blue-purple-award-background-jubilee-night-decorative-invitation-trophy-on-stage-platform-2167924209.jpg',
+      //   location: 'Nhà hát Lớn, TP. Hồ Chí Minh',
+      //   description:
+      //     '[{"insert":"Lễ trao giải Marketing Awards 2024 là sự kiện nhằm tôn vinh những thành tựu xuất sắc trong ngành marketing. Các giải thưởng sẽ được trao cho các cá nhân và doanh nghiệp có những chiến dịch marketing hiệu quả nhất trong năm qua.\\n"}]',
+      //   estBudget: 150000000,
+      //   createdBy: user1['identifiers'][0]['id'],
+      //   eventType: {
+      //     id: eventType['identifiers'][5]['id'],
+      //   },
+      // },
+      // {
+      //   eventName: 'Khóa học: SEO nâng cao',
+      //   startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+      //   processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+      //   endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+      //   coverUrl:
+      //     'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
+      //   location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
+      //   description:
+      //     '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
+      //   estBudget: 50000000,
+      //   createdBy: user1['identifiers'][0]['id'],
+      //   eventType: {
+      //     id: eventType['identifiers'][6]['id'],
+      //   },
+      // },
+      // {
+      //   eventName: 'Vui Lòng Điền Tên Event',
+      //   startDate: moment().add(5, 'days').format('YYYY-MM-DD'),
+      //   processingDate: moment().add(8, 'days').format('YYYY-MM-DD'),
+      //   endDate: moment().add(9, 'days').format('YYYY-MM-DD'),
+      //   coverUrl:
+      //     'https://img.freepik.com/premium-vector/red-orange-golden-award-background-elegant-looking-orange-premium-template_820621-109.jpg',
+      //   location: 'Trung tâm Tin học, TP. Hồ Chí Minh',
+      //   description:
+      //     '[{"insert":"Khóa học này sẽ cung cấp cho bạn những kiến thức và kỹ năng nâng cao về SEO. Bạn sẽ học cách tối ưu hóa website của mình để thu hút nhiều khách hàng tiềm năng hơn từ Google và các công cụ tìm kiếm khác.\\n"}]',
+      //   estBudget: 50000000,
+      //   createdBy: user1['identifiers'][0]['id'],
+      //   eventType: {
+      //     id: eventType['identifiers'][6]['id'],
+      //   },
+      //   isTemplate: true,
+      // },
     ];
 
     const listCategories = [
@@ -565,13 +645,15 @@ export class DataSeed implements Seeder {
       {
         fullName: 'Nguyễn Quốc Sỹ',
         id: customer['identifiers'][0]['id'],
-        dob: faker.date.anytime(),
+        dob: faker.date.between({
+          from: '1980-01-01T00:00:00',
+          to: '2000-12-31T00:00:00',
+        }),
         nationalId: faker.string.numeric(12).toString(),
         gender: faker.person.sex().toUpperCase() as EGender,
-        address: faker.location.street(),
+        address: randomAddress(),
         phoneNumber: '0909563183',
-        avatar:
-          'https://lh3.googleusercontent.com/a/ACg8ocL6T3CA_2x6IlROu1V3eLu8qCjEzDUdy5Ut6BVSaB_W=s96-c',
+        avatar: faker.image.avatar(),
       },
     ];
     await connection
