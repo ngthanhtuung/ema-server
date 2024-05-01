@@ -454,6 +454,7 @@ export class ContractsService extends BaseService<ContractEntity> {
         'contracts.startDate as contractStartDate',
         'contracts.processingDate as contractProcessingDate',
         'contracts.endDate as contractEndDate',
+        'milestone.id as milestoneId',
         'milestone.name as milestoneName',
         'milestone.startDate as milestoneStartDate',
         'milestone.endDate as milestoneEndDate',
@@ -1429,6 +1430,7 @@ export class ContractsService extends BaseService<ContractEntity> {
    */
   private formattedDataGetAllContract(rawData: any): any {
     const groupedData = {};
+    const processedContracts = new Set();
     rawData.forEach((item) => {
       if (!groupedData[item.id]) {
         groupedData[item.id] = {
@@ -1497,15 +1499,20 @@ export class ContractsService extends BaseService<ContractEntity> {
         !Object.values(item).every((value) => value === null) &&
         item.contractCode
       ) {
-        groupedData[item.id].files.push({
-          contractFileId: item.contractFileId,
-          contractCode: item.contractCode,
-          contractFileName: item.contractFileName,
-          contractFile: item.contractFile,
-          contractFileUrl: item.contractFileUrl,
-          rejectNote: item.rejectNote,
-          contractFileStatus: item.contractFileStatus,
-        });
+        const existingFileIndex = groupedData[item.id].files.findIndex(
+          (file) => file.contractFileId === item.contractFileId,
+        );
+        if (existingFileIndex === -1) {
+          groupedData[item.id].files.push({
+            contractFileId: item.contractFileId,
+            contractCode: item.contractCode,
+            contractFileName: item.contractFileName,
+            contractFile: item.contractFile,
+            contractFileUrl: item.contractFileUrl,
+            rejectNote: item.rejectNote,
+            contractFileStatus: item.contractFileStatus,
+          });
+        }
         if (
           item.milestoneName !== null &&
           item.milestoneStartDate !== null &&
@@ -1514,18 +1521,26 @@ export class ContractsService extends BaseService<ContractEntity> {
           item.milestoneCreatedBy !== null &&
           item.milestoneStatus !== null
         ) {
-          groupedData[item.id].paymentMilestone.push({
-            name: item.milestoneName,
-            startDate: moment(item.milestoneStartDate)
-              .tz('Asia/Bangkok')
-              .format('YYYY-MM-DD HH:mm:ss'),
-            endDate: moment(item.milestoneEndDate)
-              .tz('Asia/Bangkok')
-              .format('YYYY-MM-DD HH:mm:ss'),
-            amount: item.milestoneAmount,
-            createdBy: item.milestoneCreatedBy,
-            status: item.milestoneStatus,
-          });
+          const existingMilestoneIndex = groupedData[
+            item.id
+          ].paymentMilestone.findIndex(
+            (milestone) => milestone.id === item.milestoneId,
+          );
+          if (existingMilestoneIndex === -1) {
+            groupedData[item.id].paymentMilestone.push({
+              id: item.milestoneId,
+              name: item.milestoneName,
+              startDate: moment(item.milestoneStartDate)
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+              endDate: moment(item.milestoneEndDate)
+                .tz('Asia/Bangkok')
+                .format('YYYY-MM-DD HH:mm:ss'),
+              amount: item.milestoneAmount,
+              createdBy: item.milestoneCreatedBy,
+              status: item.milestoneStatus,
+            });
+          }
           for (const id in groupedData) {
             groupedData[id].paymentMilestone.sort((a, b) =>
               moment(a.endDate).diff(moment(b.endDate)),
@@ -1602,11 +1617,12 @@ export class ContractsService extends BaseService<ContractEntity> {
           id: contract.id,
         },
       });
-      if (deleteResult.affected > 0) {
-        await this.createPaymentMilestone(contract.id, data, oUserId);
-        return true;
-      }
-      return false;
+      const createResult = await this.createPaymentMilestone(
+        contract.id,
+        data,
+        oUserId,
+      );
+      return true;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

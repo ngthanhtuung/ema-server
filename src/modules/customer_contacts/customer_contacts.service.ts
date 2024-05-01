@@ -183,7 +183,7 @@ export class CustomerContactsService {
       }
       const contract =
         await this.contractService.getContractByCustomerContactId(contactId);
-      console.log('Contract: ', contract);
+      // console.log('Contract: ', contract);
       const user = await this.userService.findByEmailV2(data?.[0]?.email);
       const contractInfo = contract ? contract : null;
       return {
