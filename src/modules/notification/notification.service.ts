@@ -355,6 +355,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
       throw new InternalServerErrorException('Create notification failed!');
     } catch (err) {
       throw new InternalServerErrorException(err);
+    } finally {
+      queryRunner.release();
     }
   }
 
