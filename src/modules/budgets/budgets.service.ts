@@ -163,7 +163,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     } finally {
-      await queryRunner.release(); // Release the query runner if it was created in this function
+      await queryRunner.release();
     }
   }
 
@@ -346,7 +346,7 @@ export class BudgetsService extends BaseService<TransactionEntity> {
           if (resultAccepted.affected > 0) {
             const dataNotificationAccepted: NotificationTransactionRequest = {
               title: `Yêu cầu được chấp thuận`,
-              content: `Yêu cầu ${transactionExisted?.transactionName} được chấp thuận`,
+              content: `Yêu cầu ${transactionExisted?.transactionName} đã được chấp thuận`,
               type: ETypeNotification.BUDGET,
               receiveUser: transactionExisted?.createdBy,
               commonId: transactionExisted?.id,
