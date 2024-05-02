@@ -833,6 +833,7 @@ export class TaskService extends BaseService<TaskEntity> {
         });
       });
       const result = (await Promise.all(arrayPromise))?.flatMap((arr) => arr);
+
       const taskStatistics = {
         total: result.length,
         pending: result.filter((task) => task.status === ETaskStatus.PENDING)
@@ -840,7 +841,9 @@ export class TaskService extends BaseService<TaskEntity> {
         processing: result.filter(
           (task) => task.status === ETaskStatus.PROCESSING,
         ).length,
-        done: result.filter((task) => task.status === ETaskStatus.DONE).length,
+        done:
+          result.filter((task) => task.status === ETaskStatus.DONE).length +
+          result.filter((task) => task.status === ETaskStatus.CONFIRM).length,
         cancel: result.filter((task) => task.status === ETaskStatus.CANCEL)
           .length,
         overdue: result.filter((task) => task.status === ETaskStatus.OVERDUE)
