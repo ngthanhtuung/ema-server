@@ -8,7 +8,11 @@
 - **Nguyễn Quốc Sỹ**: Front-end Developer - FPT University
 
 ## Background
-Nowadays, organizing advertising and marketing events is becoming more and more popular in the market. But the process of implementing and organizing these events is still manual and it is difficult to control the process closely. 
+Nowadays, organizing advertising and marketing events is becoming more and more popular in the market. But the process of implementing and organizing these events is still manual and it is difficult to control the process closely. With the following disadvantages below:
+- **Using Spreadsheets for making a plan, budget, and task management**: Manage event activities still manually through Microsoft Excel or Google Sheet
+- **Connection**: Low connection between teams & divisions
+- **Monitoring**: Difficulty in tracking task progress to evaluate performance when events are being held.
+- **Budget**: Manually managing finances, especially during events, can be challenging without proper data recording, especially for purchases.
 
 ## Technology Used
 
