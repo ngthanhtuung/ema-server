@@ -1,98 +1,29 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# HREA - Building The Events Organizer Management Application For Advertising and Marketing
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Members
+- **Ngô Xuân Thiệp**: Mobile Developer (Leader) - FPT University
+- **Đoàn Vũ Quang Huy**: Back-end Developer - FPT University
+- **Nguyễn Thanh Tùng**: Back-end Developer, Tester - FPT University
+- **Nguyễn Trọng Nguyên Vũ**: Front-end Developer - FPT University
+- **Nguyễn Quốc Sỹ**: Front-end Developer - FPT University
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Background
+Nowadays, organizing advertising and marketing events is becoming more and more popular in the market. But the process of implementing and organizing these events is still manual and it is difficult to control the process closely. 
 
-## Description
+## Technology Used
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Programming Languages**: Javascript, Typescript, Dart
+- **Frameworks**: ReactJS, NestJS, Flutter
+- **Databases**: MySQL
+- **Other Tools**: Docker, Circle CI, AWS, Firebase, GoongMap
 
-## Installation
+## Main Features
 
-```bash
-$ npm install
-```
+- **Booking Process Management**: These features are built for the event organizers to help receive the booking from customers so that the event organizer can make a plan, estimate the budget and time that could be used in the event, and send it to the customer. After the customer accepts the plan, the event organizer and customer sign a contract and pay the deposit to prepare this event.
+- **Task Management**: These features are built so the event organizers can easily and immediately manage and track all of the event's tasks.
+- **Budget Management**: These features are built so the event organizers can manage all of the transactions in the event. Statistics can be obtained.
+- **User Management**:  These features are built so the event organizers can manage all of the users in the system.
 
-## Running the app
+---
 
-```bash
-# development
-$ npm run start
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
-
-## run seed 
-step1: create file seeds 
-step2: yarn seed:run 
-
-## rule commit code 
-### build: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
-
-### ci: Changes to our CI configuration files and scripts (example scopes: Gitlab CI, Circle, BrowserStack, SauceLabs)
-
-### chore: add something without touching production code (Eg: update npm dependencies)
-
-### docs: Documentation only changes
-
-### feat: A new feature
-### fix: A bug fix
-
-### perf: A code change that improves performance
-### refactor: A code change that neither fixes a bug nor adds a feature
-
-### revert: Reverts a previous commit
-
-### style: Changes that do not affect the meaning of the code (Eg: adding white-space, formatting, missing semi-colons, etc)
-
-### test: Adding missing tests or correcting existing tests
