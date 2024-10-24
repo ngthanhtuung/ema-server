@@ -1,11 +1,11 @@
 # HREA - Building The Events Organizer Management Application For Advertising and Marketing
 
 ## Members
-- **Ngô Xuân Thiệp**: Mobile Developer (Leader) - FPT University
-- **Đoàn Vũ Quang Huy**: Back-end Developer - FPT University
-- **Nguyễn Thanh Tùng**: Back-end Developer, Tester - FPT University
-- **Nguyễn Trọng Nguyên Vũ**: Front-end Developer - FPT University
-- **Nguyễn Quốc Sỹ**: Front-end Developer - FPT University
+- **Ngô Xuân Thiệp**: Mobile Developer (Leader)
+- **Đoàn Vũ Quang Huy**: Back-end Developer
+- **Nguyễn Thanh Tùng**: Back-end Developer, Tester
+- **Nguyễn Trọng Nguyên Vũ**: Front-end Developer
+- **Nguyễn Quốc Sỹ**: Front-end Developer
 
 ## Background
 Nowadays, organizing advertising and marketing events is becoming more and more popular in the market. But the process of implementing and organizing these events is still manual and it is difficult to control the process closely. With the following disadvantages below:
@@ -19,7 +19,7 @@ Nowadays, organizing advertising and marketing events is becoming more and more 
 - **Programming Languages**: Javascript, Typescript, Dart
 - **Frameworks**: ReactJS, NestJS, Flutter
 - **Databases**: MySQL
-- **Other Tools**: Docker, Circle CI, AWS, Firebase, GoongMap
+- **Other Tools**: Docker, Circle CI, AWS, Firebase, GoongMap, etc...
 
 ## Main Features
 
