@@ -1,4 +1,4 @@
-# HREA - Building The Events Organizer Management Application For Advertising and Marketing
+# EMA - Building The Events Organizer Management Application For Advertising and Marketing
 
 ## Members
 - **Ngô Xuân Thiệp**: Mobile Developer (Leader)
